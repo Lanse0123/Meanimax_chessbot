@@ -27,7 +27,6 @@ public class Board {
     protected final int playerID2;
     protected float borderSize = 10;
     protected Color borderColor;
-    protected ArrayList<Board> neighboringBoards = new ArrayList<>();
     protected char whiteTexturePrefix;
     protected char blackTexturePrefix;
 
@@ -158,15 +157,11 @@ public class Board {
 
     public int getBaseTileSize() { return baseTileSize; }
     public int getBoardSize() { return boardSize; }
-    public ArrayList<Board> getNeighboringBoards(){return this.neighboringBoards;}
 
     //this code labels the number tile, and colors it the opposite color of the current tile its on.
     protected void label(Graphics2D g) {
         BoardLetterIDCreator colLabeler = new BoardLetterIDCreator();
-        Font font = new Font(Map.of(
-                TextAttribute.WEIGHT, TextAttribute.WEIGHT_EXTRABOLD,
-                TextAttribute.SIZE, 26
-        ));
+        Font font = new Font(Map.of(TextAttribute.WEIGHT, TextAttribute.WEIGHT_EXTRABOLD, TextAttribute.SIZE, 26));
         g.setFont(font);
 
         for (int i = 0; i < boardSize; i++) {

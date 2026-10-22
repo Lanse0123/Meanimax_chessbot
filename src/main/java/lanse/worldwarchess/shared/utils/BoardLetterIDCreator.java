@@ -30,7 +30,7 @@ public class BoardLetterIDCreator implements Iterator<String> {
                 curState.set(i, 'A');
             }
         }
-        curState.add(0, 'A');
+        curState.addFirst('A');
         return string();
     }
 }

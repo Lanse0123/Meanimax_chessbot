@@ -16,8 +16,6 @@ public class VisibleMoveDetector extends LegalMoveDetector{
     // and vertically, while bishops move diagonally, knights move in an L, and queens are like a rook + bishop.
     // This is for NPCs that want to be defensive and see enemy moves.
 
-    public static int TOLERENCE_PIXELS = 100;
-    public static int OFFSET_CORRECTION_VALUE = 25;
     public static int[] bishopDirections = {1, 1, 1, -1, -1, 1, -1, -1};
     public static int[] rookDirections = {1, 0, -1, 0, 0, 1, 0, -1};
     public static int[] queenDirections = {1, 1, 1, -1, -1, 1, -1, -1, 1, 0, -1, 0, 0, 1, 0, -1};
@@ -59,8 +57,6 @@ public class VisibleMoveDetector extends LegalMoveDetector{
             if (isValidMove(localX, localY, currentBoard, piece)) {
                 moves.add(new Coordinate(localX, localY, currentBoard.getBoardID()));
             }
-        } else {
-            LegalMoveDetector.boardFinder(currentBoard, piece, offsetX, offsetY, currentBoard.getBaseTileSize(), moves);
         }
     }
 
@@ -73,8 +69,6 @@ public class VisibleMoveDetector extends LegalMoveDetector{
             if (isValidCapture(localX, localY, currentBoard, piece)) {
                 moves.add(new Coordinate(localX, localY, currentBoard.getBoardID()));
             }
-        } else {
-            LegalMoveDetector.boardFinder(currentBoard, piece, offsetX, offsetY, currentBoard.getBaseTileSize(), moves);
         }
     }
 
@@ -161,7 +155,7 @@ public class VisibleMoveDetector extends LegalMoveDetector{
             Piece left = board.getPieceAt(x - 1, y, Optional.of(piece), boardPieces);
             Piece right = board.getPieceAt(x + 1, y, Optional.of(piece), boardPieces);
 
-            int y1 = y + 1 * dir;
+            int y1 = y + dir;
             if (left != null && left.getType() == PieceType.PAWN && !left.getTeam().equals(piece.getTeam())
                     && MoveHistory.wasLastMovePawnDoubleAdvance(left.getPosX(), left.getPosY(), left.getTeam())) {
                 moves.add(new Coordinate(left.getPosX(), y1, board.getBoardID()));
@@ -189,14 +183,12 @@ public class VisibleMoveDetector extends LegalMoveDetector{
         return moves;
     }
 
-    private static void slideIterative(Piece piece, Board startBoard, int startX, int startY, int dx, int dy, List<Coordinate> moves, int maxDistance) {
-        Board currentBoard = startBoard;
+    private static void slideIterative(Piece piece, Board board, int startX, int startY, int dx, int dy, List<Coordinate> moves, int maxDistance) {
         int localX = startX;
         int localY = startY;
         final int stepMultiplier = piece.getPieceSize();
 
-        int tileSize = currentBoard.getBaseTileSize();
-        int boardSize = currentBoard.getBoardSize();
+        int boardSize = board.getBoardSize();
         int traveled = 0;
 
         // fetch neighbor list once per loop iteration
@@ -206,61 +198,16 @@ public class VisibleMoveDetector extends LegalMoveDetector{
 
             // same-board move
             if (nextX >= 0 && nextX < boardSize && nextY >= 0 && nextY < boardSize) {
-                if (!isValidMove(nextX, nextY, currentBoard, piece)) break;
+                if (!isValidMove(nextX, nextY, board, piece)) break;
 
-                moves.add(new Coordinate(nextX, nextY, currentBoard.getBoardID()));
+                moves.add(new Coordinate(nextX, nextY, board.getBoardID()));
                 localX = nextX;
                 localY = nextY;
                 traveled++;
                 continue;
             }
 
-            // cross-board: compute global once
-            final int globalX = currentBoard.getBoardX() + localX * tileSize;
-            final int globalY = currentBoard.getBoardY() + localY * tileSize;
-            final int newGlobalX = globalX + dx * tileSize * stepMultiplier + OFFSET_CORRECTION_VALUE;
-            final int newGlobalY = globalY + dy * tileSize * stepMultiplier + OFFSET_CORRECTION_VALUE;
-//            LegalMoveDetector.debugRawPoints.add(new Point(newGlobalX, newGlobalY));
-
-            boolean crossed = false;
-            List<Board> neighbors = currentBoard.getNeighboringBoards();
-            for (Board neighbor : neighbors) {
-                int neighborTileSize = neighbor.getBaseTileSize();
-                int neighborSize = neighbor.getBoardSize();
-                int boardX = neighbor.getBoardX();
-                int boardY = neighbor.getBoardY();
-                int boardWidth = neighborTileSize * neighborSize;
-                int boardHeight = neighborTileSize * neighborSize;
-
-                if (newGlobalX >= boardX - TOLERENCE_PIXELS && newGlobalX < boardX + boardWidth + TOLERENCE_PIXELS &&
-                        newGlobalY >= boardY - TOLERENCE_PIXELS && newGlobalY < boardY + boardHeight + TOLERENCE_PIXELS) {
-
-                    int snappedX = (int) ((newGlobalX - boardX) / neighborTileSize + 0.5);
-                    int snappedY = (int) ((newGlobalY - boardY) / neighborTileSize + 0.5);
-
-                    if (snappedX >= 0 && snappedX < neighborSize && snappedY >= 0 && snappedY < neighborSize) {
-                        if (!isValidMove(snappedX, snappedY, neighbor, piece)) {
-                            // stop sliding in this direction (tile blocked) - ends the direction
-                            return;
-                        }
-
-                        moves.add(new Coordinate(snappedX, snappedY, neighbor.getBoardID()));
-
-                        // cross to new board
-                        currentBoard = neighbor;
-                        tileSize = currentBoard.getBaseTileSize();
-                        boardSize = currentBoard.getBoardSize();
-                        localX = snappedX;
-                        localY = snappedY;
-                        traveled++;
-                        crossed = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!crossed) break;
-            if (traveled >= maxDistance) break;
+            break;
         }
     }
 

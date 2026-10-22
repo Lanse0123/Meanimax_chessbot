@@ -62,8 +62,6 @@ public class LegalMoveDetector {
             if (isValidMove(localX, localY, currentBoard, piece)) {
                 moves.add(new Coordinate(localX, localY, currentBoard.getBoardID()));
             }
-        } else {
-            boardFinder(currentBoard, piece, offsetX, offsetY, currentBoard.getBaseTileSize(), moves);
         }
     }
 
@@ -76,8 +74,6 @@ public class LegalMoveDetector {
             if (isValidCapture(localX, localY, currentBoard, piece)) {
                 moves.add(new Coordinate(localX, localY, currentBoard.getBoardID()));
             }
-        } else {
-            boardFinder(currentBoard, piece, offsetX, offsetY, currentBoard.getBaseTileSize(), moves);
         }
     }
 
@@ -192,15 +188,13 @@ public class LegalMoveDetector {
         return moves;
     }
 
-    private static void slideIterative(Piece piece, Board startBoard, int startX, int startY, int dx, int dy, List<Coordinate> moves, int maxDistance) {
-        Board currentBoard = startBoard;
+    private static void slideIterative(Piece piece, Board board, int startX, int startY, int dx, int dy, List<Coordinate> moves, int maxDistance) {
         int localX = startX;
         int localY = startY;
         final int stepMultiplier = piece.getPieceSize();
-        List<Piece> cachedPieces = WorldMap.getAllPiecesOfBoard(currentBoard);
+        List<Piece> cachedPieces = WorldMap.getAllPiecesOfBoard(board);
 
-        int tileSize = currentBoard.getBaseTileSize();
-        int boardSize = currentBoard.getBoardSize();
+        int boardSize = board.getBoardSize();
         int traveled = 0;
 
         // fetch neighbor list once per loop iteration
@@ -210,116 +204,24 @@ public class LegalMoveDetector {
 
             // same-board move
             if (nextX >= 0 && nextX < boardSize && nextY >= 0 && nextY < boardSize) {
-                if (!isValidMove(nextX, nextY, currentBoard, piece)) break;
+                if (!isValidMove(nextX, nextY, board, piece)) break;
 
-                Piece target = currentBoard.getPieceAt(nextX, nextY, Optional.of(piece), cachedPieces);
+                Piece target = board.getPieceAt(nextX, nextY, Optional.of(piece), cachedPieces);
                 if (target != null) {
                     if (!target.getTeam().equals(piece.getTeam())) {
-                        moves.add(new Coordinate(nextX, nextY, currentBoard.getBoardID()));
+                        moves.add(new Coordinate(nextX, nextY, board.getBoardID()));
                     }
                     break;
                 }
 
-                moves.add(new Coordinate(nextX, nextY, currentBoard.getBoardID()));
+                moves.add(new Coordinate(nextX, nextY, board.getBoardID()));
                 localX = nextX;
                 localY = nextY;
                 traveled++;
                 continue;
             }
 
-            // cross-board: compute global once
-            final int globalX = currentBoard.getBoardX() + localX * tileSize;
-            final int globalY = currentBoard.getBoardY() + localY * tileSize;
-            final int newGlobalX = globalX + dx * tileSize * stepMultiplier + OFFSET_CORRECTION_VALUE;
-            final int newGlobalY = globalY + dy * tileSize * stepMultiplier + OFFSET_CORRECTION_VALUE;
-//            LegalMoveDetector.debugRawPoints.add(new Point(newGlobalX, newGlobalY));
-
-            boolean crossed = false;
-            List<Board> neighbors = currentBoard.getNeighboringBoards();
-            for (Board neighbor : neighbors) {
-                int neighborTileSize = neighbor.getBaseTileSize();
-                int neighborSize = neighbor.getBoardSize();
-                int boardX = neighbor.getBoardX();
-                int boardY = neighbor.getBoardY();
-                int boardWidth = neighborTileSize * neighborSize;
-                int boardHeight = neighborTileSize * neighborSize;
-
-                if (newGlobalX >= boardX - TOLERENCE_PIXELS && newGlobalX < boardX + boardWidth + TOLERENCE_PIXELS &&
-                        newGlobalY >= boardY - TOLERENCE_PIXELS && newGlobalY < boardY + boardHeight + TOLERENCE_PIXELS) {
-
-                    int snappedX = (int) ((newGlobalX - boardX) / neighborTileSize + 0.5);
-                    int snappedY = (int) ((newGlobalY - boardY) / neighborTileSize + 0.5);
-
-                    if (snappedX >= 0 && snappedX < neighborSize && snappedY >= 0 && snappedY < neighborSize) {
-                        if (!isValidMove(snappedX, snappedY, neighbor, piece)) {
-                            // stop sliding in this direction (tile blocked) - ends the direction
-                            return;
-                        }
-
-                        List<Piece> neighborPieces = WorldMap.getAllPiecesOfBoard(neighbor);
-                        Piece target = neighbor.getPieceAt(snappedX, snappedY, Optional.of(piece), neighborPieces);
-
-                        if (target != null) {
-                            if (!target.getTeam().equals(piece.getTeam())) {
-                                moves.add(new Coordinate(snappedX, snappedY, neighbor.getBoardID()));
-                            }
-                            // stop after capture
-                            return;
-                        }
-
-                        moves.add(new Coordinate(snappedX, snappedY, neighbor.getBoardID()));
-
-                        // cross to new board
-                        currentBoard = neighbor;
-                        cachedPieces = neighborPieces;
-                        tileSize = currentBoard.getBaseTileSize();
-                        boardSize = currentBoard.getBoardSize();
-                        localX = snappedX;
-                        localY = snappedY;
-                        traveled++;
-                        crossed = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!crossed) break;
-            if (traveled >= maxDistance) break;
-        }
-    }
-
-    protected static void boardFinder(Board currentBoard, Piece piece, int offsetX, int offsetY, int tileSize, List<Coordinate> moves) {
-        final int pieceGlobalX = currentBoard.getBoardX() + piece.getPosX() * tileSize;
-        final int pieceGlobalY = currentBoard.getBoardY() + piece.getPosY() * tileSize;
-        final int newGlobalX = pieceGlobalX + offsetX * tileSize;
-        final int newGlobalY = pieceGlobalY + offsetY * tileSize;
-//        LegalMoveDetector.debugRawPoints.add(new Point(newGlobalX, newGlobalY));
-
-        List<Board> neighbors = currentBoard.getNeighboringBoards();
-        for (Board board : neighbors) {
-            if (board.getBoardID() == currentBoard.getBoardID()) continue;
-
-            final int neighborTileSize = board.getBaseTileSize();
-            final int neighborTileCount = board.getBoardSize();
-            final int boardX = board.getBoardX();
-            final int boardY = board.getBoardY();
-            final int boardWidth = neighborTileSize * neighborTileCount;
-            final int boardHeight = neighborTileSize * neighborTileCount;
-
-            if (newGlobalX >= boardX - TOLERENCE_PIXELS && newGlobalX < boardX + boardWidth + TOLERENCE_PIXELS &&
-                    newGlobalY >= boardY - TOLERENCE_PIXELS && newGlobalY < boardY + boardHeight + TOLERENCE_PIXELS) {
-
-                double relX = (double) (newGlobalX - boardX) / neighborTileSize;
-                double relY = (double) (newGlobalY - boardY) / neighborTileSize;
-                int snappedX = (int) (relX + 0.5);
-                int snappedY = (int) (relY + 0.5);
-
-                if (snappedX >= 0 && snappedX < neighborTileCount && snappedY >= 0 && snappedY < neighborTileCount) {
-                    if (isValidMove(snappedX, snappedY, board, piece)) {
-                        moves.add(new Coordinate(snappedX, snappedY, board.getBoardID()));
-                    }
-                }
-            }
+            break;
         }
     }
 
