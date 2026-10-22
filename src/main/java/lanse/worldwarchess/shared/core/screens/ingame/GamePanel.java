@@ -79,9 +79,7 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
 
         g2d.translate(cameraX, cameraY);
 
-        for (Board board : WorldMap.boards.values()) {
-            board.draw(g2d, zoomFactor);
-        }
+        WorldMap.board.draw(g2d, zoomFactor);
 
         Marker.drawAllMarkers(zoomFactor, g2d);
 
@@ -108,7 +106,7 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        double maxZoomOut = Math.max((double) 1 / Math.max(WorldMap.boards.size(), 10), 0.001);
+        double maxZoomOut = Math.max((double) 1 / 10, 0.001);
 
         double zoomMultiplier = 1.1;
         int rotation = e.getWheelRotation();
@@ -118,7 +116,7 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         double oldZoom = zoomFactor;
         double newZoom = (rotation < 0) ? oldZoom * zoomMultiplier : oldZoom / zoomMultiplier;
 
-        newZoom = Math.max(maxZoomOut, Math.min(newZoom, 1));
+        newZoom = Math.clamp(newZoom, maxZoomOut, 1);
 
         double zoomRatio = newZoom / oldZoom;
 
@@ -139,21 +137,20 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
             int worldX = e.getX() - cameraX;
             int worldY = e.getY() - cameraY;
 
-            for (Board board : WorldMap.boards.values()) {
-                Rectangle region = getBoardRegion(board, zoomFactor);
-                if (region.contains(worldX, worldY)) {
-                    int baseTile = board.getBaseTileSize();
-                    int tileSize = (int) (baseTile * zoomFactor);
+            Board board = WorldMap.board;
+            Rectangle region = getBoardRegion(board, zoomFactor);
+            if (region.contains(worldX, worldY)) {
+                int baseTile = board.getBaseTileSize();
+                int tileSize = (int) (baseTile * zoomFactor);
 
-                    int pieceLogicalX = (worldX - region.x) / tileSize;
-                    int pieceLogicalY = (worldY - region.y) / tileSize;
+                int pieceLogicalX = (worldX - region.x) / tileSize;
+                int pieceLogicalY = (worldY - region.y) / tileSize;
 
-                    // Get the nearest piece within snapping range of the click
-                    Optional<Piece> opt_piece = Utils.nearestPiece(new LegalMoveDetector.Coordinate(pieceLogicalX, pieceLogicalY, board.getBoardID()), WorldMap.getAllPiecesOfBoard(board));
-                    if (opt_piece.isPresent()) {
-                        selectPiece(opt_piece.get(), board, worldX, worldY);
-                        return;
-                    }
+                // Get the nearest piece within snapping range of the click
+                Optional<Piece> opt_piece = Utils.nearestPiece(new LegalMoveDetector.Coordinate(pieceLogicalX, pieceLogicalY, board.getBoardID()), WorldMap.getAllPiecesOfBoard(board));
+                if (opt_piece.isPresent()) {
+                    selectPiece(opt_piece.get(), board, worldX, worldY);
+                    return;
                 }
             }
             lastMouseX = e.getX();
@@ -214,9 +211,9 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
 
         boolean sameSquare = (logicalCoords.x() == originalLogicalX && logicalCoords.y() == originalLogicalY && newBoard == selectedPiece.getBoard());
         boolean invalidMoveBase = newBoard == null || sameSquare ||
-                        Timer.playerIDMovedList.contains(selectedPiece.getPlayerID()) ||
-                        !selectedPiece.getTeam().equals((Timer.turnCounter % 2 == 0) ? "White" : "Black") ||
-                        (selectedPiece instanceof NpcPiece);
+                Timer.playerIDMovedList.contains(selectedPiece.getPlayerID()) ||
+                !selectedPiece.getTeam().equals((Timer.turnCounter % 2 == 0) ? "White" : "Black") ||
+                (selectedPiece instanceof NpcPiece);
 
         if (invalidMoveBase) {
             resetDrag();
@@ -291,35 +288,4 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
     @Override public void mouseExited(MouseEvent e) {}
     @Override public void keyReleased(KeyEvent keyEvent) {}
     @Override public void keyTyped(KeyEvent keyEvent) {}
-
-    public void setZoomFactor(double zoom){ zoomFactor = zoom; }
-    public double getZoomFactor() { return zoomFactor; }
-    public double[] getCameraPos(){ return new double[]{cameraX, cameraY}; }
-    public void setCameraPos(double cameraX, double cameraY){
-        GamePanel.cameraX = (int) cameraX;
-        GamePanel.cameraY = (int) cameraY;
-    }
-
-    public Piece getSelectedPiece(){
-        return selectedPiece;
-    }
-
-    public void deselectElements() {
-        selectedPiece = null;
-        selectedBoard = null;
-    }
-
-    public void selectBoard(Board board) {
-        selectedPiece = null;
-        selectedBoard = board;
-        pieceDragging = true;
-    }
-
-    public void spawnPiece(Piece piece) {
-        WorldMap.pieces.add(piece);
-
-        selectedBoard = null;
-        selectedPiece = piece;
-        pieceDragging = true;
-    }
 }

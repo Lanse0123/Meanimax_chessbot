@@ -3,7 +3,6 @@ package lanse.worldwarchess.shared.core.screens.background;
 import lanse.worldwarchess.shared.central.Main;
 import lanse.worldwarchess.shared.client.storage.Settings;
 import lanse.worldwarchess.shared.core.Timer;
-import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

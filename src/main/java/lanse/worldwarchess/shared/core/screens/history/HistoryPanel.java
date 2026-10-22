@@ -46,9 +46,7 @@ public class HistoryPanel extends GamePanel implements KeyListener{
 
         g2d.translate(cameraX, cameraY);
 
-        for (Board board : WorldMap.boards.values()) {
-            board.draw(g2d, zoomFactor);
-        }
+        WorldMap.board.draw(g2d, zoomFactor);
 
         Marker.drawAllMarkers(zoomFactor, g2d);
 

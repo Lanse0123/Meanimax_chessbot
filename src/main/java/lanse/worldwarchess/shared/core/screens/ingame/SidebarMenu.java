@@ -36,23 +36,17 @@ public class SidebarMenu extends JPanel {
         JButton homeButton = createSidebarButton("<html>Home<br></html>");
         JButton settingsButton = createSidebarButton("<html>Settings<br></html>");
         JButton resetCameraButton = createSidebarButton("<html>Reset<br>Camera</html>");
-        JButton skipTurnButton = createSidebarButton("<html>Skip<br>Turn</html>");
         JButton pauseGameButton = createSidebarButton("<html>Pause<br>Game</html>");
-        JButton slowModeButton = createSidebarButton("<html>NPC Slow<br>Mode</html>");
 
         homeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         settingsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         resetCameraButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        skipTurnButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         pauseGameButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        slowModeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         homeButton.addActionListener(e -> returnToMainMenu());
         settingsButton.addActionListener(e -> Settings.showSettingsWindow());
         resetCameraButton.addActionListener(e -> resetCamera());
-        skipTurnButton.addActionListener(e -> skipTurn());
         pauseGameButton.addActionListener(e -> pauseGame());
-        slowModeButton.addActionListener(e -> toggleSlowMode());
 
         menuPanel.add(homeButton);
         menuPanel.add(Box.createVerticalStrut(7));
@@ -60,15 +54,9 @@ public class SidebarMenu extends JPanel {
         menuPanel.add(Box.createVerticalStrut(7));
         menuPanel.add(resetCameraButton);
         menuPanel.add(Box.createVerticalStrut(7));
-        menuPanel.add(slowModeButton);
-        menuPanel.add(Box.createVerticalStrut(7));
 
         add(toggleButton, BorderLayout.WEST);
         updateSize();
-    }
-
-    private void toggleSlowMode() {
-        slowMode = !slowMode;
     }
 
     private void pauseGame() {
@@ -100,19 +88,8 @@ public class SidebarMenu extends JPanel {
     }
 
     private void resetCamera() {
-        int newX = 0;
-        int newY = 0;
-        if (!WorldMap.boards.isEmpty()) {
-            for (Board board : WorldMap.boards.values()) {
-                newX += board.getBoardX();
-                newY += board.getBoardY();
-            }
-            GamePanel.cameraX = newX / WorldMap.boards.size();
-            GamePanel.cameraY = newY / WorldMap.boards.size();
-        } else {
-            GamePanel.cameraX = 0;
-            GamePanel.cameraY = 0;
-        }
+        GamePanel.cameraX = 0;
+        GamePanel.cameraY = 0;
 
         if (Main.gamePanel != null) {
             Main.gamePanel.repaint();
@@ -130,10 +107,6 @@ public class SidebarMenu extends JPanel {
         if (confirm == JOptionPane.YES_OPTION) {
             Returner.returnToMainMenu();
         }
-    }
-
-    private void skipTurn() {
-        Timer.currentTime = 0;
     }
 
     private JButton createSidebarButton(String text) {

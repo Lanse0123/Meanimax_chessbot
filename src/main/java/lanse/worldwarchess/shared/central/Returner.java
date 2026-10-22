@@ -26,7 +26,6 @@ public class Returner {
         MoveHistory.moveRecords.clear();
         MoveHistory.shouldRecordHistory = false;
         NPC.attackedSquares.clear();
-        WorldMap.boards.clear();
         WorldMap.pieces.clear();
         BoardPresets.resetOrder();
         MapShapePresets.playerIDCount = 1;

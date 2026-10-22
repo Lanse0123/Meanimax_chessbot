@@ -77,22 +77,20 @@ public class Utils {
         double worldX = px.x - LegalMoveDetector.OFFSET_CORRECTION_VALUE * pieceForScale.getPieceSize() * offset.x;
         double worldY = px.y - LegalMoveDetector.OFFSET_CORRECTION_VALUE * pieceForScale.getPieceSize() * offset.y;
 
-        for (Board board : WorldMap.boards.values()) {
-            Rectangle region = getBoardRegion(board, zoomFactor);
-            if (!region.contains(worldX, worldY)) continue;
+        Board board = WorldMap.board;
+        Rectangle region = getBoardRegion(board, zoomFactor);
 
-            int baseTile = board.getBaseTileSize();
-            int pieceTileSize = (int) (pieceForScale.getPieceSize() * baseTile * zoomFactor);
+        int baseTile = board.getBaseTileSize();
+        int pieceTileSize = (int) (pieceForScale.getPieceSize() * baseTile * zoomFactor);
 
-            double newLogicalX = (worldX - region.x) / pieceTileSize;
-            double newLogicalY = (worldY - region.y) / pieceTileSize;
-            int boardSize = board.getBoardSize();
+        double newLogicalX = (worldX - region.x) / pieceTileSize;
+        double newLogicalY = (worldY - region.y) / pieceTileSize;
+        int boardSize = board.getBoardSize();
 
-            if (newLogicalX >= 0 && newLogicalY >= 0 && newLogicalX < boardSize - 1 && newLogicalY < boardSize - 1) {
+        if (newLogicalX >= 0 && newLogicalY >= 0 && newLogicalX < boardSize - 1 && newLogicalY < boardSize - 1) {
 
-                return new LegalMoveDetector.Coordinate((int) Math.round(newLogicalX * pieceForScale.getPieceSize()),
-                        (int) Math.round(newLogicalY * pieceForScale.getPieceSize()), board.getBoardID());
-            }
+            return new LegalMoveDetector.Coordinate((int) Math.round(newLogicalX * pieceForScale.getPieceSize()),
+                    (int) Math.round(newLogicalY * pieceForScale.getPieceSize()), board.getBoardID());
         }
 
         if (offsets.hasNext()) {

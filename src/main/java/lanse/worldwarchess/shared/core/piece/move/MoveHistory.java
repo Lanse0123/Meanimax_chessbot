@@ -9,7 +9,6 @@ import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.PieceType;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
-import lanse.worldwarchess.shared.core.worldmap.board.BoardClassPrefixMap;
 
 import java.io.IOException;
 import java.nio.file.Files;

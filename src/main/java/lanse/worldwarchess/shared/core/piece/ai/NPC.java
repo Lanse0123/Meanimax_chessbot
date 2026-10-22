@@ -2,10 +2,8 @@ package lanse.worldwarchess.shared.core.piece.ai;
 
 import lanse.worldwarchess.shared.core.Timer;
 import lanse.worldwarchess.shared.core.piece.Piece;
-import lanse.worldwarchess.shared.core.piece.PieceType;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.piece.move.MoveExecutor;
-import lanse.worldwarchess.shared.core.worldmap.Utils;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
@@ -17,17 +15,13 @@ public class NPC {
     //This is the central class that orders all NPC pieces to move when needed. It also stores the core logic for
     // some of the ai types like zombies, vampires, and etc.
 
-    public static volatile boolean stopMovement = false;
     public static volatile boolean areNpcsMoving = false;
     public static Map<LegalMoveDetector.Coordinate, List<String>> attackedSquares = new HashMap<>();
-
-    public static int setLimiter = 1;
-    private static final HashMap<Integer, Integer> npcLimiterMap = new HashMap<>();
 
     public static void doAllNpcLogic(String team, String ignoredTeam, boolean doOtherTeams, boolean skipTurn) {
         //moved NPC logic on a different thread because it can be laggy
         new Thread(() -> {
-            //TODO - put meanimax algorithm here
+            performMove();
 
             if (skipTurn) {
                 Timer.currentTime = 0;
@@ -35,6 +29,12 @@ public class NPC {
             areNpcsMoving = false;
 
         }, "NPCMover").start();
+    }
+
+    public static void performMove(){
+        //TODO - put meanimax algorithm here
+
+        Board mainBoard = WorldMap.getBoardByID(0);
     }
 
     private static void performMove(Piece piece, List<LegalMoveDetector.Coordinate> candidateMoves) {

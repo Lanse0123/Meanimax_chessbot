@@ -13,7 +13,6 @@ import lanse.worldwarchess.shared.core.worldmap.board.Board;
 import lanse.worldwarchess.shared.utils.LagTester;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class WorldMap {
@@ -22,12 +21,12 @@ public class WorldMap {
      * for calling them and making use of them. It is also responsible for setting up the map.
      */
 
-    public static Map<Integer, Board> boards = new ConcurrentHashMap<>();
+    public static Board board;
     public static List<Piece> pieces = new CopyOnWriteArrayList<>();
 
     public static void initializeBoards() {
         System.out.println("Adding board...");
-        MapShapePresets.addBoard(0, 0);
+        MapShapePresets.setBoard(0, 0);
     }
 
     public static List<Piece> getAllPiecesOfBoard(Board board) {
@@ -76,10 +75,12 @@ public class WorldMap {
     }
 
     public static Board getBoardByID(int boardID) {
-        return boards.get(boardID);
+        return board;
     }
 
-    public static void tickBoards() { boards.values().forEach(Board::tick); }
+    public static void tickBoards() {
+        board.tick();
+    }
 
     public static void killPiece(Piece piece, boolean doNpcCheck, boolean shouldSend) {
         if (doNpcCheck) {

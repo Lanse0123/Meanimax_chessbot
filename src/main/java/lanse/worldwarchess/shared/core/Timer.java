@@ -23,7 +23,6 @@ public class Timer {
     public static boolean gameStarted = false;
     public static boolean isGamePaused = false;
     private static int lastSecondPlayed = -1;
-    public static boolean skipTurn = false;
 
     public static void count() {
         // pregame countdown
