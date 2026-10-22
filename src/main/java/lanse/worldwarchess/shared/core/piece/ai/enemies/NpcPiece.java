@@ -6,6 +6,8 @@ import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.awt.*;
 
+//TODO - this needs to NOT be abstract
+
 /** REMEMBER TO ADD TO THE PieceClassPrefixMap.java WHEN ADDING A NEW PIECE CLASS*/
 public abstract class NpcPiece extends Piece {
 

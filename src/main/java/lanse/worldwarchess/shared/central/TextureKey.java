@@ -1,11 +1,7 @@
 package lanse.worldwarchess.shared.central;
 
 import lanse.worldwarchess.shared.core.piece.Piece;
-import lanse.worldwarchess.shared.core.piece.ai.attacks.PieceAttack;
-import lanse.worldwarchess.shared.core.piece.ai.bosses.NpcBoss;
 import lanse.worldwarchess.shared.core.piece.ai.enemies.NpcPiece;
-import lanse.worldwarchess.shared.core.piece.ai.enemies.commander.NpcCommanderPiece;
-import lanse.worldwarchess.shared.core.piece.fairies.FairyPiece;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -62,8 +58,6 @@ public class TextureKey {
 
 
     public static String getTextureKey(Piece piece) {
-        if (piece instanceof PieceAttack || piece instanceof NpcBoss || piece instanceof FairyPiece) return piece.getTexture();
-
         String textureKey = switch (piece.getType()) {
             case PAWN -> "wp";
             case ROOK -> "wr";
@@ -71,17 +65,16 @@ public class TextureKey {
             case BISHOP -> "wb";
             case QUEEN -> "wq";
             case KING -> "wk";
-            default -> null;
         };
 
         char replacement;
 
-        if (textureKey != null && (piece.getTeam().equalsIgnoreCase("Black"))) {
+        if (piece.getTeam().equalsIgnoreCase("Black")) {
             replacement = 'b';
             textureKey = replacement + textureKey.substring(1);
         }
 
-        if (textureKey != null && (piece instanceof NpcPiece || piece instanceof NpcCommanderPiece)) {
+        if (piece instanceof NpcPiece) {
             replacement = piece.getPrefixReplacement();
             if (replacement != 0) textureKey = replacement + textureKey.substring(1);
         }

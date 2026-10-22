@@ -1,9 +1,7 @@
 package lanse.worldwarchess.shared.core.screens.ingame;
 
 import lanse.worldwarchess.shared.core.Timer;
-import lanse.worldwarchess.shared.core.gamemode.GameMode;
 import lanse.worldwarchess.shared.core.piece.Piece;
-import lanse.worldwarchess.shared.core.piece.ai.bosses.BossHealthManager;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 
 import javax.swing.*;
@@ -32,10 +30,10 @@ public class SidebarEvaluator extends JPanel {
         List<Piece> blackPieces = WorldMap.getAllPiecesOfTeam("Black");
 
         for (Piece piece : whitePieces) {
-            whiteStrength += BossHealthManager.getPieceStrength(piece);
+            whiteStrength += piece.getStrength();
         }
         for (Piece piece : blackPieces) {
-            blackStrength += BossHealthManager.getPieceStrength(piece);
+            blackStrength += piece.getStrength();
         }
 
         repaint(); // Refresh UI
@@ -43,7 +41,7 @@ public class SidebarEvaluator extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        if (Timer.preGameCountdown > 0 && GameMode.isTimed) return;
+        if (Timer.preGameCountdown > 0) return;
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 

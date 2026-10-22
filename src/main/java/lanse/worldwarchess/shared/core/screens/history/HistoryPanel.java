@@ -5,7 +5,6 @@ import lanse.worldwarchess.shared.core.piece.marker.Marker;
 import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
 import lanse.worldwarchess.shared.core.screens.background.Background;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
-import lanse.worldwarchess.shared.core.tutorial.Tutorial;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
@@ -97,8 +96,6 @@ public class HistoryPanel extends GamePanel implements KeyListener{
     // pan the camera.
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (Tutorial.staticPhases.contains(Tutorial.phase)) return;
-
         int screenWidth = getWidth();
         int screenHeight = getHeight();
         int edgeBuffer = 50;

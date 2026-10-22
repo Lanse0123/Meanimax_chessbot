@@ -1,31 +1,16 @@
 package lanse.worldwarchess.shared.core.worldmap;
 
-import lanse.worldwarchess.cascading.CascadePacketBundler;
-import lanse.worldwarchess.cascading.CascadePacketManager;
-import lanse.worldwarchess.shared.central.CentralTick;
-import lanse.worldwarchess.shared.central.Main;
-import lanse.worldwarchess.shared.core.gamemode.GameMode;
-import lanse.worldwarchess.shared.core.gamemode.GameModeInitializer;
-import lanse.worldwarchess.shared.core.gamemode.GameModeMapType;
-import lanse.worldwarchess.shared.core.piece.CommanderPiece;
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.PieceType;
-import lanse.worldwarchess.shared.core.piece.ai.AutoHealable;
 import lanse.worldwarchess.shared.core.piece.ai.attacks.PieceAttack;
-import lanse.worldwarchess.shared.core.piece.ai.bosses.BossHealthManager;
-import lanse.worldwarchess.shared.core.piece.ai.bosses.NpcBoss;
 import lanse.worldwarchess.shared.core.piece.ai.enemies.NpcPiece;
-import lanse.worldwarchess.shared.core.piece.ai.enemies.commander.NpcCommanderPiece;
 import lanse.worldwarchess.shared.core.piece.marker.DeathMarker;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
 import lanse.worldwarchess.shared.core.piece.move.VisibleMoveDetector;
-import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.sound.SoundManager;
-import lanse.worldwarchess.shared.core.tutorial.Tutorial;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 import lanse.worldwarchess.shared.utils.LagTester;
-import lanse.worldwarchess.steam.Account;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,12 +28,10 @@ public class WorldMap {
     public static List<Piece> minionPieceSpawnRequests = new CopyOnWriteArrayList<>();
     public static List<Piece> minionPieceDestroyRequests = new CopyOnWriteArrayList<>();
 
-    public static GameModeMapType currentMapPreset;
-
     public static void initializeBoards() {
         boards.clear();
-        if (currentMapPreset == null) return;
 
+        //TODO - spawn the board
         GameModeMapType.setupMap();
         Board.linkAllBoardNeighbors();
 
@@ -59,49 +42,12 @@ public class WorldMap {
         MoveHistory.createNewGameForRecord();
         MoveHistory.createBoardListForRecord();
         MoveHistory.createPieceListForRecord();
-
-        /**
-        if (WorldMap.currentMapPreset == GameModeMapType.CITYDEBUG) {
-            Cityifier.cityify();
-        }
-         **/
-
-        if (Main.userIsHost) {
-            MultiplayerTeamIDBuilder.buildTeams();
-        }
     }
 
     public static List<Piece> getAllPiecesOfBoard(Board board) {
         List<Piece> result = new ArrayList<>();
         for (Piece p : pieces) {
             if (p != null && p.getBoard() == board) {
-                result.add(p);
-            }
-        }
-        return result;
-    }
-
-    public static Optional<Piece> getKingWithName(String name){
-        return WorldMap.pieces.stream()
-                .filter(p -> p.getType() == PieceType.KING)
-                .filter(p -> name.equalsIgnoreCase(p.getPlayerName()))
-                .findFirst();
-    }
-
-    public static List<Piece> getCommanderPiecesOnBoard(Board board) {
-        List<Piece> result = new ArrayList<>();
-        for (Piece p : pieces) {
-            if (p != null && p.getBoard() == board && p instanceof CommanderPiece) {
-                result.add(p);
-            }
-        }
-        return result;
-    }
-
-    public static List<Piece> getRegularPiecesOnBoard(Board board) {
-        List<Piece> result = new ArrayList<>();
-        for (Piece p : pieces) {
-            if (p != null && p.getBoard() == board && !(p instanceof CommanderPiece) && !(p instanceof NpcBoss)) {
                 result.add(p);
             }
         }
@@ -115,17 +61,9 @@ public class WorldMap {
         Map<LegalMoveDetector.Coordinate, List<String>> attackedSquares = new HashMap<>();
 
         for (Piece piece : pieces) {
-            if (GameMode.isFogOfWar) {
-                List<LegalMoveDetector.Coordinate> legalMoves = VisibleMoveDetector.getLegalMoves(piece);
-                for (LegalMoveDetector.Coordinate coord : legalMoves) {
-                    attackedSquares.computeIfAbsent(coord, k -> new ArrayList<>()).add(piece.getTeam());
-                }
-            }
-            else {
-                List<LegalMoveDetector.Coordinate> legalMoves = VisibleMoveDetector.getVisibleMoves(piece);
-                for (LegalMoveDetector.Coordinate coord : legalMoves) {
-                    attackedSquares.computeIfAbsent(coord, k -> new ArrayList<>()).add(piece.getTeam());
-                }
+            List<LegalMoveDetector.Coordinate> legalMoves = VisibleMoveDetector.getVisibleMoves(piece);
+            for (LegalMoveDetector.Coordinate coord : legalMoves) {
+                attackedSquares.computeIfAbsent(coord, k -> new ArrayList<>()).add(piece.getTeam());
             }
         }
 
@@ -134,15 +72,15 @@ public class WorldMap {
     }
 
     public static List<Piece> getAllNPCPieces() {
-        return pieces.stream().filter(p -> p instanceof NpcPiece || p instanceof NpcCommanderPiece).toList();
+        return pieces.stream().filter(p -> p instanceof NpcPiece).toList();
     }
 
     public static List<Piece> getAllPiecesOfPlayerID(int playerID) {
         return pieces.stream().filter(p -> p.getPlayerID() == playerID).toList();
     }
 
-    public static List<Piece> getAllKings(String team, boolean commander, boolean findNearestEnemy, boolean findNearestTeamate, List<Piece> pieceList) {
-        return pieceList.stream().filter(p -> (p instanceof CommanderPiece || !commander) && p.getType() == PieceType.KING)
+    public static List<Piece> getAllKings(String team, boolean findNearestEnemy, boolean findNearestTeamate, List<Piece> pieceList) {
+        return pieceList.stream().filter(p -> p.getType() == PieceType.KING)
                 .filter(p -> (findNearestEnemy && !Objects.equals(team, p.getTeam())) || (findNearestTeamate &&
                         Objects.equals(team, p.getTeam()))).toList();
     }
@@ -187,16 +125,9 @@ public class WorldMap {
     }
 
     public static void killPiece(Piece piece, boolean doNpcCheck, boolean shouldSend) {
-        killPiece(piece, doNpcCheck, shouldSend, Optional.empty());
-    }
-
-    public static void killPiece(Piece piece, boolean doNpcCheck, boolean shouldSend, Optional<CascadePacketBundler> bundler) {
         if (doNpcCheck) {
             if (piece instanceof NpcPiece) {
                 ((NpcPiece) piece).killPiece(piece, shouldSend);
-                return;
-            } else if (piece instanceof NpcCommanderPiece) {
-                ((NpcCommanderPiece) piece).killPiece(piece, shouldSend);
                 return;
             }
         }
@@ -205,58 +136,8 @@ public class WorldMap {
         pieces.remove(piece);
 
         if (piece.getType() == PieceType.KING) {
-            if (WorldMap.currentMapPreset.equals(GameModeMapType.SIEGE) && piece instanceof NpcPiece) return;
-
-            if (piece instanceof CommanderPiece){
-                GamePanel.winningTeam = (piece.getTeam().equals("White")) ? "BLACK" : "WHITE";
-                DeathMarker.deathRow.addAll(WorldMap.getAllPiecesOfTeam(piece.getTeam()));
-                if (!GameMode.isTutorial) CentralTick.gameOver = true;
-                SoundManager.gameOver();
-                if (GameMode.isTutorial && Tutorial.phase == 8){
-                    Tutorial.nextPhase();
-                }
-            } else {
-                DeathMarker.deathRow.addAll(WorldMap.getAllPiecesOfPlayerID(piece.getPlayerID()));
-                if (GameMode.isTutorial && Tutorial.phase == 4){
-                    Tutorial.nextPhase();
-                }
-            }
+            DeathMarker.deathRow.addAll(WorldMap.getAllPiecesOfPlayerID(piece.getPlayerID()));
         }
-        String kill = String.format("%d,%d,%d,%s",
-                piece.getBoard().getBoardID(),
-                piece.getPosX(), piece.getPosY(),
-                (piece instanceof CommanderPiece) ? "cmdr" : "");
-
-        if (!GameMode.isSinglePlayer && shouldSend) {
-            if (bundler.isPresent()) {
-                bundler.get().addPacket(new CascadePacketManager.Packet(
-                        CascadePacketManager.PacketType.ERASE,
-                        CascadePacketManager.PacketRange.EVERYONE,
-                        Account.username(), kill));
-            } else {
-                CascadePacketManager.manager.sendPacketToEveryone(CascadePacketManager.PacketType.KILL, kill, Optional.empty());
-            }
-        }
-    }
-
-    public static void infectPiece(Piece infector, Piece piece, boolean doNpcCheck){
-        infectPiece(infector, piece, doNpcCheck, false, Optional.empty());
-    }
-
-    public static void infectPiece(Piece infector, Piece piece, boolean doNpcCheck, boolean shouldSend, Optional<CascadePacketBundler> bundler){
-        int infectorStrength = BossHealthManager.getPieceStrength(infector);
-
-        if (BossHealthManager.getPieceStrength(piece) > infectorStrength * 2){
-            killPiece(piece, doNpcCheck, shouldSend, bundler);
-            return;
-        }
-
-        WorldMap.killPiece(piece, false, shouldSend, bundler);
-
-        Piece newPiece = new Piece(piece.getPlayerID(), piece.getBoard(), piece.getType().getDisplayName(), infector.getTeam(),
-                piece.getBoardX(), piece.getBoardY(), piece.getPosX(), piece.getPosY(), piece.getPieceSize());
-
-        WorldMap.spawnPiece(newPiece, false);
     }
 
     public static void resetPieces() {
@@ -270,12 +151,7 @@ public class WorldMap {
 
     public static void erasePiece(Piece piece, boolean shouldSend){
         pieces.remove(piece);
-        MoveHistory.erasePieceForRecord(piece, shouldSend, null);
-    }
-
-    public static void erasePiece(Piece piece, boolean shouldSend, CascadePacketBundler bundler) {
-        pieces.remove(piece);
-        MoveHistory.erasePieceForRecord(piece, shouldSend, bundler);
+        MoveHistory.erasePieceForRecord(piece);
     }
 
     public static void killScaledBlock(Board board, int blockX, int blockY, Piece capturingPiece) {
@@ -290,14 +166,6 @@ public class WorldMap {
             SoundManager.ultraKill(capturingPiece);
         } else {
             SoundManager.commanderAttack(capturingPiece);
-        }
-    }
-
-    public static void healAutoHealables() {
-        for (Piece piece : pieces){
-            if (piece instanceof AutoHealable hp){
-                hp.passiveHeal();
-            }
         }
     }
 

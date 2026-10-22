@@ -1,10 +1,7 @@
 package lanse.worldwarchess.shared.core.piece.move;
 
-import lanse.worldwarchess.shared.core.piece.CommanderPiece;
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.PieceType;
-import lanse.worldwarchess.shared.core.piece.fairies.FairyLegalMoveDetector;
-import lanse.worldwarchess.shared.core.piece.fairies.FairyPiece;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
@@ -24,22 +21,13 @@ public class VisibleMoveDetector extends LegalMoveDetector{
     public static int[] bishopDirections = {1, 1, 1, -1, -1, 1, -1, -1};
     public static int[] rookDirections = {1, 0, -1, 0, 0, 1, 0, -1};
     public static int[] queenDirections = {1, 1, 1, -1, -1, 1, -1, -1, 1, 0, -1, 0, 0, 1, 0, -1};
-    //    public static List<Point> debugRawPoints = new ArrayList<>();
 
     public static List<Coordinate> getVisibleMoves(Piece piece) {
         try {
             List<Coordinate> legalMoves = new ArrayList<>(16);
-//        debugRawPoints.clear();
             Board currentBoard = piece.getBoard();
             if (currentBoard == null) return legalMoves;
             PieceType type = piece.getType();
-
-            if (piece instanceof FairyPiece) {
-                List<Coordinate> fairyMoves = FairyLegalMoveDetector.getLegalMoves(piece, type, currentBoard);
-                if (fairyMoves != null) {
-                    return fairyMoves;
-                }
-            }
 
             Collection<Coordinate> newMoves = switch (type) {
                 case PAWN -> getPawnMoves(piece, currentBoard);
@@ -48,12 +36,9 @@ public class VisibleMoveDetector extends LegalMoveDetector{
                 case ROOK -> getSlidingMoves(piece, currentBoard, rookDirections);
                 case QUEEN -> getSlidingMoves(piece, currentBoard, queenDirections);
                 case KING -> getKingMoves(piece, currentBoard);
-                default -> piece.getMovementOverride();
             };
 
-            if (newMoves != null) {
-                legalMoves.addAll(newMoves);
-            }
+            legalMoves.addAll(newMoves);
 
             return legalMoves;
 
@@ -167,21 +152,16 @@ public class VisibleMoveDetector extends LegalMoveDetector{
         }
 
         // Captures
-        if (piece instanceof CommanderPiece) {
-            addCaptureMoveForOffset(piece, -2, 2 * dir, board, moves);
-            addCaptureMoveForOffset(piece, 2, 2 * dir, board, moves);
-        } else {
-            addCaptureMoveForOffset(piece, -1, dir, board, moves);
-            addCaptureMoveForOffset(piece, 1, dir, board, moves);
-        }
+        addCaptureMoveForOffset(piece, -1, dir, board, moves);
+        addCaptureMoveForOffset(piece, 1, dir, board, moves);
 
         // En passant
         int enPassantRow = piece.getTeam().equals("White") ? 4 : 3;
         if (y == enPassantRow) {
-            Piece left = board.getPieceAt(x - (piece instanceof CommanderPiece ? 2 : 1), y, Optional.of(piece), boardPieces);
-            Piece right = board.getPieceAt(x + (piece instanceof CommanderPiece ? 2 : 1), y, Optional.of(piece), boardPieces);
+            Piece left = board.getPieceAt(x - 1, y, Optional.of(piece), boardPieces);
+            Piece right = board.getPieceAt(x + 1, y, Optional.of(piece), boardPieces);
 
-            int y1 = y + (piece instanceof CommanderPiece ? 2 : 1) * dir;
+            int y1 = y + 1 * dir;
             if (left != null && left.getType() == PieceType.PAWN && !left.getTeam().equals(piece.getTeam())
                     && MoveHistory.wasLastMovePawnDoubleAdvance(left.getPosX(), left.getPosY(), left.getTeam())) {
                 moves.add(new Coordinate(left.getPosX(), y1, board.getBoardID()));

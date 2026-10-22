@@ -2,12 +2,8 @@ package lanse.worldwarchess.shared.core.screens.ingame;
 
 import lanse.worldwarchess.shared.central.Main;
 import lanse.worldwarchess.shared.central.Returner;
-import lanse.worldwarchess.shared.chat.InGameChatRenderer;
 import lanse.worldwarchess.shared.client.storage.Settings;
 import lanse.worldwarchess.shared.core.Timer;
-import lanse.worldwarchess.shared.core.gamemode.GameMode;
-import lanse.worldwarchess.shared.core.tutorial.Tutorial;
-import lanse.worldwarchess.shared.core.tutorial.TutorialHelper;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
@@ -40,28 +36,22 @@ public class SidebarMenu extends JPanel {
         JButton homeButton = createSidebarButton("<html>Home<br></html>");
         JButton settingsButton = createSidebarButton("<html>Settings<br></html>");
         JButton resetCameraButton = createSidebarButton("<html>Reset<br>Camera</html>");
-        JButton disableChatButton = createSidebarButton("<html>Toggle<br>Chat</html>");
         JButton skipTurnButton = createSidebarButton("<html>Skip<br>Turn</html>");
         JButton pauseGameButton = createSidebarButton("<html>Pause<br>Game</html>");
-        JButton fireItUpButton = createSidebarButton("<html>Fire<br>It Up!</html>");
         JButton slowModeButton = createSidebarButton("<html>NPC Slow<br>Mode</html>");
 
         homeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         settingsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         resetCameraButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        disableChatButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         skipTurnButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         pauseGameButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        fireItUpButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         slowModeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         homeButton.addActionListener(e -> returnToMainMenu());
         settingsButton.addActionListener(e -> Settings.showSettingsWindow());
         resetCameraButton.addActionListener(e -> resetCamera());
-        disableChatButton.addActionListener(e -> toggleChat());
         skipTurnButton.addActionListener(e -> skipTurn());
         pauseGameButton.addActionListener(e -> pauseGame());
-        fireItUpButton.addActionListener(e -> TutorialHelper.helpPlayerWithTutorial());
         slowModeButton.addActionListener(e -> toggleSlowMode());
 
         menuPanel.add(homeButton);
@@ -72,21 +62,6 @@ public class SidebarMenu extends JPanel {
         menuPanel.add(Box.createVerticalStrut(7));
         menuPanel.add(slowModeButton);
         menuPanel.add(Box.createVerticalStrut(7));
-
-        if (GameMode.isSinglePlayer) {
-            if (!GameMode.isSandbox) {
-                menuPanel.add(skipTurnButton);
-                menuPanel.add(Box.createVerticalStrut(7));
-                menuPanel.add(pauseGameButton);
-            }
-        } else {
-            menuPanel.add(disableChatButton);
-        }
-
-        if (Tutorial.fireItUp){
-            menuPanel.add(Box.createVerticalStrut(7));
-            menuPanel.add(fireItUpButton);
-        }
 
         add(toggleButton, BorderLayout.WEST);
         updateSize();
@@ -125,7 +100,6 @@ public class SidebarMenu extends JPanel {
     }
 
     private void resetCamera() {
-        if (GameMode.isTutorial && Tutorial.staticPhases.contains(Tutorial.phase)) return;
         int newX = 0;
         int newY = 0;
         if (!WorldMap.boards.isEmpty()) {
@@ -159,13 +133,7 @@ public class SidebarMenu extends JPanel {
     }
 
     private void skipTurn() {
-        if (GameMode.isSinglePlayer){
-            Timer.currentTime = 0;
-        }
-    }
-
-    private void toggleChat() {
-        InGameChatRenderer.ingameChatEnabled = !InGameChatRenderer.ingameChatEnabled;
+        Timer.currentTime = 0;
     }
 
     private JButton createSidebarButton(String text) {

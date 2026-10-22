@@ -2,8 +2,6 @@ package lanse.worldwarchess.shared.core.sound;
 
 import lanse.worldwarchess.shared.central.AudioKey;
 import lanse.worldwarchess.shared.client.storage.Settings;
-import lanse.worldwarchess.shared.core.gamemode.GameMode;
-import lanse.worldwarchess.shared.core.piece.CommanderPiece;
 import lanse.worldwarchess.shared.core.piece.Piece;
 
 import javax.sound.sampled.AudioFormat;
@@ -170,19 +168,13 @@ public class SoundManager {
 
     public static void gameOver() { playSound("/sounds/game-over.wav"); }
     public static void preGame() {
-        if (!GameMode.isSandbox) {
-            playSound("/sounds/pregame.wav");
-        }
+        playSound("/sounds/pregame.wav");
     }
     public static void promote() { playSound("/sounds/promote.wav"); }
     public static void invalidMove() { playSound("/sounds/invalid-move.wav"); }
     public static void castle() { playSound("/sounds/castle.wav"); }
-    public static void newTurn() { playSound("/sounds/new-turn.wav");}
 
     public static void enPassant(Piece piece) {
-        String sound = (piece instanceof CommanderPiece)
-                ? "/sounds/commander-en-passant.wav"
-                : "/sounds/en-passant.wav";
-        playSoundWithRandomPitch(sound, false);
+        playSoundWithRandomPitch("/sounds/en-passant.wav", false);
     }
 }

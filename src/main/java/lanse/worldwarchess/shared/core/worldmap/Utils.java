@@ -1,6 +1,5 @@
 package lanse.worldwarchess.shared.core.worldmap;
 
-import javafx.util.Pair;
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
@@ -63,6 +62,7 @@ public class Utils {
      * @return The nearest logical coordinate the piece could land on, or (0, 0, -404) if there is none within range.
      */
     public static LegalMoveDetector.Coordinate pxToLogicalCoords(Point px, Piece pieceForScale, double zoomFactor) {
+        //TODO - WTF
         return recursivePxToLogicalCoords(px, pieceForScale, zoomFactor, List.of(
                 new Pair<>(0, 0),
                 new Pair<>(-1, 0), new Pair<>(1, 0),

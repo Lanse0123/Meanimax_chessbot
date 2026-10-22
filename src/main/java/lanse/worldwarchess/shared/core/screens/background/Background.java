@@ -3,7 +3,6 @@ package lanse.worldwarchess.shared.core.screens.background;
 import lanse.worldwarchess.shared.central.Main;
 import lanse.worldwarchess.shared.client.storage.Settings;
 import lanse.worldwarchess.shared.core.Timer;
-import lanse.worldwarchess.shared.core.gamemode.GameModeMapType;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 
 import java.awt.*;
@@ -30,7 +29,7 @@ public class Background {
         boolean needsRegen = (((width != lastWidth || height != lastHeight ||
                 centerX != lastCenterX || centerY != lastCenterY || step != lastStep ||
                 !Objects.equals(bg, lastBackgroundSetting) || lastTurnCount != Timer.turnCounter)
-                && !(WorldMap.currentMapPreset == GameModeMapType.BADAPPLE)) || cachedBackground == null);
+                || cachedBackground == null));
 
         if (needsRegen) {
             lastStep = step;

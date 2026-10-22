@@ -1,12 +1,9 @@
 package lanse.worldwarchess.shared.core.piece;
 
-import lanse.worldwarchess.cascading.CascadingClient;
 import lanse.worldwarchess.shared.central.TextureKey;
-import lanse.worldwarchess.shared.core.gamemode.GameMode;
 import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
-import lanse.worldwarchess.shared.core.worldmap.board.CommanderBoard;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -25,10 +22,7 @@ public class PawnPromotionManager {
     }
 
     public void addPromotion(Piece pawn, Board board, int logicalX, int logicalY, boolean isOurMove) {
-        if (GameMode.isSinglePlayer || pawn.getPlayerID() == CascadingClient.playerID ||
-                (GameMode.isFrenzy && isOurMove && GameMode.isTimed)) {
-            promotions.add(new PawnPromotion(pawn, board, logicalX, logicalY, pawn instanceof CommanderPiece));
-        }
+        promotions.add(new PawnPromotion(pawn, board, logicalX, logicalY));
     }
 
     public void drawPromotions(Graphics2D g, double zoomFactor) {
@@ -58,17 +52,11 @@ public class PawnPromotionManager {
         int boardY = promo.board.getBoardY();
         int posX = promo.logicalX;
         int posY = promo.logicalY;
-        boolean commander = promo.commander;
-        Piece newPiece;
-        if (commander){
-            newPiece = new CommanderPiece(playerID, board, newType, pawn.getTeam(), boardX, boardY, posX, posY, 2);
-        } else {
-            newPiece = new Piece(playerID, board, newType, pawn.getTeam(), boardX, boardY, posX, posY, 1);
-        }
+        Piece newPiece = new Piece(playerID, board, newType, pawn.getTeam(), boardX, boardY, posX, posY, 1);
         WorldMap.erasePiece(pawn, false);
         WorldMap.spawnPiece(newPiece, false);
 
-        MoveHistory.addPromotionForRecord(newPiece, true, null);
+        MoveHistory.addPromotionForRecord(newPiece, true);
     }
 
     private static class PawnPromotion {
@@ -79,20 +67,17 @@ public class PawnPromotionManager {
         private Rectangle optionKnight;
         private Rectangle optionBishop;
         private Rectangle optionRook;
-        private final boolean commander;
 
-        public PawnPromotion(Piece pawn, Board board, int logicalX, int logicalY, boolean commander) {
+        public PawnPromotion(Piece pawn, Board board, int logicalX, int logicalY) {
             this.pawn = pawn;
             this.board = board;
             this.logicalX = logicalX;
             this.logicalY = logicalY;
-            this.commander = commander;
         }
 
         public void draw(Graphics2D g, double zoomFactor) {
             int baseTile = board.getBaseTileSize();
-            boolean isCommander = board instanceof CommanderBoard;
-            int tileSize = isCommander ? (int)(2 * baseTile * zoomFactor) : (int)(baseTile * zoomFactor);
+            int tileSize = (int)(baseTile * zoomFactor);
 
             int regionX = (int)(board.getBoardX() * zoomFactor);
             int regionY = (int)(board.getBoardY() * zoomFactor);

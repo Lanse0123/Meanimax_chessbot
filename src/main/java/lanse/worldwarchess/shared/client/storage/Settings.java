@@ -2,12 +2,9 @@ package lanse.worldwarchess.shared.client.storage;
 
 import dev.dirs.ProjectDirectories;
 import lanse.worldwarchess.shared.central.LogoManager;
-import lanse.worldwarchess.shared.chat.ChatManager;
-import lanse.worldwarchess.shared.utils.StringUtils;
 import org.json.JSONObject;
 
 import javax.swing.*;
-import javax.swing.text.AbstractDocument;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -26,13 +23,10 @@ public class Settings {
 
     private static int volume;
     private static String background;
-    private static String joinMessage;
-    private static String leaveMessage;
     private static boolean playGothamSound;
     private static boolean showDeathMarkers;
     private static boolean playMainMenuStartup;
     private static boolean playIllegalMoveSound;
-    private static boolean shouldShowDebugScreen;
 
     public static void loadSettings() {
         Path path = Paths.get(SETTINGS_PATH);
@@ -49,10 +43,7 @@ public class Settings {
                 playGothamSound = json.optBoolean("playGothamSound", false);
                 showDeathMarkers = json.optBoolean("showDeathMarkers", true);
                 playMainMenuStartup = json.optBoolean("playMainMenuStartup", false);
-                joinMessage = StringUtils.abbreviateString(json.optString("joinMessage", "Has Joined The Game."));
-                leaveMessage = StringUtils.abbreviateString(json.optString("leaveMessage", "Has Left The Game."));
                 playIllegalMoveSound = json.optBoolean("playIllegalMoveSound", false);
-                shouldShowDebugScreen = json.optBoolean("shouldShowDebugScreen", false);
             } catch (IOException e) {
                 e.printStackTrace();
                 setDefaultSettings();
@@ -68,10 +59,7 @@ public class Settings {
         showDeathMarkers = true;
         playMainMenuStartup = false;
         playIllegalMoveSound = false;
-        shouldShowDebugScreen = false;
         background = "Warped Plane";
-        leaveMessage = "Has Left The Game,";
-        joinMessage = "Has Joined The Game.";
         saveSettings();
     }
 
@@ -84,13 +72,10 @@ public class Settings {
             JSONObject settingsJson = new JSONObject();
             settingsJson.put("volume", volume);
             settingsJson.put("background", background);
-            settingsJson.put("joinMessage", joinMessage);
-            settingsJson.put("leaveMessage", leaveMessage);
             settingsJson.put("playGothamSound", playGothamSound);
             settingsJson.put("showDeathMarkers", showDeathMarkers);
             settingsJson.put("playMainMenuStartup", playMainMenuStartup);
             settingsJson.put("playIllegalMoveSound", playIllegalMoveSound);
-            settingsJson.put("shouldShowDebugScreen", shouldShowDebugScreen);
 
             try (FileWriter file = new FileWriter(SETTINGS_PATH)) {
                 file.write(settingsJson.toString(4)); // Pretty print JSON
@@ -153,40 +138,11 @@ public class Settings {
         JCheckBox illegalMoveSoundCheck = new JCheckBox("Play Illegal Move Sound", playIllegalMoveSound);
         JCheckBox gothamSoundCheck = new JCheckBox("THE ROOK!!!", playGothamSound);
         JCheckBox playMainMenuCheck = new JCheckBox("Play Main Menu Animation on Startup", playMainMenuStartup);
-        JCheckBox shouldShowDebugScreenCheck = new JCheckBox("Show debug screen", shouldShowDebugScreen);
-        for (JCheckBox checkBox : new JCheckBox[]{deathMarkersCheck, illegalMoveSoundCheck, gothamSoundCheck, playMainMenuCheck, shouldShowDebugScreenCheck}) {
+        for (JCheckBox checkBox : new JCheckBox[]{deathMarkersCheck, illegalMoveSoundCheck, gothamSoundCheck, playMainMenuCheck}) {
             checkBox.setBackground(panelColor);
             checkBox.setForeground(labelColor);
             frame.add(checkBox);
         }
-
-        // Join Message input
-        JPanel joinMessagePanel = new JPanel();
-        joinMessagePanel.setBackground(panelColor);
-        JLabel joinMessageLabel = new JLabel("Join Message:");
-        joinMessageLabel.setForeground(labelColor);
-        JTextField joinMessageField = new JTextField(joinMessage, 20); // prefilled with current joinMessage
-        ((AbstractDocument)joinMessageField.getDocument()).setDocumentFilter(new ChatManager.DocumentSizeFilter());
-        joinMessageField.setBackground(panelColor);
-        joinMessageField.setForeground(labelColor);
-        joinMessagePanel.add(joinMessageLabel);
-        joinMessagePanel.add(joinMessageField);
-        frame.add(joinMessagePanel);
-
-        //TODO - make sure the join message and leave message can only be like 100 characters at most.
-
-        // Leave Message input
-        JPanel leaveMessagePanel = new JPanel();
-        leaveMessagePanel.setBackground(panelColor);
-        JLabel leaveMessageLabel = new JLabel("Leave Message:");
-        leaveMessageLabel.setForeground(labelColor);
-        JTextField leaveMessageField = new JTextField(leaveMessage, 20); // prefilled with current leaveMessage
-        ((AbstractDocument)leaveMessageField.getDocument()).setDocumentFilter(new ChatManager.DocumentSizeFilter());
-        leaveMessageField.setBackground(panelColor);
-        leaveMessageField.setForeground(labelColor);
-        leaveMessagePanel.add(leaveMessageLabel);
-        leaveMessagePanel.add(leaveMessageField);
-        frame.add(leaveMessagePanel);
 
         // Panel for buttons
         JPanel buttonPanel = new JPanel();
@@ -197,13 +153,10 @@ public class Settings {
         saveButton.setForeground(Color.WHITE);
         saveButton.addActionListener(e -> {
             volume = volumeSlider.getValue();
-            joinMessage = joinMessageField.getText().trim();
             playGothamSound = gothamSoundCheck.isSelected();
-            leaveMessage = leaveMessageField.getText().trim();
             showDeathMarkers = deathMarkersCheck.isSelected();
             playMainMenuStartup = playMainMenuCheck.isSelected();
             playIllegalMoveSound = illegalMoveSoundCheck.isSelected();
-            shouldShowDebugScreen = shouldShowDebugScreenCheck.isSelected();
             background = (String) backgroundDropdown.getSelectedItem();
             saveSettings();
             frame.dispose();
@@ -215,14 +168,11 @@ public class Settings {
         defaultButton.addActionListener(e -> {
             setDefaultSettings();
             volumeSlider.setValue(volume);
-            joinMessageField.setText(joinMessage);
-            leaveMessageField.setText(leaveMessage);
             gothamSoundCheck.setSelected(playGothamSound);
             backgroundDropdown.setSelectedItem(background);
             deathMarkersCheck.setSelected(showDeathMarkers);
             playMainMenuCheck.setSelected(playMainMenuStartup);
             illegalMoveSoundCheck.setSelected(playIllegalMoveSound);
-            shouldShowDebugScreenCheck.setSelected(shouldShowDebugScreen);
         });
 
         buttonPanel.add(saveButton);
@@ -234,11 +184,8 @@ public class Settings {
 
     public static int getVolume() { return volume; }
     public static String getBackground() { return background; }
-    public static String getJoinMessage() {return joinMessage; }
     public static boolean THE_ROOK() { return playGothamSound; }
-    public static String getLeaveMessage() {return leaveMessage; }
     public static boolean isShowDeathMarkers() { return showDeathMarkers; }
     public static boolean isPlayMainMenuStartup() {return playMainMenuStartup; }
     public static boolean isPlayIllegalMoveSound() { return playIllegalMoveSound; }
-    public static boolean shouldShowDebugScreen() { return shouldShowDebugScreen; }
 }

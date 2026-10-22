@@ -1,14 +1,11 @@
 package lanse.worldwarchess.shared.central;
 
-import lanse.worldwarchess.cascading.CascadingClient;
 import lanse.worldwarchess.shared.core.Timer;
-import lanse.worldwarchess.shared.core.gamemode.GameMode;
 import lanse.worldwarchess.shared.core.piece.marker.DeathMarker;
 import lanse.worldwarchess.shared.core.screens.ingame.GameOverScreen;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.sound.SoundManager;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
-import lanse.worldwarchess.steam.SteamPlayerCountCallback;
 
 import javax.swing.*;
 import java.util.Objects;
@@ -30,28 +27,18 @@ public class CentralTick {
             tickCount++;
             if (tickCount > 1000000000) tickCount = 0;
 
-            CascadingClient.doMultiplayerTick();
-
-            if (tickCount % 600 == 0 || tickCount == 30) { // low check once so it is accurate enough
-                SteamPlayerCountCallback.updatePlayerCount();
-            }
-
             SoundManager.soundLimitReached = false;
 
             if (Timer.isGamePaused) return;
 
             //Responsible for the timer and the playerIDMoved list.
-            if ((!gameOver && isGameActive) || GameMode.isTutorial) Timer.count();
+            if ((!gameOver && isGameActive)) Timer.count();
 
             SwingUtilities.invokeLater(() -> {
                 if (Main.gamePanel != null) {
                     Main.gamePanel.repaint();
                 }
             });
-
-            if (!GameMode.isSinglePlayer && Main.gamePanel.chat != null) {
-                Main.gamePanel.chat.removeOldMessages();
-            }
 
             //Kill a random piece from the list of pieces on death row.
             if (!DeathMarker.deathRow.isEmpty()) {

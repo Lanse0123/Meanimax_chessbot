@@ -4,18 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.dirs.ProjectDirectories;
-import lanse.worldwarchess.cascading.CascadePacketBundler;
-import lanse.worldwarchess.cascading.CascadePacketManager;
 import lanse.worldwarchess.shared.core.Timer;
-import lanse.worldwarchess.shared.core.gamemode.GameMode;
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.PieceType;
-import lanse.worldwarchess.shared.core.piece.ai.enemies.NpcPiece;
-import lanse.worldwarchess.shared.core.piece.ai.enemies.commander.NpcCommanderPiece;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 import lanse.worldwarchess.shared.core.worldmap.board.BoardClassPrefixMap;
-import lanse.worldwarchess.steam.Account;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -110,7 +104,7 @@ public class MoveHistory {
             ArrayNode boards = mapper.createArrayNode();
 
             for (Board board : WorldMap.boards.values()) {
-                boards.add(BoardClassPrefixMap.getPrefixIndex(board.getClass()) + "," +
+                boards.add(1 + "," +
                         board.getBoardID() + "," +
                         board.getBoardSize() + "," +
                         board.getBoardX() + "," +
@@ -153,7 +147,6 @@ public class MoveHistory {
             e.printStackTrace();
         }
     }
-
 
     public static void recordData(String move) {
         synchronized (bufferLock) {
@@ -225,7 +218,7 @@ public class MoveHistory {
         }
     }
 
-    public static void addMoveForRecord(Piece oldPiece, Piece newPiece, boolean shouldSend, String moveType, int bossHealth, CascadePacketBundler bundler) {
+    public static void addMoveForRecord(Piece oldPiece, Piece newPiece, boolean shouldSend, String moveType, int bossHealth) {
         newPiece.hasMovedEver = true;
 
         String health = (bossHealth == -40404) ? "" : String.valueOf(bossHealth);
@@ -238,21 +231,10 @@ public class MoveHistory {
                 newPiece.getPosX(), newPiece.getPosY(),
                 health);
 
-        if (!GameMode.isSinglePlayer && shouldSend) {
-            if (bundler != null) {
-                bundler.addPacket(new CascadePacketManager.Packet(
-                        CascadePacketManager.PacketType.MOVE,
-                        CascadePacketManager.PacketRange.EVERYONE,
-                        Account.username(), move));
-            } else {
-                CascadePacketManager.manager.sendPacketToEveryone(CascadePacketManager.PacketType.MOVE, move, Optional.empty());
-            }
-        }
-
         recordData(move);
     }
 
-    public static void addPromotionForRecord(Piece newPiece, boolean shouldSend, CascadePacketBundler bundler) {
+    public static void addPromotionForRecord(Piece newPiece, boolean shouldSend) {
         newPiece.hasMovedEver = true;
         String move = String.format("promo,%d,%d,%d,%s,%d",
                 newPiece.getBoard().getBoardID(),
@@ -261,16 +243,6 @@ public class MoveHistory {
                 newPiece.getPieceClassPrefix());
 
         recordData(move);
-
-        if (!GameMode.isSinglePlayer && shouldSend)
-            if (bundler != null && (newPiece instanceof NpcPiece || newPiece instanceof NpcCommanderPiece)) {
-                bundler.addPacket(new CascadePacketManager.Packet(
-                        CascadePacketManager.PacketType.PROMOTE, CascadePacketManager.PacketRange.EVERYONE,
-                        Account.getMySteamID().toString(), move));
-            }
-            else {
-                CascadePacketManager.manager.sendPacketToEveryone(CascadePacketManager.PacketType.PROMOTE, move, Optional.empty());
-            }
     }
 
     public static void spawnPieceForRecord(Piece newPiece, boolean shouldSend) {
@@ -284,27 +256,13 @@ public class MoveHistory {
                 newPiece.getPieceClassPrefix());
 
         recordData(move);
-
-        if (!GameMode.isSinglePlayer && shouldSend)
-            CascadePacketManager.manager.sendPacketToEveryone(CascadePacketManager.PacketType.SPAWN, move, Optional.empty());
     }
 
-    public static void erasePieceForRecord(Piece piece, boolean shouldSend, CascadePacketBundler bundler) {
+    public static void erasePieceForRecord(Piece piece) {
         String move = String.format("erase,%d,%d,%d",
                 piece.getBoard().getBoardID(),
                 piece.getPosX(), piece.getPosY());
 
         recordData(move);
-
-        if (!GameMode.isSinglePlayer && shouldSend) {
-            if (bundler != null) {
-                bundler.addPacket(new CascadePacketManager.Packet(
-                        CascadePacketManager.PacketType.ERASE,
-                        CascadePacketManager.PacketRange.EVERYONE,
-                        Account.username(), move));
-            } else {
-                CascadePacketManager.manager.sendPacketToEveryone(CascadePacketManager.PacketType.ERASE, move, Optional.empty());
-            }
-        }
     }
 }

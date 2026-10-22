@@ -1,14 +1,9 @@
 package lanse.worldwarchess.shared.core.piece;
 
-import lanse.worldwarchess.cascading.CascadingClient;
-import lanse.worldwarchess.shared.central.Main;
 import lanse.worldwarchess.shared.central.TextureKey;
 import lanse.worldwarchess.shared.core.RenderCache;
-import lanse.worldwarchess.shared.core.gamemode.GameMode;
-import lanse.worldwarchess.shared.core.piece.ai.NPC;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.worldmap.Utils;
-import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.awt.*;
@@ -119,17 +114,6 @@ public class Piece {
             return;
         }
 
-        if (GameMode.isFogOfWar && !team.equals(CascadingClient.team)) {
-            LegalMoveDetector.Coordinate coord = new LegalMoveDetector.Coordinate(
-                    this.getPosX(), this.getPosY(), board.getBoardID());
-
-            List<String> attackers = NPC.attackedSquares.get(coord);
-
-            if (attackers == null || !attackers.contains(CascadingClient.team)) {
-                return;
-            }
-        }
-
         String textureKey = TextureKey.getTextureKey(this);
         BufferedImage original = TextureKey.textures.get(textureKey);
         if (original == null) return;
@@ -145,7 +129,7 @@ public class Piece {
         g2d.drawImage(scaled, drawX, drawY, null);
 
         //if this is your piece, draw a glow around it.
-        if (this.playerID == CascadingClient.playerID) {
+        if (this.playerID == 0) {
             Stroke oldStroke = g2d.getStroke();
             g2d.setStroke(new BasicStroke((float)(6 * zoomFactor)));
             g2d.setColor(new Color(255, 215, 0));
@@ -184,31 +168,6 @@ public class Piece {
     public void drawSelectedPiece(boolean pieceDragging, Board selectedBoard, Point currentDragPoint, Point dragOffset, List<LegalMoveDetector.Coordinate> legalMoves, double zoomFactor, Graphics2D g2d){
         // Draw the dragged piece on top
 
-        if (GameMode.isSandbox){
-            int oldX = board.getBoardX();
-            int oldY = board.getBoardY();
-            if (pieceDragging) {
-                board.setMapPos(currentDragPoint.x - dragOffset.x, currentDragPoint.y - dragOffset.y);
-            }
-            this.draw(g2d, zoomFactor);
-
-            Stroke oldStroke = g2d.getStroke();
-            g2d.setStroke(new BasicStroke((float)(6 * zoomFactor)));
-            g2d.setColor(new Color(0, 180, 0));
-
-            Board board = this.getBoard();
-            int baseTile = board.getBaseTileSize();
-            double scaledBaseTile = baseTile * zoomFactor;
-            int pieceSize = (int) (this.getPieceSize() * scaledBaseTile);
-            int drawX = (int) (board.getBoardX() * zoomFactor + this.getPosX() * scaledBaseTile);
-            int drawY = (int) (board.getBoardY() * zoomFactor + this.getPosY() * scaledBaseTile);
-
-            g2d.drawRect(drawX, drawY, pieceSize, pieceSize);
-            g2d.setStroke(oldStroke);
-            board.setMapPos(oldX, oldY);
-            return;
-        }
-
         if (pieceDragging && selectedBoard != null) {
             int baseTile = selectedBoard.getBaseTileSize();
             int scaledPieceSize = (int) (pieceSize * baseTile * zoomFactor);
@@ -219,15 +178,6 @@ public class Piece {
 
             // Draw a texture showing where it will end up
             LegalMoveDetector.Coordinate real_point = Utils.pxToLogicalCoords(currentDragPoint, this, zoomFactor);
-
-            // If debug mode, show a pointer over the original square of the piece
-            if (Main.debugMode && real_point.boardID() != -404) {
-                double scaledBaseTile = baseTile * zoomFactor;
-                int homeDrawX = (int) (WorldMap.getBoardByID(real_point.boardID()).getBoardX() * zoomFactor + real_point.x() * scaledBaseTile);
-                int homeDrawY = (int) (WorldMap.getBoardByID(real_point.boardID()).getBoardY() * zoomFactor + real_point.y() * scaledBaseTile);
-
-                g2d.drawImage(TextureKey.textures.get("pointer"), homeDrawX, homeDrawY, scaledPieceSize, scaledPieceSize, null);
-            }
 
             boolean onOriginalSquare = squares().anyMatch((square) -> square.equals(real_point));
 
@@ -281,5 +231,16 @@ public class Piece {
         } catch (Exception e) {
             throw new RuntimeException("Failed to clone piece: " + this.getClass(), e);
         }
+    }
+
+    public int getStrength() {
+        return switch (type){
+            case PAWN -> 1;
+            case BISHOP -> 3;
+            case KNIGHT -> 3;
+            case ROOK -> 5;
+            case QUEEN -> 9;
+            case KING -> 1;
+        };
     }
 }

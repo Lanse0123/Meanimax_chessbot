@@ -1,24 +1,15 @@
 package lanse.worldwarchess.shared.core.screens.ingame;
 
-import javafx.util.Pair;
-import lanse.worldwarchess.cascading.CascadingClient;
-import lanse.worldwarchess.shared.chat.InGameChatRenderer;
-import lanse.worldwarchess.shared.core.FunFactGenerator;
 import lanse.worldwarchess.shared.core.Timer;
-import lanse.worldwarchess.shared.core.gamemode.GameMode;
 import lanse.worldwarchess.shared.core.piece.PawnPromotionManager;
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.ai.enemies.NpcPiece;
-import lanse.worldwarchess.shared.core.piece.ai.enemies.commander.NpcCommanderPiece;
 import lanse.worldwarchess.shared.core.piece.marker.Marker;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDrawer;
 import lanse.worldwarchess.shared.core.piece.move.MoveExecutor;
-import lanse.worldwarchess.shared.core.piece.move.SandboxMoveDetector;
 import lanse.worldwarchess.shared.core.screens.background.Background;
 import lanse.worldwarchess.shared.core.sound.SoundManager;
-import lanse.worldwarchess.shared.core.tutorial.Tutorial;
-import lanse.worldwarchess.shared.core.tutorial.TutorialTextBubble;
 import lanse.worldwarchess.shared.core.worldmap.Utils;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
@@ -47,7 +38,6 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
     protected int originalLogicalX, originalLogicalY;
     public static SidebarEvaluator sidebarEvaluator;
     public SidebarMenu sidebarMenu;
-    public InGameChatRenderer chat;
 
     public GamePanel() {
         setLayout(new BorderLayout());
@@ -62,27 +52,16 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         requestFocus();
         requestFocusInWindow();
 
-        Timer.currentFunFact = FunFactGenerator.getRandomFunFact();
-
         sidebarEvaluator = new SidebarEvaluator();
         add(sidebarEvaluator, BorderLayout.WEST);
 
         sidebarMenu = new SidebarMenu();
         add(sidebarMenu, BorderLayout.EAST);
-
-        if (!GameMode.isSinglePlayer) {
-            chat = new InGameChatRenderer();
-            add(chat.chatInput);
-        }
     }
 
     public void recalculateLegalMoves() {
         if (selectedPiece != null) {
-            if (GameMode.isSandbox){
-                legalMoves = SandboxMoveDetector.getSandboxMoves(selectedPiece);
-            } else {
-                legalMoves = LegalMoveDetector.getLegalMoves(selectedPiece);
-            }
+            legalMoves = LegalMoveDetector.getLegalMoves(selectedPiece);
         }
     }
 
@@ -109,8 +88,6 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         // Highlight all legal moves
         LegalMoveDrawer.draw(pieceDragging, selectedPiece, legalMoves, g2d, zoomFactor);
 
-        if (GameMode.isFogOfWar) LegalMoveDrawer.drawAllTeamMoves(g2d, zoomFactor);
-
         // Draw all pieces on top of the legal move indicators
         for (Piece piece : WorldMap.pieces){
             if (piece != selectedPiece) piece.draw(g2d, zoomFactor);
@@ -124,30 +101,14 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
 
         PawnPromotionManager.getInstance().drawPromotions(g2d, zoomFactor);
 
-        for (TutorialTextBubble bubble : Tutorial.bubbles){
-            bubble.draw(g2d);
-        }
-
-        if (!GameMode.isSinglePlayer) {
-            chat.drawAllTextBubbles(g2d, zoomFactor);
-        }
-
         // Undo camera translation for UI drawing.
         g2d.translate(-cameraX, -cameraY);
 
-        if (GameMode.isTimed) {
-            Timer.draw(g, width, height, sidebarMenu);
-        }
-
-        if (chat != null) {
-            chat.drawAllGlobalChats(g);
-        }
+        Timer.draw(g, width, height, sidebarMenu);
     }
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        if (Tutorial.staticPhases.contains(Tutorial.phase)) return;
-
         double maxZoomOut = Math.max((double) 1 / Math.max(WorldMap.boards.size(), 10), 0.001);
 
         double zoomMultiplier = 1.1;
@@ -179,21 +140,6 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
             int worldX = e.getX() - cameraX;
             int worldY = e.getY() - cameraY;
 
-            if (GameMode.isTutorial) {
-                int mouseY = e.getY();
-                int screenHeight = getHeight();
-
-                //generous hitbox for text bubbles
-                if (mouseY < screenHeight / 3.5) {
-                    if (!Tutorial.bubbles.isEmpty()) {
-                        for (TutorialTextBubble bubble : Tutorial.bubbles) {
-                            bubble.onClicked();
-                        }
-                        return;
-                    }
-                }
-            }
-
             for (Board board : WorldMap.boards.values()) {
                 Rectangle region = getBoardRegion(board, zoomFactor);
                 if (region.contains(worldX, worldY)) {
@@ -220,8 +166,6 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
     // If dragging a piece, update its drag position; otherwise, pan the camera.
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (Tutorial.staticPhases.contains(Tutorial.phase)) return;
-
         int screenWidth = getWidth();
         int screenHeight = getHeight();
         int edgeBuffer = 50;
@@ -273,13 +217,9 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         boolean invalidMoveBase = newBoard == null || sameSquare ||
                         Timer.playerIDMovedList.contains(selectedPiece.getPlayerID()) ||
                         !selectedPiece.getTeam().equals((Timer.turnCounter % 2 == 0) ? "White" : "Black") ||
-                        (selectedPiece instanceof NpcPiece) || (selectedPiece instanceof NpcCommanderPiece);
+                        (selectedPiece instanceof NpcPiece);
 
         if (invalidMoveBase) {
-            if (!GameMode.isSinglePlayer && selectedPiece.getPlayerID() != CascadingClient.playerID && !GameMode.isFrenzy) {
-                selectedPiece.setBoardPosition(originalLogicalX, originalLogicalY);
-                SoundManager.invalidMove();
-            }
             resetDrag();
             legalMoves.clear();
             return;
@@ -289,28 +229,11 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         Optional<LegalMoveDetector.Coordinate> move = Utils.nearestLegalCoordinate(logicalCoords, legalMoves);
         legalMoves.clear();
 
-        // Handle not being allowed to move this piece
-        if (!GameMode.isSinglePlayer) {
-            if (GameMode.isFrenzy){
-                if (!CascadingClient.team.equalsIgnoreCase(selectedPiece.getTeam())){
-                    selectedPiece.setBoardPosition(originalLogicalX, originalLogicalY);
-                    SoundManager.invalidMove();
-                    resetDrag();
-                    return;
-                }
-            } else if (selectedPiece.getPlayerID() != CascadingClient.playerID){
-                selectedPiece.setBoardPosition(originalLogicalX, originalLogicalY);
-                SoundManager.invalidMove();
-                resetDrag();
-                return;
-            }
-        }
-
         if (move.isPresent()) {
             LegalMoveDetector.Coordinate valid_move = move.get();
             // EXECUTE ORDER 66 or wait no I mean EXECUTE MOVE!!
             MoveExecutor.executeMove(selectedPiece, newBoard, valid_move.x(), valid_move.y(), originalLogicalX, originalLogicalY,
-                    true, "move", true, null, false);
+                    true, "move", true, false);
         }
         // handle illegal move
         else {
@@ -356,12 +279,7 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
-        if (key == KeyEvent.VK_ENTER) {
-            if (GameMode.isSinglePlayer) return;
-            if (!chat.chatInput.isVisible()) {
-                chat.showChatInput();
-            }
-        } else if (key == KeyEvent.VK_ESCAPE){
+        if (key == KeyEvent.VK_ESCAPE){
             sidebarMenu.toggleMenu();
         }
 
@@ -382,8 +300,9 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         GamePanel.cameraX = (int) cameraX;
         GamePanel.cameraY = (int) cameraY;
     }
-    public Pair<Piece, Board> getSelectedElements(){
-        return new Pair<>(selectedPiece, selectedBoard);
+
+    public Piece getSelectedPiece(){
+        return selectedPiece;
     }
 
     public void deselectElements() {

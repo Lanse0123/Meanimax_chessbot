@@ -1,16 +1,10 @@
 package lanse.worldwarchess.shared.core.piece.move;
 
-import lanse.worldwarchess.cascading.CascadePacketBundler;
-import lanse.worldwarchess.shared.central.Main;
 import lanse.worldwarchess.shared.core.Timer;
-import lanse.worldwarchess.shared.core.gamemode.GameMode;
-import lanse.worldwarchess.shared.core.piece.*;
-import lanse.worldwarchess.shared.core.piece.ai.bosses.NpcBoss;
+import lanse.worldwarchess.shared.core.piece.PawnPromotionManager;
+import lanse.worldwarchess.shared.core.piece.Piece;
+import lanse.worldwarchess.shared.core.piece.PieceType;
 import lanse.worldwarchess.shared.core.piece.ai.enemies.NpcPiece;
-import lanse.worldwarchess.shared.core.piece.ai.enemies.commander.NpcCommanderPiece;
-import lanse.worldwarchess.shared.core.piece.fairies.FairyPiece;
-import lanse.worldwarchess.shared.core.piece.marker.MageMarker;
-import lanse.worldwarchess.shared.core.piece.marker.MoveMarker;
 import lanse.worldwarchess.shared.core.sound.SoundManager;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
@@ -24,34 +18,23 @@ public class MoveExecutor {
     //when the piece makes it there.
 
     public static void executeMove(Piece executorPiece, Board newBoard, int newX, int newY, int originalX, int originalY,
-                                   boolean shouldSend, String moveType, boolean isOurMove, CascadePacketBundler bundler, boolean isFromDecoder) {
+                                   boolean shouldSend, String moveType, boolean isOurMove, boolean isFromDecoder) {
 
         boolean playNormalSound = true;
 
         Piece targetPiece = newBoard.getPieceAt(newX, newY, Optional.of(executorPiece), WorldMap.getAllPiecesOfBoard(newBoard));
 
         Piece oldPiece = new Piece(executorPiece.getPlayerID(), executorPiece.getBoard(), String.valueOf(executorPiece.getType()), executorPiece.getTeam(),
-        executorPiece.getBoardX(), executorPiece.getBoardY(), executorPiece.getPosX(), executorPiece.getPosY(), executorPiece.getPieceSize());
+                executorPiece.getBoardX(), executorPiece.getBoardY(), executorPiece.getPosX(), executorPiece.getPosY(), executorPiece.getPieceSize());
 
 //        new MoveMarker(oldPiece.getBoard(), oldPiece.getPosX(), oldPiece.getPosY(), oldPiece.getPieceSize());
 
         // Handle captures
         if (targetPiece != null && !targetPiece.getTeam().equals(executorPiece.getTeam())) {
-            if (targetPiece instanceof CommanderPiece || targetPiece instanceof NpcBoss) {
-                if (executorPiece instanceof CommanderPiece) {
-                    WorldMap.killScaledBlock(newBoard, targetPiece.getPosX(), targetPiece.getPosY(), executorPiece);
-                } else {
-                    AttackOnTitans.attacksOnTitans.add(new AttackOnTitans.TitanAttack(executorPiece, targetPiece));
-                }
-            } else {
-                if (executorPiece instanceof CommanderPiece) {
-                    WorldMap.killScaledBlock(newBoard, newX, newY, executorPiece);
-                } else {
-                    SoundManager.capturePiece(executorPiece);
-                    playNormalSound = false;
-                    WorldMap.killPiece(targetPiece, true, false); //TODO: should it send packets sometimes?
-                }
-            }
+            SoundManager.capturePiece(executorPiece);
+            playNormalSound = false;
+            WorldMap.killPiece(targetPiece, true, false); //TODO: should it send packets sometimes?
+
         }
 
         // Move the piece
@@ -79,15 +62,11 @@ public class MoveExecutor {
         }
 
         // Castlin
-        int endzone = (executorPiece instanceof CommanderPiece) ? 14 : 7;
+        int endzone = 7;
 
-        int stepCheck = (executorPiece instanceof CommanderPiece) ? 4 : 2;
+        int stepCheck = 2;
         if (executorPiece.getType() == PieceType.KING && Math.abs(newX - originalX) == stepCheck) {
-            if (stepCheck == 4) {
-                SoundManager.commanderMove(executorPiece);
-            } else {
-                SoundManager.castle();
-            }
+            SoundManager.castle();
             playNormalSound = false;
             if (newX > originalX) {
                 Piece rook = newBoard.getPieceAt(endzone, originalY, Optional.of(executorPiece), WorldMap.getAllPiecesOfBoard(newBoard));
@@ -104,34 +83,28 @@ public class MoveExecutor {
 
         Timer.playerIDMovedList.add(executorPiece.getPlayerID());
 
-        if (executorPiece instanceof NpcPiece || executorPiece instanceof NpcCommanderPiece){
+        if (executorPiece instanceof NpcPiece){
             executorPiece.hasMoved = true;
         } else {
             for (Piece movedPiece : WorldMap.getAllPiecesOfPlayerID(executorPiece.getPlayerID())) movedPiece.hasMoved = true;
         }
 
-        if (playNormalSound && !(executorPiece instanceof NpcPiece) && !(executorPiece instanceof NpcCommanderPiece)) {
-            if (executorPiece instanceof CommanderPiece) {
-                SoundManager.commanderMove(executorPiece);
-            } else {
-                SoundManager.validMove(executorPiece);
-            }
+        if (playNormalSound && !(executorPiece instanceof NpcPiece)) {
+            SoundManager.validMove(executorPiece);
         }
 
-        MoveHistory.addMoveForRecord(oldPiece, executorPiece, shouldSend, moveType, -40404, bundler);
+        MoveHistory.addMoveForRecord(oldPiece, executorPiece, shouldSend, moveType, -40404);
 
         // Promotion
-        if (executorPiece.getType() == PieceType.PAWN || executorPiece.getType() == PieceType.CHECKER) {
+        if (executorPiece.getType() == PieceType.PAWN) {
             if ((executorPiece.getTeam().equalsIgnoreCase("White") && newY == 0) ||
                     (executorPiece.getTeam().equalsIgnoreCase("Black") && newY == endzone)) {
 
-                if (executorPiece instanceof NpcPiece || executorPiece instanceof NpcCommanderPiece || executorPiece instanceof FairyPiece){
-                    if (GameMode.isSinglePlayer || Main.userIsHost) {
-                        Piece new_piece = executorPiece.promoteOverride(executorPiece);
-                        WorldMap.erasePiece(executorPiece, false);
-                        WorldMap.spawnPiece(new_piece, false);
-                        MoveHistory.addPromotionForRecord(new_piece, !isFromDecoder, bundler);
-                    }
+                if (executorPiece instanceof NpcPiece){
+                    Piece new_piece = executorPiece.promoteOverride(executorPiece);
+                    WorldMap.erasePiece(executorPiece, false);
+                    WorldMap.spawnPiece(new_piece, false);
+                    MoveHistory.addPromotionForRecord(new_piece, !isFromDecoder);
                 } else {
                     PawnPromotionManager.getInstance().addPromotion(executorPiece, newBoard, newX, newY, isOurMove);
                 }
@@ -139,8 +112,7 @@ public class MoveExecutor {
         }
 
         // skip the turn if every piece on the team has moved.
-        if ((GameMode.isSinglePlayer || Main.userIsHost) &&
-                !(executorPiece instanceof NpcPiece || executorPiece instanceof NpcCommanderPiece)){
+        if (!(executorPiece instanceof NpcPiece)){
             String currentTeam = executorPiece.getTeam();
             for (Piece piece1 : WorldMap.pieces){
                 if (!piece1.hasMoved && Objects.equals(piece1.getTeam(), currentTeam)){

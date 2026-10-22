@@ -1,12 +1,9 @@
 package lanse.worldwarchess.shared.core.worldmap.board;
 
-import lanse.worldwarchess.cascading.CascadingClient;
 import lanse.worldwarchess.shared.central.Main;
 import lanse.worldwarchess.shared.central.TextureKey;
 import lanse.worldwarchess.shared.core.RenderCache;
-import lanse.worldwarchess.shared.core.gamemode.GameMode;
 import lanse.worldwarchess.shared.core.piece.Piece;
-import lanse.worldwarchess.shared.core.piece.ai.attacks.PieceAttack;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.worldmap.MapShapePresets;
@@ -17,8 +14,8 @@ import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 public class Board {
 
@@ -78,8 +75,7 @@ public class Board {
 
     public static Board createFromPrefix(int prefix, int boardID, int boardX, int boardY) {
         try {
-            Class<? extends Board> clazz = BoardClassPrefixMap.getBoardClass(prefix);
-            boolean isCommander = CommanderBoard.class.isAssignableFrom(clazz);
+            Class<? extends Board> clazz = Board.class;
 
             return clazz.getConstructor(
                     int.class, int.class, int.class, String.class,
@@ -89,7 +85,7 @@ public class Board {
                     boardX, boardY,
                     MapShapePresets.TILE_SIZE,
                     "empty", 0, 0,
-                    boardID, isCommander,
+                    boardID, false,
                     false,  // DO NOT link neighbors during load
                     true
             );
@@ -166,9 +162,7 @@ public class Board {
         int drawX = (int) Math.round(boardX * zoomFactor);
         int drawY = (int) Math.round(boardY * zoomFactor);
 
-        // Check if it is your ('u') board, or another team's board
-        char prefix = ((CascadingClient.playerID == this.playerID || CascadingClient.playerID == this.playerID2)
-                && !GameMode.isFrenzy) ? 'u' : this.blackTexturePrefix;
+        char prefix = 'u';
 
         String cacheKey = prefix + "_" + tileScale + "_" + boardSize + "_" + String.format("%.3f", zoomFactor);
 
@@ -327,14 +321,6 @@ public class Board {
         return emptySquares;
     }
 
-    public PieceAttack getPieceAttackAt(int x, int y) {
-        Piece piece = getPieceAt(x, y, Optional.empty(), WorldMap.getAllPiecesOfBoard(this));
-        if (piece instanceof PieceAttack){
-            return (PieceAttack) piece;
-        }
-        return null;
-    }
-
     protected Point getRandomEmptyTile() {
         int maxAttempts = 50; // prevent infinite loop
         for (int i = 0; i < maxAttempts; i++) {
@@ -399,7 +385,7 @@ public class Board {
 
     public Board cloneForSandbox(int offsetX, int offsetY) {
         int newBoardID = WorldMap.getNewBoardID();
-        boolean isCommander = this.getClass().isAssignableFrom(CommanderBoard.class);
+        boolean isCommander = false;
 
         try {
             return this.getClass().getConstructor(
