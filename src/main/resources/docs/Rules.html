@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="colorscheme" content="dark">
+    <title>World War Chess Rules</title>
+    <style>
+        html, body {
+            color: white;
+            background: black;
+        }
+        h2 {
+            margin-bottom: 0px;
+        }
+        p {
+            margin-top: 0px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+<h1><img src="/images/icon/WWCIconSmall.png" alt="World War Chess logo">World War Chess Rules</h1>
+<p> Note: this is not meant to be a comprehensive set of rules,
+    it should be just enough to get you playing a few games,
+    at which point you can explore on your own.
+</p>
+
+<h2 id="summary">Summary</h2>
+<p> Most of the rules of chess are the same, except where they needed to be changed to make multiple boards work.
+    In general, each board is controlled by 1 player, who gets to move 1 of  their pieces each turn.
+    When their king dies, the game isn't over, but all their pieces die
+    - so they can only watch and hope that their teammates can still win.
+</p>
+
+<h2 id="turns">Turns</h2>
+<p> There are several modes: humans vs. humans, humans vs. NPC and NPC vs. NPC.
+    In all of these modes, everyone on one team has a fixed amount of time that they can make one move in.
+    When everyone on the current team has moved (or the timer has run out), the other team starts taking their moves.
+</p>
+<p>
+    On their turn, each player can move one of the pieces that started on their board (although NPCs by default can move two of their pieces).
+    Legal moves now include moving onto other boards (even non-adjacent ones), although for pieces moving in a line
+    (bishops, rooks and queens) every intermediate square must be on some board.
+</p>
+
+<h2 id="commanders">Commander Pieces</h2>
+<p> Every team has 1 commander board: a board with boss pieces 4 times as large as normal ones.
+    Killing your opponents commander king is how you win the entire game.
+</p>
+<p>
+    Commander pieces can capture other commander pieces like normal, but it's harder for normal pieces to capture them.
+    Commanders and boss pieces have health bars that get decreased by a set amount when they are attacked by a normal piece.
+    If multiple pieces attack a commander at the same time, their combined damage gets a boost for each attacker piece.
+</p>
+<p>
+    Additionally, commander pieces can capture normal pieces quickly:
+    they capture all the pieces in any of the squares they are moving into
+    (however, this does mean that one of your regular pieces can block your commander pieces,
+    which can make it hard for them to get past your own team, though.)
+</p>
+
+<h2 id="misc">Miscellaneous Differences and Clarifications</h2>
+<ul>
+    <li>Pawns promote when reaching the end of any board.</li>
+    <li>The game isn't over when a king dies, only when a Commander King dies.</li>
+    <li>You are allowed to make a move leaving or putting your king in check (even for commander kings).</li>
+    <li>Commander kings cannot castle.</li>
+    <li>En-passant does not work.</li>
+</ul>
+</body>
+</html>
