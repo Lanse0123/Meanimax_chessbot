@@ -12,13 +12,11 @@ public class AudioKey {
 
     //This class preloads all the audio like texture key does so it isnt a problem on first attempt or like game starting.
     public static final String[] soundKeys = {
-            "capture", "castle", "commander-attack", "commander-move", "commander-ultrakill",
-            "en-passant", "commander-en-passant", "game-over", "invalid-move",
+            "capture", "castle", "en-passant", "game-over", "invalid-move",
             "pregame", "promote", "valid-move", "new-turn",
 
             "Lego-yoda-death-sound", "THE-ROOK", "THE-BISHOP", "THE-KNIGHT", "THE-QUEEN"
     };
-
 
     public static final Map<String, Clip> clips = new HashMap<>();
 
