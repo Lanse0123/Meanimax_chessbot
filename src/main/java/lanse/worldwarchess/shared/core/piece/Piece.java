@@ -128,15 +128,6 @@ public class Piece {
 
         g2d.drawImage(scaled, drawX, drawY, null);
 
-        //if this is your piece, draw a glow around it.
-        if (this.playerID == 0) {
-            Stroke oldStroke = g2d.getStroke();
-            g2d.setStroke(new BasicStroke((float)(6 * zoomFactor)));
-            g2d.setColor(new Color(255, 215, 0));
-            g2d.drawRect(drawX, drawY, pieceSize, pieceSize);
-            g2d.setStroke(oldStroke);
-        }
-
         //draw name above piece if it has one
         String name = this.getPlayerName();
         if (name != null && !name.isEmpty()) {

@@ -4,7 +4,6 @@ import java.util.List;
 
 public enum PieceType {
 
-
     PAWN("pawn", true, "p"),
     BISHOP("bishop", true, "b"),
     KNIGHT("knight", true, "n"),

@@ -28,7 +28,10 @@ public class NPC {
         //moved NPC logic on a different thread because it can be laggy
         new Thread(() -> {
             //TODO - put meanimax algorithm here
-            Timer.currentTime = 0;
+
+            if (skipTurn) {
+                Timer.currentTime = 0;
+            }
             areNpcsMoving = false;
 
         }, "NPCMover").start();

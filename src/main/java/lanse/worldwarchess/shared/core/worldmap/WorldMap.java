@@ -1,5 +1,6 @@
 package lanse.worldwarchess.shared.core.worldmap;
 
+import lanse.worldwarchess.shared.central.CentralTick;
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.PieceType;
 import lanse.worldwarchess.shared.core.piece.ai.enemies.NpcPiece;
@@ -7,6 +8,7 @@ import lanse.worldwarchess.shared.core.piece.marker.DeathMarker;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
 import lanse.worldwarchess.shared.core.piece.move.VisibleMoveDetector;
+import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 import lanse.worldwarchess.shared.utils.LagTester;
 
@@ -24,8 +26,7 @@ public class WorldMap {
     public static List<Piece> pieces = new CopyOnWriteArrayList<>();
 
     public static void initializeBoards() {
-//        boards.clear();
-
+        System.out.println("Adding board...");
         MapShapePresets.addBoard(0, 0);
     }
 
@@ -93,6 +94,14 @@ public class WorldMap {
 
         if (piece.getType() == PieceType.KING) {
             DeathMarker.deathRow.addAll(WorldMap.getAllPiecesOfPlayerID(piece.getPlayerID()));
+            String winningTeam = "WHITE";
+
+            if (Objects.equals(piece.getTeam(), "white")){
+                winningTeam = "BLACK";
+            }
+
+            GamePanel.winningTeam = winningTeam;
+            CentralTick.gameOver = true;
         }
     }
 
@@ -108,28 +117,5 @@ public class WorldMap {
     public static void erasePiece(Piece piece, boolean shouldSend){
         pieces.remove(piece);
         MoveHistory.erasePieceForRecord(piece);
-    }
-
-    public static int getNewBoardID() {
-        int newID = 1;
-        boolean newIDFound = false;
-        boolean brokeLoop;
-
-        while (!newIDFound) {
-            brokeLoop = false;
-            for (Board board : WorldMap.boards.values()) {
-                if (board.getBoardID() == newID) {
-                    newID++;
-                    brokeLoop = true;
-                    break;
-                }
-            }
-
-            if (!brokeLoop) {
-                newIDFound = true;
-            }
-        }
-
-        return newID;
     }
 }

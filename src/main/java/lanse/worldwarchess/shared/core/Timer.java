@@ -15,7 +15,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Timer {
-    public static double maxTimePerTurn;
+    public static double maxTimePerTurn = 30;
     public static double currentTime;
     public static int turnCounter = 0;
     public static ArrayList<Integer> playerIDMovedList = new ArrayList<>();
@@ -46,6 +46,8 @@ public class Timer {
             return;
         }
 
+        currentTime -= 0.1;
+
         if (Main.gamePanel instanceof HistoryPanel) return;
 
         if (currentTime <= 0) {
@@ -72,22 +74,6 @@ public class Timer {
         else if (turnCounter % 2 == 0) {
             NPC.doAllNpcLogic("White", "Black", false,false);
         }
-        Main.gamePanel.recalculateLegalMoves();
-    }
-
-    private static void doClientLogic(){
-        NPC.recalculateAttackerLocations();
-        currentTime = maxTimePerTurn;
-        turnCounter++;
-        playerIDMovedList.clear();
-        GamePanel.sidebarEvaluator.updateEvaluation();
-        WorldMap.resetPieces();
-        Marker.tickMarkers();
-
-        MoveHistory.saveData();
-        MoveHistory.addNewTurn();
-
-        skipTurn = false;
         Main.gamePanel.recalculateLegalMoves();
     }
 
