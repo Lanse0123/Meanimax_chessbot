@@ -4,6 +4,7 @@ import lanse.worldwarchess.shared.central.Main;
 import lanse.worldwarchess.shared.core.piece.ai.NPC;
 import lanse.worldwarchess.shared.core.piece.marker.Marker;
 import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
+import lanse.worldwarchess.shared.core.screens.background.BackgroundColors;
 import lanse.worldwarchess.shared.core.screens.history.HistoryPanel;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.screens.ingame.SidebarMenu;
@@ -12,7 +13,6 @@ import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class Timer {
     public static double maxTimePerTurn;
@@ -60,7 +60,6 @@ public class Timer {
         playerIDMovedList.clear();
         GamePanel.sidebarEvaluator.updateEvaluation();
         WorldMap.tickBoards();
-        WorldMap.tickAttacks();
         WorldMap.resetPieces();
         Marker.tickMarkers();
         WorldMap.tickMinionRequests();
@@ -109,17 +108,12 @@ public class Timer {
 
         String team2 = "Black's";
 
-        //Turn UI painter
-        if (!Objects.equals(GameMode.getCurrentGameModeAsString(), "War")) {
-            team2 = GameMode.getCurrentGameModeAsString();
-        }
-
         String turnText = (Timer.turnCounter % 2 == 0) ? "White's turn" : team2 + " turn";
         boolean isWhiteTurn = Timer.turnCounter % 2 == 0;
 
         // Set colors based on turn
-        Color boxColor = isWhiteTurn ? GameMode.currentGamemodeColor1 : GameMode.currentGamemodeColor2;
-        Color textColor = isWhiteTurn ? GameMode.currentGamemodeColor2 : GameMode.currentGamemodeColor1;
+        Color boxColor = isWhiteTurn ? BackgroundColors.firstBackgroundColor : BackgroundColors.secondBackgroundColor;
+        Color textColor = isWhiteTurn ? BackgroundColors.firstBackgroundColor : BackgroundColors.secondBackgroundColor;
         Color borderColor = new Color(150, 150, 150); // Gray border
 
         int boxX = width - 200;

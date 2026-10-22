@@ -1,13 +1,6 @@
+
 package lanse.worldwarchess.shared.core.screens.pregame;
 
-import javafx.embed.swing.JFXPanel;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import lanse.worldwarchess.shared.central.LogoManager;
 import lanse.worldwarchess.shared.client.storage.Settings;
 import lanse.worldwarchess.shared.core.screens.history.HistoryMenu;
@@ -18,12 +11,9 @@ import java.awt.*;
 
 public class MainMenu extends JFrame {
 
-    //This class works a lot with VideoBackground class. This creates the window, and starts the correct videoBackground
-    // player. It also has the logic for each button.
-
-    private final JFXPanel fxPanel = new JFXPanel();
-    private StackPane root;
-    private VBox mainMenu, playMenu;
+    private JPanel root;
+    private JPanel mainMenu;
+    private JPanel playMenu;
 
     public static MainMenu instance;
 
@@ -42,70 +32,106 @@ public class MainMenu extends JFrame {
         reset(firstLaunch);
     }
 
-    //TODO - change all javafx to jframe
     public void reset(boolean firstLaunch) {
         getContentPane().removeAll();
-        getContentPane().add(fxPanel, BorderLayout.CENTER);
-        setVisible(true);
 
-        root = new StackPane();
-        root.setStyle("-fx-background-color: black;");
+        // Root panel, replacing JavaFX StackPane.
+        root = new JPanel(new GridBagLayout());
+        root.setBackground(Color.BLACK);
 
-        // Main menu buttons
-        this.mainMenu = new VBox(12);
-        mainMenu.setPickOnBounds(false);
-        mainMenu.setAlignment(Pos.CENTER_LEFT);
-        mainMenu.setPadding(new Insets(24));
-        mainMenu.setMaxWidth(200);
+        mainMenu = new JPanel();
+        mainMenu.setLayout(new BoxLayout(mainMenu, BoxLayout.Y_AXIS));
+        mainMenu.setOpaque(false);
+        mainMenu.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
+        mainMenu.setPreferredSize(new Dimension(248, 0));
 
-        Button playButton = new Button("Play");
-        Button historyButton = new Button("Game Review");
-        Button settingsButton = new Button("Settings");
-        Button quitButton = new Button("Quit");
+        JButton playButton = new JButton("Play");
+        JButton historyButton = new JButton("Game Review");
+        JButton settingsButton = new JButton("Settings");
+        JButton quitButton = new JButton("Quit");
 
-        playButton.setMaxWidth(Double.MAX_VALUE);
-        historyButton.setMaxWidth(Double.MAX_VALUE);
-        settingsButton.setMaxWidth(Double.MAX_VALUE);
-        quitButton.setMaxWidth(Double.MAX_VALUE);
+        mainMenu.add(playButton);
+        mainMenu.add(Box.createVerticalStrut(12));
+        mainMenu.add(historyButton);
+        mainMenu.add(Box.createVerticalStrut(12));
+        mainMenu.add(settingsButton);
+        mainMenu.add(Box.createVerticalStrut(12));
+        mainMenu.add(quitButton);
 
-        mainMenu.getChildren().addAll(playButton, historyButton, settingsButton, quitButton);
-        mainMenu.setOpacity(0);
-        mainMenu.setDisable(true);
+        playMenu = new JPanel();
+        playMenu.setLayout(new BoxLayout(playMenu, BoxLayout.Y_AXIS));
+        playMenu.setOpaque(false);
+        playMenu.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
+        playMenu.setPreferredSize(new Dimension(248, 0));
 
-        // Play submenu
-        this.playMenu = new VBox(12);
-        playMenu.setAlignment(Pos.CENTER_LEFT);
-        playMenu.setPadding(new Insets(24));
-        playMenu.setMaxWidth(200);
+        JButton singlePlayerButton = new JButton("SinglePlayer");
+        JButton hostButton = new JButton("Host");
+        JButton joinButton = new JButton("Join");
+        JButton sandboxButton = new JButton("Sandbox");
+        JButton tutorialButton = new JButton("Tutorial");
+        JButton rulesButton = new JButton("Rules");
+        JButton backButton = new JButton("Back");
+
+        playMenu.add(singlePlayerButton);
+        playMenu.add(Box.createVerticalStrut(12));
+        playMenu.add(hostButton);
+        playMenu.add(Box.createVerticalStrut(12));
+        playMenu.add(joinButton);
+        playMenu.add(Box.createVerticalStrut(12));
+        playMenu.add(sandboxButton);
+        playMenu.add(Box.createVerticalStrut(12));
+        playMenu.add(tutorialButton);
+        playMenu.add(Box.createVerticalStrut(12));
+        playMenu.add(rulesButton);
+        playMenu.add(Box.createVerticalStrut(12));
+        playMenu.add(backButton);
+
+        // Make buttons fill the menu's width.
+        for (Component component : mainMenu.getComponents()) {
+            if (component instanceof JButton button) {
+                button.setAlignmentX(Component.LEFT_ALIGNMENT);
+                button.setMaximumSize(new Dimension(Integer.MAX_VALUE, button.getPreferredSize().height));
+            }
+        }
+
+        for (Component component : playMenu.getComponents()) {
+            if (component instanceof JButton button) {
+                button.setAlignmentX(Component.LEFT_ALIGNMENT);
+                button.setMaximumSize(new Dimension(Integer.MAX_VALUE, button.getPreferredSize().height));
+            }
+        }
+
+        root.add(mainMenu);
+        root.add(playMenu);
+
+        mainMenu.setVisible(true);
         playMenu.setVisible(false);
 
-        Button singlePlayerButton = new Button("SinglePlayer");
+        getContentPane().add(root, BorderLayout.CENTER);
 
-        singlePlayerButton.setMaxWidth(Double.MAX_VALUE);
-
-        playMenu.getChildren().addAll(singlePlayerButton, hostButton, joinButton, sandboxButton, tutorialButton, rulesButton, backButton);
-
-        // Add both menus to the root
-        StackPane.setAlignment(mainMenu, Pos.CENTER);
-        StackPane.setMargin(mainMenu, new Insets(0, 0, 0, 10));
-        StackPane.setAlignment(playMenu, Pos.CENTER);
-        StackPane.setMargin(playMenu, new Insets(0, 0, 0, 10));
-        root.getChildren().addAll(mainMenu, playMenu);
-
-        playButton.setOnAction(ae -> {
+        playButton.addActionListener(e -> {
             mainMenu.setVisible(false);
             playMenu.setVisible(true);
+            root.revalidate();
+            root.repaint();
         });
-        backButton.setOnAction(ae -> {
+
+        backButton.addActionListener(e -> {
             playMenu.setVisible(false);
             mainMenu.setVisible(true);
+            root.revalidate();
+            root.repaint();
         });
 
-        historyButton.setOnAction(_ -> SwingUtilities.invokeLater(this::showHistoryWindow));
-        settingsButton.setOnAction(_ -> SwingUtilities.invokeLater(this::showSettingsWindow));
-        quitButton.setOnAction(_ -> SwingUtilities.invokeLater(this::quitGame));
+        historyButton.addActionListener(e -> showHistoryWindow());
+        settingsButton.addActionListener(e -> showSettingsWindow());
+        quitButton.addActionListener(e -> quitGame());
 
-        singlePlayerButton.setOnAction(_ -> SwingUtilities.invokeLater(() -> StartGame.initializeSinglePlayer(this)));
+        singlePlayerButton.addActionListener(e -> StartGame.initializeSinglePlayer(this));
+
+        setVisible(true);
+        root.revalidate();
+        root.repaint();
     }
 
     private void showHistoryWindow() {

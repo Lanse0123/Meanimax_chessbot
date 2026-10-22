@@ -3,7 +3,7 @@ package lanse.worldwarchess.shared.central;
 import lanse.worldwarchess.shared.client.storage.Settings;
 import lanse.worldwarchess.shared.core.piece.ai.bosses.security.c.h.e.c.k.SecurityCheck;
 import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
-import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
+import lanse.worldwarchess.shared.core.screens.pregame.MainMenu;
 
 import javax.swing.*;
 import java.util.concurrent.Executors;
@@ -23,7 +23,7 @@ public class CentralInitializer {
 
         Settings.loadSettings();
 
-        SwingUtilities.invokeLater(GamePanel::new);
+        SwingUtilities.invokeLater(MainMenu::new);
 
         // Start server tick loop (10 times per second)
         scheduler.scheduleAtFixedRate(CentralTick::centralTick, 0, 100, TimeUnit.MILLISECONDS);

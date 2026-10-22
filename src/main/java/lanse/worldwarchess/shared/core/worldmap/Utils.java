@@ -62,21 +62,20 @@ public class Utils {
      * @return The nearest logical coordinate the piece could land on, or (0, 0, -404) if there is none within range.
      */
     public static LegalMoveDetector.Coordinate pxToLogicalCoords(Point px, Piece pieceForScale, double zoomFactor) {
-        //TODO - WTF
         return recursivePxToLogicalCoords(px, pieceForScale, zoomFactor, List.of(
-                new Pair<>(0, 0),
-                new Pair<>(-1, 0), new Pair<>(1, 0),
-                new Pair<>(0, -1), new Pair<>(0, 1),
-                new Pair<>(-1, -1), new Pair<>(1, 1),
-                new Pair<>(-1, 1), new Pair<>(1, -1)
+                new Point(0, 0),
+                new Point(-1, 0), new Point(1, 0),
+                new Point(0, -1), new Point(0, 1),
+                new Point(-1, -1), new Point(1, 1),
+                new Point(-1, 1), new Point(1, -1)
         ).iterator());
     }
 
-    // Helper for pxToLogicalCoords, to allow checking offsets in different directions
-    private static LegalMoveDetector.Coordinate recursivePxToLogicalCoords(Point px, Piece pieceForScale, double zoomFactor, Iterator<Pair<Integer, Integer>> offsets) {
-        Pair<Integer, Integer> offset = offsets.next();
-        double worldX = px.x - LegalMoveDetector.OFFSET_CORRECTION_VALUE * pieceForScale.getPieceSize() * offset.getKey();
-        double worldY = px.y - LegalMoveDetector.OFFSET_CORRECTION_VALUE * pieceForScale.getPieceSize() * offset.getValue();
+    private static LegalMoveDetector.Coordinate recursivePxToLogicalCoords(Point px, Piece pieceForScale, double zoomFactor, Iterator<Point> offsets) {
+        Point offset = offsets.next();
+
+        double worldX = px.x - LegalMoveDetector.OFFSET_CORRECTION_VALUE * pieceForScale.getPieceSize() * offset.x;
+        double worldY = px.y - LegalMoveDetector.OFFSET_CORRECTION_VALUE * pieceForScale.getPieceSize() * offset.y;
 
         for (Board board : WorldMap.boards.values()) {
             Rectangle region = getBoardRegion(board, zoomFactor);
@@ -90,19 +89,18 @@ public class Utils {
             int boardSize = board.getBoardSize();
 
             if (newLogicalX >= 0 && newLogicalY >= 0 && newLogicalX < boardSize - 1 && newLogicalY < boardSize - 1) {
-                return new LegalMoveDetector.Coordinate(
-                        (int)Math.round(newLogicalX * pieceForScale.getPieceSize()),
-                        (int)Math.round(newLogicalY * pieceForScale.getPieceSize()),
-                        board.getBoardID());
+
+                return new LegalMoveDetector.Coordinate((int) Math.round(newLogicalX * pieceForScale.getPieceSize()),
+                        (int) Math.round(newLogicalY * pieceForScale.getPieceSize()), board.getBoardID());
             }
         }
-        // Invalid board ID
+
         if (offsets.hasNext()) {
-            return recursivePxToLogicalCoords(px, pieceForScale, zoomFactor, offsets);
+            return recursivePxToLogicalCoords(
+                    px, pieceForScale, zoomFactor, offsets);
         }
-        else {
-            return new LegalMoveDetector.Coordinate(0, 0, -404);
-        }
+
+        return new LegalMoveDetector.Coordinate(0, 0, -404);
     }
 
     // The distance we should try and move a piece to snap it into place on this board size
@@ -184,28 +182,4 @@ public class Utils {
         return (board.getBoardSize() * board.getBaseTileSize());
     }
 
-    public static Pair<Integer, Integer> snapBoard(int x, int y, Board board, double zoomFactor) {
-        Optional<Board> nearest = nearestBoard((int) (x * zoomFactor), (int) (y * zoomFactor), WorldMap.boards.values().stream().filter((b) -> b.getBoardID() != board.getBoardID()), zoomFactor);
-        if (nearest.isEmpty()) {
-            return new Pair<>(x, y);
-        }
-        Board n = nearest.get();
-        if (x < n.getBoardX()) {
-            x = n.getBoardX() - boardPxSize(board) - MapShapePresets.GAP;
-        } else if (x > n.getBoardX() + boardPxSize(n)) {
-            x = n.getBoardX() + boardPxSize(n) + MapShapePresets.GAP;
-        }
-        else {
-            x = n.getBoardX();
-        }
-        if (y < n.getBoardY()) {
-            y = n.getBoardY() - boardPxSize(board) - MapShapePresets.GAP;
-        } else if (y > n.getBoardY() + boardPxSize(n)) {
-            y = n.getBoardY() + boardPxSize(n) + MapShapePresets.GAP;
-        }
-        else {
-            y = n.getBoardY();
-        }
-        return new Pair<>(x, y);
-    }
 }

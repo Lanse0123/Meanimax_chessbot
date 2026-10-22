@@ -2,7 +2,6 @@ package lanse.worldwarchess.shared.core.worldmap;
 
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.PieceType;
-import lanse.worldwarchess.shared.core.piece.ai.attacks.PieceAttack;
 import lanse.worldwarchess.shared.core.piece.ai.enemies.NpcPiece;
 import lanse.worldwarchess.shared.core.piece.marker.DeathMarker;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
@@ -32,12 +31,12 @@ public class WorldMap {
         boards.clear();
 
         //TODO - spawn the board
-        GameModeMapType.setupMap();
+//        GameModeMapType.setupMap();
         Board.linkAllBoardNeighbors();
 
         System.out.println("Players accounted for: " + MapShapePresets.playerIDCount);
 
-        GameModeInitializer.initializeTeams();
+//        GameModeInitializer.initializeTeams();
 
         MoveHistory.createNewGameForRecord();
         MoveHistory.createBoardListForRecord();
@@ -94,12 +93,6 @@ public class WorldMap {
     }
 
     public static void tickBoards() { boards.values().forEach(Board::tick); }
-
-    public static void tickAttacks() {
-        for (Piece piece : pieces){
-            if (piece instanceof PieceAttack) ((PieceAttack) piece).doLifeSpanCheck();
-        }
-    }
 
     public static void tickMinionRequests() {
         for (Piece piece : minionPieceDestroyRequests){

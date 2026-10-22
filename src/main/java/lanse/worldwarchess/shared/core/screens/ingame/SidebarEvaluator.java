@@ -2,6 +2,7 @@ package lanse.worldwarchess.shared.core.screens.ingame;
 
 import lanse.worldwarchess.shared.core.Timer;
 import lanse.worldwarchess.shared.core.piece.Piece;
+import lanse.worldwarchess.shared.core.screens.background.BackgroundColors;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 
 import javax.swing.*;
@@ -55,10 +56,10 @@ public class SidebarEvaluator extends JPanel {
         int blackBarHeight = height - whiteBarHeight; // Remaining height
 
         // Draw bars
-        g2d.setColor(GameMode.currentGamemodeColor1);
+        g2d.setColor(BackgroundColors.firstBackgroundColor);
         g2d.fillRect(0, 0, width, whiteBarHeight);
 
-        g2d.setColor(GameMode.currentGamemodeColor2);
+        g2d.setColor(BackgroundColors.secondBackgroundColor);
         g2d.fillRect(0, whiteBarHeight, width, blackBarHeight);
 
         // Draw a small gray border
