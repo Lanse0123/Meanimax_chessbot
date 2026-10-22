@@ -32,7 +32,6 @@ public class WorldMap {
 
         //TODO - spawn the board
 //        GameModeMapType.setupMap();
-        Board.linkAllBoardNeighbors();
 
         System.out.println("Players accounted for: " + MapShapePresets.playerIDCount);
 

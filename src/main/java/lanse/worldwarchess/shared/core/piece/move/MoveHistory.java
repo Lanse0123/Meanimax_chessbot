@@ -23,7 +23,7 @@ public class MoveHistory {
 
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Path gameHistoryDir =
-            Path.of(ProjectDirectories.from("dev", "Lanse", "WorldWarChess").dataDir);
+            Path.of(ProjectDirectories.from("dev", "Lanse", "Meanimax").dataDir);
 
     private static Path currentGameFile;
     public static boolean shouldRecordHistory = false;

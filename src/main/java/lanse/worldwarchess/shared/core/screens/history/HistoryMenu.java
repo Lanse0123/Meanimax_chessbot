@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class HistoryMenu {
 
     private static final Path gameHistoryDir =
-            Path.of(ProjectDirectories.from("dev", "Lanse", "WorldWarChess").dataDir);
+            Path.of(ProjectDirectories.from("dev", "Lanse", "Meanimax").dataDir);
 
     public static void show(JFrame parent) {
         SwingUtilities.invokeLater(() -> {

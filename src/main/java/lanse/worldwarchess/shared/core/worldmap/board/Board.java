@@ -129,27 +129,6 @@ public class Board {
         }
     }
 
-    public static void linkAllBoardNeighbors() {
-        List<Board> allBoards = new ArrayList<>(WorldMap.boards.values());
-        int tolerancePixels = LegalMoveDetector.TOLERENCE_PIXELS;
-        double zoomFactor = Main.gamePanel.getZoomFactor();
-
-        for (int i = 0; i < allBoards.size(); i++) {
-            Board a = allBoards.get(i);
-            Rectangle regionA = expandRect(GamePanel.getBoardRegion(a, zoomFactor), tolerancePixels);
-
-            for (int j = i + 1; j < allBoards.size(); j++) {
-                Board b = allBoards.get(j);
-                Rectangle regionB = expandRect(GamePanel.getBoardRegion(b, zoomFactor), tolerancePixels);
-
-                if (regionA.intersects(regionB)) {
-                    a.neighboringBoards.add(b);
-                    b.neighboringBoards.add(a);
-                }
-            }
-        }
-    }
-
     //Helper function for getting board neighbors
     private static Rectangle expandRect(Rectangle rect, int margin) {
         return new Rectangle(rect.x - margin, rect.y - margin, rect.width + margin * 2, rect.height + margin * 2);
@@ -214,13 +193,6 @@ public class Board {
 
         g.dispose();
         return boardImg;
-    }
-
-    public void drawSelectedBoard(Graphics2D g2d, double zoomFactor) {
-        Color old = this.borderColor;
-        this.borderColor = new Color(0, 180, 15);
-        this.draw(g2d, zoomFactor);
-        this.borderColor = old;
     }
 
     public static void clearBoardCache() { BOARD_CACHE.clear(); }

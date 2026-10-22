@@ -18,7 +18,7 @@ public class Settings {
 
     //This class stores and queries your settings file. It also loads the settings screen. It can probably be made static.
 
-    private static final Path settingsDir = Path.of(ProjectDirectories.from("dev", "Lanse", "WorldWarChess").configDir);
+    private static final Path settingsDir = Path.of(ProjectDirectories.from("dev", "Lanse", "Meanimax").configDir);
     private static final String SETTINGS_PATH = settingsDir + "/settings.json";
 
     private static int volume;
