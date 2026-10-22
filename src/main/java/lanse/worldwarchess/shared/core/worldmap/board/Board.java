@@ -1,12 +1,8 @@
 package lanse.worldwarchess.shared.core.worldmap.board;
 
-import lanse.worldwarchess.shared.central.Main;
 import lanse.worldwarchess.shared.central.TextureKey;
 import lanse.worldwarchess.shared.core.RenderCache;
 import lanse.worldwarchess.shared.core.piece.Piece;
-import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
-import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
-import lanse.worldwarchess.shared.core.worldmap.MapShapePresets;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.utils.BoardLetterIDCreator;
 
@@ -40,7 +36,7 @@ public class Board {
 
     /** REMEMBER TO ADD TO THE BoardClassPrefixMap.java WHEN ADDING A NEW BOARD CLASS*/
 
-    public Board(int boardX, int boardY, int baseTileSize, String preset, int playerID, int playerID2, int boardID, boolean isCommander, boolean shouldLinkNeighbors, boolean shouldSetBoardPreset) {
+    public Board(int boardX, int boardY, int baseTileSize, String preset, int playerID, int playerID2, int boardID, boolean isCommander, boolean shouldSetBoardPreset) {
         this.boardX = boardX;
         this.boardY = boardY;
         this.boardID = boardID;
@@ -56,83 +52,10 @@ public class Board {
         if (shouldSetBoardPreset){
             BoardPresets.setPreset(preset, boardX, boardY, playerID, playerID2, this, isCommander);
         }
-
-        if (shouldLinkNeighbors) {
-            updateBoardNeighbors(this);
-        }
-
-        WorldMap.boards.put(boardID, this);
-    }
-
-    public void setMapPos(int newBoardX, int newBoardY) {
-        this.boardX = newBoardX;
-        this.boardY = newBoardY;
-    }
-
-    public void setBoardID(int boardID) {
-        this.boardID = boardID;
-    }
-
-    public static Board createFromPrefix(int prefix, int boardID, int boardX, int boardY) {
-        try {
-            Class<? extends Board> clazz = Board.class;
-
-            return clazz.getConstructor(
-                    int.class, int.class, int.class, String.class,
-                    int.class, int.class, int.class,
-                    boolean.class, boolean.class, boolean.class
-            ).newInstance(
-                    boardX, boardY,
-                    MapShapePresets.TILE_SIZE,
-                    "empty", 0, 0,
-                    boardID, false,
-                    false,  // DO NOT link neighbors during load
-                    true
-            );
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create board from prefix: " + prefix, e);
-        }
     }
 
     //TO BE OVERRIDEN:
     public void tick() {}
-
-    //This code will limit the off board travel check to just the neighboring boards, instead of all boards
-    // in the world. This might be laggy at the map creation so this can probably be moved to after all
-    // boards were made, or maybe there could be a boolean to update if it should make these
-    public static void updateBoardNeighbors(Board newBoard) {
-        if (newBoard.neighboringBoards == null){
-            newBoard.neighboringBoards = new ArrayList<>();
-        }
-
-        double zoomFactor = Main.gamePanel.getZoomFactor();
-        int tolerancePixels = LegalMoveDetector.TOLERENCE_PIXELS;
-
-        Rectangle newRegion = GamePanel.getBoardRegion(newBoard, zoomFactor);
-        Rectangle expandedNewRegion = expandRect(newRegion, tolerancePixels);
-
-        for (Board other : WorldMap.boards.values()) {
-            if (other == newBoard) continue;
-
-            Rectangle otherRegion = GamePanel.getBoardRegion(other, zoomFactor);
-            Rectangle expandedOtherRegion = expandRect(otherRegion, tolerancePixels);
-
-            if (expandedNewRegion.intersects(expandedOtherRegion)) {
-                if (!newBoard.neighboringBoards.contains(other)) {
-                    newBoard.neighboringBoards.add(other);
-                }
-                if (!other.neighboringBoards.contains(newBoard)) {
-                    other.neighboringBoards.add(newBoard);
-                }
-            }
-        }
-    }
-
-    //Helper function for getting board neighbors
-    private static Rectangle expandRect(Rectangle rect, int margin) {
-        return new Rectangle(rect.x - margin, rect.y - margin, rect.width + margin * 2, rect.height + margin * 2);
-    }
 
     public void draw(Graphics2D g2d, double zoomFactor) {
         double scaledBaseTile = baseTileSize * zoomFactor;
@@ -233,100 +156,9 @@ public class Board {
         return null;
     }
 
-    //TODO - give this to any piece with a size > 1
-    public static Set<Piece> getPiecesAtScaledBlock(Board board, int blockX, int blockY, Piece ignoringPiece) {
-        int boardSize = board.getBoardSize();
-        int pieceSize = ignoringPiece.getPieceSize();
-        Set<Piece> foundPieces = new HashSet<>();
-        List<Piece> pieceList = WorldMap.getAllPiecesOfBoard(board);
-
-        //check for pieces within the footprint of the large piece
-        for (int dx = 0; dx < pieceSize; dx++) {
-            for (int dy = 0; dy < pieceSize; dy++) {
-                int x = blockX + dx;
-                int y = blockY + dy;
-
-                if (x < 0 || y < 0 || x >= boardSize || y >= boardSize) continue;
-
-                Piece found = board.getPieceAt(x, y, Optional.empty(), pieceList);
-
-                if (found != null && found != ignoringPiece) {
-                    foundPieces.add(found);
-                }
-            }
-        }
-        return foundPieces;
-    }
-
     public int getBaseTileSize() { return baseTileSize; }
     public int getBoardSize() { return boardSize; }
     public ArrayList<Board> getNeighboringBoards(){return this.neighboringBoards;}
-
-    public List<int[]> getEmptySquares() {
-        List<int[]> emptySquares = new ArrayList<>();
-
-        // Track occupied positions
-        Set<String> occupiedPositions = new HashSet<>();
-        for (Piece piece : WorldMap.getAllPiecesOfBoard(this)) {
-            int size = Math.max(1, piece.getPieceSize());
-            int px = piece.getPosX();
-            int py = piece.getPosY();
-
-            // Mark all tiles the piece occupies
-            for (int dx = 0; dx < size; dx++) {
-                for (int dy = 0; dy < size; dy++) {
-                    occupiedPositions.add((px + dx) + "," + (py + dy));
-                }
-            }
-        }
-
-        // Find empty squares
-        for (int x = 0; x < boardSize; x++) {
-            for (int y = 0; y < boardSize; y++) {
-                String pos = x + "," + y;
-                if (!occupiedPositions.contains(pos)) {
-                    emptySquares.add(new int[]{x, y});
-                }
-            }
-        }
-
-        return emptySquares;
-    }
-
-    protected Point getRandomEmptyTile() {
-        int maxAttempts = 50; // prevent infinite loop
-        for (int i = 0; i < maxAttempts; i++) {
-            int x = new Random().nextInt(this.boardSize);
-            int y = new Random().nextInt(this.boardSize);
-
-            boolean occupied = WorldMap.getAllPiecesOfBoard(this).stream()
-                    .anyMatch(p -> p.getPosX() == x && p.getPosY() == y);
-
-            if (!occupied) return new Point(x, y);
-        }
-        return null; // no free tile found
-    }
-
-    public Set<Piece> getPiecesOfRange(Piece ignoringPiece, int range) {
-        int scaledRange = range * ignoringPiece.getPieceSize();
-        Set<Piece> foundPieces = new HashSet<>();
-        int posX = ignoringPiece.getPosX();
-        int posY = ignoringPiece.getPosY();
-
-        for (int dx = -scaledRange; dx <= scaledRange; dx++) {
-            for (int dy = -scaledRange; dy <= scaledRange; dy++) {
-                int x = posX + dx;
-                int y = posY + dy;
-
-                Piece p = getPieceAt(x, y, Optional.empty(), WorldMap.getAllPiecesOfBoard(this));
-
-                if (p != null && p != ignoringPiece) {
-                    foundPieces.add(p);
-                }
-            }
-        }
-        return foundPieces;
-    }
 
     //this code labels the number tile, and colors it the opposite color of the current tile its on.
     protected void label(Graphics2D g) {
@@ -355,22 +187,4 @@ public class Board {
         }
     }
 
-    public Board cloneForSandbox(int offsetX, int offsetY) {
-        int newBoardID = WorldMap.getNewBoardID();
-        boolean isCommander = false;
-
-        try {
-            return this.getClass().getConstructor(
-                    int.class, int.class, int.class, String.class, int.class, int.class,
-                    int.class, boolean.class, boolean.class, boolean.class
-            ).newInstance(
-                    this.boardX + offsetX,
-                    this.boardY + offsetY, this.baseTileSize,
-                    "empty", this.playerID, this.playerID2,
-                    newBoardID, isCommander, false, false
-            );
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to clone board: " + this.getClass(), e);
-        }
-    }
 }

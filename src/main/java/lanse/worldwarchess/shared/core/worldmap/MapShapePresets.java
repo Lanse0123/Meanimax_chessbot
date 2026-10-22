@@ -11,7 +11,8 @@ public class MapShapePresets {
     public static int playerIDCount = 1;
     public static int boardID = 1;
 
-    protected static void addBoard(int x, int y, String type, String boardType) {
-        new Board(x, y, TILE_SIZE, "Border", 0, 1, boardID, false, false, true);
+    protected static void addBoard(int x, int y) {
+        Board board = new Board(x, y, TILE_SIZE, "Border", 0, 1, boardID, false, true);
+        WorldMap.boards.put(boardID, board);
     }
 }

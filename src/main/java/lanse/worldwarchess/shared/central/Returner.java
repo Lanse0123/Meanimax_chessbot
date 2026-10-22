@@ -25,8 +25,6 @@ public class Returner {
         DeathMarker.deathRow.clear();
         MoveHistory.moveRecords.clear();
         MoveHistory.shouldRecordHistory = false;
-        WorldMap.minionPieceSpawnRequests.clear();
-        WorldMap.minionPieceDestroyRequests.clear();
         NPC.attackedSquares.clear();
         WorldMap.boards.clear();
         WorldMap.pieces.clear();

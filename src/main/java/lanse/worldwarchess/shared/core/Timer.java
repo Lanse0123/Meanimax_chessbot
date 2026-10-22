@@ -62,7 +62,6 @@ public class Timer {
         WorldMap.tickBoards();
         WorldMap.resetPieces();
         Marker.tickMarkers();
-        WorldMap.tickMinionRequests();
 
         MoveHistory.saveData();
         MoveHistory.addNewTurn();

@@ -97,7 +97,6 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         if (selectedPiece != null) {
             selectedPiece.drawSelectedPiece(pieceDragging, selectedBoard, currentDragPoint, dragOffset, legalMoves, zoomFactor, g2d);
         }
-//        Piece.drawSelectedPiece(pieceDragging, selectedPiece, selectedBoard, currentDragPoint, dragOffset, legalMoves, zoomFactor, g2d);
 
         PawnPromotionManager.getInstance().drawPromotions(g2d, zoomFactor);
 
