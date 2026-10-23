@@ -3,7 +3,9 @@ package lanse.worldwarchess.shared.server;
 import lanse.worldwarchess.shared.central.CentralTick;
 import lanse.worldwarchess.shared.central.Main;
 import lanse.worldwarchess.shared.core.Timer;
+import lanse.worldwarchess.shared.core.piece.ai.NPC;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
+import lanse.worldwarchess.shared.core.screens.pregame.MainMenu;
 
 import javax.swing.*;
 
@@ -36,7 +38,25 @@ public class StartGame {
     }
 
     public static void initializeSinglePlayer(JFrame frame) {
-        System.out.println("Starting Single Player Mode.");
+        String[] options = {"Minimax", "Meanimax", "Maximin"};
+
+        //TODO - make prettier?
+        String choice = (String) JOptionPane.showInputDialog(frame, "Choose the AI enemy:",
+                "Hello I hope this is a good final project", JOptionPane.QUESTION_MESSAGE, null, options, "Meanimax");
+
+        if (choice == null) {
+            return;
+        }
+
+        NPC.selectedAI = switch (choice.toLowerCase()) {
+            case "minimax" -> NPC.SELECTED_AI.MINIMAX;
+            case "meanimax" -> NPC.SELECTED_AI.MEANIMAX;
+            case "maximin" -> NPC.SELECTED_AI.MAXIMIN;
+            default -> throw new IllegalStateException("Unexpected value: " + choice);
+        };
+
+        System.out.println("Starting Single Player Mode with " + choice + ".");
+
         StartGame.startGame(frame);
     }
 }

@@ -18,6 +18,14 @@ public class NPC {
     public static volatile boolean areNpcsMoving = false;
     public static Map<LegalMoveDetector.Coordinate, List<String>> attackedSquares = new HashMap<>();
 
+    public enum SELECTED_AI {
+        MINIMAX,
+        MEANIMAX,
+        MAXIMIN
+    }
+
+    public static SELECTED_AI selectedAI = SELECTED_AI.MEANIMAX;
+
     public static void doAllNpcLogic(String team, String ignoredTeam, boolean doOtherTeams, boolean skipTurn) {
         //moved NPC logic on a different thread because it can be laggy
         new Thread(() -> {
@@ -32,7 +40,17 @@ public class NPC {
     }
 
     public static void performMove(){
-        //TODO - put meanimax algorithm here
+        switch (selectedAI){
+            case MINIMAX -> {
+                //TODO - minimize the enemy score, maximize your score
+            }
+            case MEANIMAX -> {
+                //TODO - find path to the most average position possible
+            }
+            case MAXIMIN -> {
+                //TODO - maximize the enemy score, minimize your own score
+            }
+        }
 
         Board mainBoard = WorldMap.getBoardByID(0);
     }
