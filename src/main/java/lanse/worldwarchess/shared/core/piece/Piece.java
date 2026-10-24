@@ -223,14 +223,14 @@ public class Piece {
         }
     }
 
-    public int getStrength() {
+    public int getValue() {
         return switch (type){
             case PAWN -> 1;
             case BISHOP -> 3;
             case KNIGHT -> 3;
             case ROOK -> 5;
             case QUEEN -> 9;
-            case KING -> 1;
+            case KING -> 250;
         };
     }
 }

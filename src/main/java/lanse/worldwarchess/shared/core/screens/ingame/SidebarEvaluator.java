@@ -31,10 +31,10 @@ public class SidebarEvaluator extends JPanel {
         List<Piece> blackPieces = WorldMap.getAllPiecesOfTeam("Black");
 
         for (Piece piece : whitePieces) {
-            whiteStrength += piece.getStrength();
+            whiteStrength += piece.getValue();
         }
         for (Piece piece : blackPieces) {
-            blackStrength += piece.getStrength();
+            blackStrength += piece.getValue();
         }
 
         repaint(); // Refresh UI
