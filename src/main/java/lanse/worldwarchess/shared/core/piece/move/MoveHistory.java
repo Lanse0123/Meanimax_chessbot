@@ -35,7 +35,8 @@ public class MoveHistory {
 
 
     public static MoveRecord getLastMove() {
-        return moveRecords.isEmpty() ? null : moveRecords.get(moveRecords.size() - 1);    }
+        return moveRecords.isEmpty() ? null : moveRecords.get(moveRecords.size() - 1);
+    }
 
     public static boolean wasLastMovePawnDoubleAdvance(int x, int y, String color) {
         MoveRecord lastMove = getLastMove();
@@ -130,11 +131,9 @@ public class MoveHistory {
 
         String health = (bossHealth == -40404) ? "" : String.valueOf(bossHealth);
 
-        String move = String.format("%s,%d,%d,%d,%d,%d,%d,%s",
+        String move = String.format("%s,%d,%d,%d,%d,%s",
                 moveType,
-                oldPiece.getBoard().getBoardID(),
                 oldPiece.getPosX(), oldPiece.getPosY(),
-                newPiece.getBoard().getBoardID(),
                 newPiece.getPosX(), newPiece.getPosY(),
                 health);
 
@@ -143,8 +142,7 @@ public class MoveHistory {
 
     public static void addPromotionForRecord(Piece newPiece, boolean shouldSend) {
         newPiece.hasMovedEver = true;
-        String move = String.format("promo,%d,%d,%d,%s,%d",
-                newPiece.getBoard().getBoardID(),
+        String move = String.format("promo,%d,%d,%s,%d",
                 newPiece.getPosX(), newPiece.getPosY(),
                 newPiece.getType().getDisplayName(),
                 newPiece.getPieceClassPrefix());
@@ -153,8 +151,7 @@ public class MoveHistory {
     }
 
     public static void spawnPieceForRecord(Piece newPiece, boolean shouldSend) {
-        String move = String.format("spawn,%d,%d,%d,%s,%s,%d,%s,%d",
-                newPiece.getBoard().getBoardID(),
+        String move = String.format("spawn,%d,%d,%s,%s,%d,%s,%d",
                 newPiece.getPosX(), newPiece.getPosY(),
                 newPiece.getType().getDisplayName(),
                 newPiece.getTeam(),
@@ -166,8 +163,7 @@ public class MoveHistory {
     }
 
     public static void erasePieceForRecord(Piece piece) {
-        String move = String.format("erase,%d,%d,%d",
-                piece.getBoard().getBoardID(),
+        String move = String.format("erase,%d,%d",
                 piece.getPosX(), piece.getPosY());
 
         recordData(move);

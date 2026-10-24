@@ -8,7 +8,6 @@ import lanse.worldwarchess.shared.utils.BoardLetterIDCreator;
 
 import java.awt.*;
 import java.awt.font.TextAttribute;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
@@ -22,7 +21,6 @@ public class Board {
     protected int baseTileSize;
     protected int boardSize;
     protected int tileScale;
-    protected int boardID;
     protected final int playerID;
     protected final int playerID2;
     protected float borderSize = 10;
@@ -35,10 +33,9 @@ public class Board {
 
     /** REMEMBER TO ADD TO THE BoardClassPrefixMap.java WHEN ADDING A NEW BOARD CLASS*/
 
-    public Board(int boardX, int boardY, int baseTileSize, String preset, int playerID, int playerID2, int boardID, boolean isCommander, boolean shouldSetBoardPreset) {
+    public Board(int boardX, int boardY, int baseTileSize, String preset, int playerID, int playerID2, boolean isCommander, boolean shouldSetBoardPreset) {
         this.boardX = boardX;
         this.boardY = boardY;
-        this.boardID = boardID;
         this.baseTileSize = baseTileSize;
         this.boardSize = 8;
         this.tileScale = 1;
@@ -78,15 +75,6 @@ public class Board {
         g2d.setColor(borderColor);
         g2d.setStroke(new BasicStroke((float) (borderSize * zoomFactor)));
         g2d.drawRect(drawX, drawY, boardPixelSize, boardPixelSize);
-
-        Font font = g2d.getFont().deriveFont(Font.BOLD, (float) (26 * zoomFactor));
-        g2d.setFont(font);
-        Rectangle2D textBounds = font.getStringBounds(String.valueOf(boardID), g2d.getFontRenderContext());
-        boolean topRightTileIsWhite = (((boardSize - 1) / tileScale) % 2 == 0);
-        g2d.setColor(topRightTileIsWhite ? new Color(80, 60, 40) : Color.WHITE);
-        g2d.drawString(String.valueOf(boardID),
-                (float) (drawX + boardPixelSize - textBounds.getWidth() - borderSize * zoomFactor),
-                (float) (drawY + borderSize * zoomFactor + textBounds.getHeight() / 2));
     }
 
     private BufferedImage buildBoardImage(double zoomFactor, int boardPixelSize, char prefix) {
@@ -125,9 +113,6 @@ public class Board {
         return boardX;
     }
     public int getBoardY() { return boardY; }
-    public int getBoardID() {
-        return boardID;
-    }
 
     public Piece getPieceAt(int x, int y, Optional<Piece> attackerPiece, List<Piece> pieceList) {
         int scale = attackerPiece.map(Piece::getPieceSize).orElse(1);

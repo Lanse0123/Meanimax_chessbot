@@ -29,7 +29,6 @@ public class Returner {
         WorldMap.pieces.clear();
         BoardPresets.resetOrder();
         MapShapePresets.playerIDCount = 1;
-        MapShapePresets.boardID = 1;
         Marker.markers.clear();
         RenderCache.clear();
         CentralTick.tickCount = 0;

@@ -1,5 +1,6 @@
 package lanse.worldwarchess.shared.core.piece.ai;
 
+import lanse.worldwarchess.shared.client.storage.Settings;
 import lanse.worldwarchess.shared.core.Timer;
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
@@ -40,6 +41,9 @@ public class NPC {
     }
 
     public static void performMove(){
+        Board mainBoard = WorldMap.getBoard();
+        long maxTimeMilliseconds = Settings.getMaxTimeMillisecondsForBot();
+
         switch (selectedAI){
             case MINIMAX -> {
                 //TODO - minimize the enemy score, maximize your score
@@ -51,8 +55,6 @@ public class NPC {
                 //TODO - maximize the enemy score, minimize your own score
             }
         }
-
-        Board mainBoard = WorldMap.getBoardByID(0);
     }
 
     private static void performMove(Piece piece, List<LegalMoveDetector.Coordinate> candidateMoves) {
@@ -61,9 +63,8 @@ public class NPC {
         LegalMoveDetector.Coordinate chosenMove = candidateMoves.get(new Random().nextInt(candidateMoves.size()));
         int moveX = chosenMove.x();
         int moveY = chosenMove.y();
-        int moveBoardID = chosenMove.boardID();
 
-        Board moveBoard = WorldMap.getBoardByID(moveBoardID);
+        Board moveBoard = WorldMap.getBoard();
         if (moveBoard == null) return;
 
         MoveExecutor.executeMove(piece, moveBoard, moveX, moveY, piece.getPosX(), piece.getPosY(), true,
@@ -75,8 +76,7 @@ public class NPC {
         for (LegalMoveDetector.Coordinate move : moves) {
             int targetX = move.x();
             int targetY = move.y();
-            int targetBoardID = move.boardID();
-            Board targetBoard = WorldMap.getBoardByID(targetBoardID);
+            Board targetBoard = WorldMap.getBoard();
 
             if (targetBoard != null) {
                 Piece targetPiece = targetBoard.getPieceAt(targetX, targetY, Optional.of(piece), WorldMap.getAllPiecesOfBoard(targetBoard));
@@ -95,7 +95,7 @@ public class NPC {
     }
 
     private static boolean isSquareEnemyAttacked(Piece piece, LegalMoveDetector.Coordinate move) {
-        LegalMoveDetector.Coordinate key = new LegalMoveDetector.Coordinate(move.x(), move.y(), move.boardID());
+        LegalMoveDetector.Coordinate key = new LegalMoveDetector.Coordinate(move.x(), move.y());
 
         List<String> attackers = NPC.attackedSquares.get(key);
         if (attackers == null) return false;
@@ -104,8 +104,6 @@ public class NPC {
     }
 
     private static Piece getPieceAt(LegalMoveDetector.Coordinate move, Piece mover) {
-        Board b = WorldMap.getBoardByID(move.boardID());
-        if (b == null) return null;
-        return b.getPieceAt(move.x(), move.y(), Optional.of(mover), WorldMap.getAllPiecesOfBoard(b));
+        return WorldMap.board.getPieceAt(move.x(), move.y(), Optional.of(mover), WorldMap.getAllPiecesOfBoard(WorldMap.getBoard()));
     }
 }

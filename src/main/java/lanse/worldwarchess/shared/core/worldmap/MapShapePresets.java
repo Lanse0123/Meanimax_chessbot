@@ -9,9 +9,8 @@ public class MapShapePresets {
     public static final int GAP = 25;
 
     public static int playerIDCount = 1;
-    public static int boardID = 1;
 
     protected static void setBoard(int x, int y) {
-        WorldMap.board = new Board(x, y, TILE_SIZE, "Border", 0, 1, boardID, false, true);
+        WorldMap.board = new Board(x, y, TILE_SIZE, "Border", 0, 1, false, true);
     }
 }

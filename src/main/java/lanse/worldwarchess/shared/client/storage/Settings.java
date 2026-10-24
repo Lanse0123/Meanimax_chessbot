@@ -27,6 +27,7 @@ public class Settings {
     private static boolean showDeathMarkers;
     private static boolean playMainMenuStartup;
     private static boolean playIllegalMoveSound;
+    private static long maxTimeMillisecondsForBot;
 
     public static void loadSettings() {
         Path path = Paths.get(SETTINGS_PATH);
@@ -44,6 +45,7 @@ public class Settings {
                 showDeathMarkers = json.optBoolean("showDeathMarkers", true);
                 playMainMenuStartup = json.optBoolean("playMainMenuStartup", false);
                 playIllegalMoveSound = json.optBoolean("playIllegalMoveSound", false);
+                maxTimeMillisecondsForBot = json.optLong("maxTimeMillisecondsForBot", 5000);
             } catch (IOException e) {
                 e.printStackTrace();
                 setDefaultSettings();
@@ -60,6 +62,7 @@ public class Settings {
         playMainMenuStartup = false;
         playIllegalMoveSound = false;
         background = "Warped Plane";
+        maxTimeMillisecondsForBot = 5000;
         saveSettings();
     }
 
@@ -76,6 +79,7 @@ public class Settings {
             settingsJson.put("showDeathMarkers", showDeathMarkers);
             settingsJson.put("playMainMenuStartup", playMainMenuStartup);
             settingsJson.put("playIllegalMoveSound", playIllegalMoveSound);
+            settingsJson.put("maxTimeMillisecondsForBot", maxTimeMillisecondsForBot);
 
             try (FileWriter file = new FileWriter(SETTINGS_PATH)) {
                 file.write(settingsJson.toString(4)); // Pretty print JSON
@@ -85,6 +89,7 @@ public class Settings {
         }
     }
 
+    //TODO - add maxTimeMillisecondsForBot
     public static void showSettingsWindow() {
         JFrame frame = new JFrame("Settings");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -188,4 +193,8 @@ public class Settings {
     public static boolean isShowDeathMarkers() { return showDeathMarkers; }
     public static boolean isPlayMainMenuStartup() {return playMainMenuStartup; }
     public static boolean isPlayIllegalMoveSound() { return playIllegalMoveSound; }
+
+    public static long getMaxTimeMillisecondsForBot() {
+        return 5000;
+    }
 }

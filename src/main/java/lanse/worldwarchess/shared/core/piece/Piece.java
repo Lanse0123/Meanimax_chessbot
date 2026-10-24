@@ -195,8 +195,7 @@ public class Piece {
 
     public Stream<LegalMoveDetector.Coordinate> squares() {
         return IntStream.range(0, pieceSize).mapToObj(
-                (x) -> IntStream.range(0, pieceSize).mapToObj(
-                        (y) -> new LegalMoveDetector.Coordinate(posX + x, posY + y, board.getBoardID())
+                (x) -> IntStream.range(0, pieceSize).mapToObj((y) -> new LegalMoveDetector.Coordinate(posX + x, posY + y)
                 )
         ).flatMap((x) -> x);
     }
@@ -204,7 +203,7 @@ public class Piece {
     public Stream<LegalMoveDetector.Coordinate> squaresAt(int newX, int newY, Board newBoard) {
         return IntStream.range(0, pieceSize).mapToObj(
                 (x) -> IntStream.range(0, pieceSize).mapToObj(
-                        (y) -> new LegalMoveDetector.Coordinate(newX + x, newY + y, newBoard.getBoardID())
+                        (y) -> new LegalMoveDetector.Coordinate(newX + x, newY + y)
                 )
         ).flatMap((x) -> x);
     }

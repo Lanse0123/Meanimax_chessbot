@@ -37,7 +37,6 @@ public class VisibleMoveDetector extends LegalMoveDetector{
             };
 
             legalMoves.addAll(newMoves);
-
             return legalMoves;
 
         } catch (Exception e){
@@ -55,7 +54,7 @@ public class VisibleMoveDetector extends LegalMoveDetector{
 
         if (localX >= 0 && localX < boardSize && localY >= 0 && localY < boardSize) {
             if (isValidMove(localX, localY, currentBoard, piece)) {
-                moves.add(new Coordinate(localX, localY, currentBoard.getBoardID()));
+                moves.add(new Coordinate(localX, localY));
             }
         }
     }
@@ -67,7 +66,7 @@ public class VisibleMoveDetector extends LegalMoveDetector{
 
         if (localX >= 0 && localX < boardSize && localY >= 0 && localY < boardSize) {
             if (isValidCapture(localX, localY, currentBoard, piece)) {
-                moves.add(new Coordinate(localX, localY, currentBoard.getBoardID()));
+                moves.add(new Coordinate(localX, localY));
             }
         }
     }
@@ -92,12 +91,12 @@ public class VisibleMoveDetector extends LegalMoveDetector{
             if (!MoveHistory.hasRookMoved(piece.getBoard(), 0, y) &&
                     LegalMoveDetector.isPathClearForCastling(board, piece.getPosX(), y, -1)) {
                 int newX = piece.getPosX() - 2;
-                if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y, board.getBoardID()));
+                if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y));
             }
             if (!MoveHistory.hasRookMoved(piece.getBoard(), 7, y) &&
                     LegalMoveDetector.isPathClearForCastling(board, piece.getPosX(), y, 1)) {
                 int newX = piece.getPosX() + 2;
-                if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y, board.getBoardID()));
+                if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y));
             }
         }
         return moves;
@@ -134,13 +133,13 @@ public class VisibleMoveDetector extends LegalMoveDetector{
         int newY = y + stepSize * dir;
         if (newY >= 0 && newY < boardSize &&
                 board.getPieceAt(x, newY, Optional.of(piece), boardPieces) == null) {
-            moves.add(new Coordinate(x, newY, board.getBoardID()));
+            moves.add(new Coordinate(x, newY));
 
             if (!piece.hasMovedEver) {
                 int newY2 = y + firstMoveStep * dir;
                 if (newY2 >= 0 && newY2 < boardSize &&
                         board.getPieceAt(x, newY2, Optional.of(piece), boardPieces) == null) {
-                    moves.add(new Coordinate(x, newY2, board.getBoardID()));
+                    moves.add(new Coordinate(x, newY2));
                 }
             }
         }
@@ -158,11 +157,11 @@ public class VisibleMoveDetector extends LegalMoveDetector{
             int y1 = y + dir;
             if (left != null && left.getType() == PieceType.PAWN && !left.getTeam().equals(piece.getTeam())
                     && MoveHistory.wasLastMovePawnDoubleAdvance(left.getPosX(), left.getPosY(), left.getTeam())) {
-                moves.add(new Coordinate(left.getPosX(), y1, board.getBoardID()));
+                moves.add(new Coordinate(left.getPosX(), y1));
             }
             if (right != null && right.getType() == PieceType.PAWN && !right.getTeam().equals(piece.getTeam())
                     && MoveHistory.wasLastMovePawnDoubleAdvance(right.getPosX(), right.getPosY(), right.getTeam())) {
-                moves.add(new Coordinate(right.getPosX(), y1, board.getBoardID()));
+                moves.add(new Coordinate(right.getPosX(), y1));
             }
         }
 
@@ -200,7 +199,7 @@ public class VisibleMoveDetector extends LegalMoveDetector{
             if (nextX >= 0 && nextX < boardSize && nextY >= 0 && nextY < boardSize) {
                 if (!isValidMove(nextX, nextY, board, piece)) break;
 
-                moves.add(new Coordinate(nextX, nextY, board.getBoardID()));
+                moves.add(new Coordinate(nextX, nextY));
                 localX = nextX;
                 localY = nextY;
                 traveled++;

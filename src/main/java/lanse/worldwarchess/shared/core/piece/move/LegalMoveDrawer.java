@@ -33,7 +33,7 @@ public class LegalMoveDrawer {
     }
 
     public static void drawMove(Piece selectedPiece, Graphics2D g2d, double zoomFactor, LegalMoveDetector.Coordinate move, BufferedImage captureTexture, BufferedImage legalMoveTexture) {
-        Board moveBoard = WorldMap.getBoardByID(move.boardID());
+        Board moveBoard = WorldMap.getBoard();
         if (moveBoard == null) return;
 
         int baseTile = moveBoard.getBaseTileSize();

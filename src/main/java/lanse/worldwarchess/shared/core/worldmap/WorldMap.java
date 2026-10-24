@@ -74,7 +74,7 @@ public class WorldMap {
         return pieces.stream().filter(p -> Objects.equals(p.getTeam(), team)).toList();
     }
 
-    public static Board getBoardByID(int boardID) {
+    public static Board getBoard() {
         return board;
     }
 

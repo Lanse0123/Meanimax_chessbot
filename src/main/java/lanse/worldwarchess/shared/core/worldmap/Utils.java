@@ -43,14 +43,11 @@ public class Utils {
 
     // Returns the distance between two coordinates on a board, or +∞ if they are on separate boards
     public static double localDistance(LegalMoveDetector.Coordinate c1, LegalMoveDetector.Coordinate c2) {
-        return localDistance(c1.x(), c1.y(), c1.boardID(), c2.x(), c2.y(), c2.boardID());
+        return localDistance(c1.x(), c1.y(), c2.x(), c2.y());
     }
 
     // Returns the distance between two points on a board, or +∞ if they are on separate boards
-    public static double localDistance(int x1, int y1, int b1, int x2, int y2, int b2) {
-        if (b1 != b2) {
-            return Double.POSITIVE_INFINITY;
-        }
+    public static double localDistance(int x1, int y1, int x2, int y2) {
         return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
     }
 
@@ -90,15 +87,15 @@ public class Utils {
         if (newLogicalX >= 0 && newLogicalY >= 0 && newLogicalX < boardSize - 1 && newLogicalY < boardSize - 1) {
 
             return new LegalMoveDetector.Coordinate((int) Math.round(newLogicalX * pieceForScale.getPieceSize()),
-                    (int) Math.round(newLogicalY * pieceForScale.getPieceSize()), board.getBoardID());
+                    (int) Math.round(newLogicalY * pieceForScale.getPieceSize()));
         }
 
         if (offsets.hasNext()) {
-            return recursivePxToLogicalCoords(
-                    px, pieceForScale, zoomFactor, offsets);
+            return recursivePxToLogicalCoords(px, pieceForScale, zoomFactor, offsets);
         }
 
-        return new LegalMoveDetector.Coordinate(0, 0, -404);
+        //TODO - this is supposed to be an invalid move
+        return new LegalMoveDetector.Coordinate(0, 0);
     }
 
     // The distance we should try and move a piece to snap it into place on this board size
@@ -114,11 +111,8 @@ public class Utils {
      */
     public static Optional<LegalMoveDetector.Coordinate> nearestLegalCoordinate(LegalMoveDetector.Coordinate p, List<LegalMoveDetector.Coordinate> legalMoves) {
         try {
-            int boardSize = WorldMap.getBoardByID(p.boardID()).getBoardSize();
-            return legalMoves.stream()
-                    .filter(coordinate -> p.boardID() == coordinate.boardID())
-                    .filter(coordinate ->
-                            localDistance(coordinate, p) < Math.pow(boardSize / 4.0, 1.5))
+            int boardSize = WorldMap.getBoard().getBoardSize();
+            return legalMoves.stream().filter(coordinate -> localDistance(coordinate, p) < Math.pow(boardSize / 4.0, 1.5))
                     .min(Comparator.comparing((coordinate -> localDistance(coordinate, p))));
         } catch (NullPointerException e) {
             return Optional.empty();
@@ -132,9 +126,8 @@ public class Utils {
      * @return The piece in validPieces that is nearest to coord, while being on the same board and within snapping distance
      */
     public static Optional<Piece> nearestPiece(LegalMoveDetector.Coordinate coord, List<Piece> validPieces) {
-        int boardSize = WorldMap.getBoardByID(coord.boardID()).getBoardSize();
-        return validPieces.stream().filter(piece -> piece.getBoard().getBoardID() == coord.boardID())
-                .filter(piece -> localDistance(piece, coord) < Math.pow(boardSize / 32.0, 2))
+        int boardSize = WorldMap.getBoard().getBoardSize();
+        return validPieces.stream().filter(piece -> localDistance(piece, coord) < Math.pow(boardSize / 32.0, 2))
                 .min(Comparator.comparing(piece -> localDistance(piece, coord)));
     }
 

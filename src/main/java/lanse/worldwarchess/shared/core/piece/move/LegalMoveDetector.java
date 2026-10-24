@@ -15,13 +15,11 @@ public class LegalMoveDetector {
     //This class is responsible for calculating all the base piece movements in chess. Like rooks move horrizontally
     // and vertically, while bishops move diagonally, knights move in an L, and queens are like a rook + bishop.
 
-    public record Coordinate(int x, int y, int boardID) {}
-    public static int TOLERENCE_PIXELS = 100;
+    public record Coordinate(int x, int y) {}
     public static int OFFSET_CORRECTION_VALUE = 25;
     public static int[] bishopDirections = {1, 1, 1, -1, -1, 1, -1, -1};
     public static int[] rookDirections = {1, 0, -1, 0, 0, 1, 0, -1};
     public static int[] queenDirections = {1, 1, 1, -1, -1, 1, -1, -1, 1, 0, -1, 0, 0, 1, 0, -1};
-//    public static List<Point> debugRawPoints = new ArrayList<>();
 
     public static List<Coordinate> getLegalMoves(Piece piece) {
         try {
@@ -39,9 +37,7 @@ public class LegalMoveDetector {
                 case KING -> getKingMoves(piece, currentBoard);
             };
 
-            if (newMoves != null) {
-                legalMoves.addAll(newMoves);
-            }
+            legalMoves.addAll(newMoves);
 
             return legalMoves;
 
@@ -60,7 +56,7 @@ public class LegalMoveDetector {
 
         if (localX >= 0 && localX < boardSize && localY >= 0 && localY < boardSize) {
             if (isValidMove(localX, localY, currentBoard, piece)) {
-                moves.add(new Coordinate(localX, localY, currentBoard.getBoardID()));
+                moves.add(new Coordinate(localX, localY));
             }
         }
     }
@@ -72,7 +68,7 @@ public class LegalMoveDetector {
 
         if (localX >= 0 && localX < boardSize && localY >= 0 && localY < boardSize) {
             if (isValidCapture(localX, localY, currentBoard, piece)) {
-                moves.add(new Coordinate(localX, localY, currentBoard.getBoardID()));
+                moves.add(new Coordinate(localX, localY));
             }
         }
     }
@@ -97,12 +93,12 @@ public class LegalMoveDetector {
             if (!MoveHistory.hasRookMoved(piece.getBoard(), 0, y) &&
                     isPathClearForCastling(board, piece.getPosX(), y, -1)) {
                 int newX = piece.getPosX() - 2;
-                if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y, board.getBoardID()));
+                if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y));
             }
             if (!MoveHistory.hasRookMoved(piece.getBoard(), 7, y) &&
                     isPathClearForCastling(board, piece.getPosX(), y, 1)) {
                 int newX = piece.getPosX() + 2;
-                if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y, board.getBoardID()));
+                if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y));
             }
         }
         return moves;
@@ -139,13 +135,13 @@ public class LegalMoveDetector {
         int newY = y + stepSize * dir;
         if (newY >= 0 && newY < boardSize &&
                 board.getPieceAt(x, newY, Optional.of(piece), boardPieces) == null) {
-            moves.add(new Coordinate(x, newY, board.getBoardID()));
+            moves.add(new Coordinate(x, newY));
 
             if (!piece.hasMovedEver) {
                 int newY2 = y + firstMoveStep * dir;
                 if (newY2 >= 0 && newY2 < boardSize &&
                         board.getPieceAt(x, newY2, Optional.of(piece), boardPieces) == null) {
-                    moves.add(new Coordinate(x, newY2, board.getBoardID()));
+                    moves.add(new Coordinate(x, newY2));
                 }
             }
         }
@@ -155,19 +151,20 @@ public class LegalMoveDetector {
         addCaptureMoveForOffset(piece, 1, dir, board, moves);
 
         // En passant
+        //TODO - make sure this works
         int enPassantRow = piece.getTeam().equals("White") ? 4 : 3;
         if (y == enPassantRow) {
             Piece left = board.getPieceAt(x - 1, y, Optional.of(piece), boardPieces);
             Piece right = board.getPieceAt(x + 1, y, Optional.of(piece), boardPieces);
 
-            int y1 = y + 1 * dir;
+            int y1 = y + dir;
             if (left != null && left.getType() == PieceType.PAWN && !left.getTeam().equals(piece.getTeam())
                     && MoveHistory.wasLastMovePawnDoubleAdvance(left.getPosX(), left.getPosY(), left.getTeam())) {
-                moves.add(new Coordinate(left.getPosX(), y1, board.getBoardID()));
+                moves.add(new Coordinate(left.getPosX(), y1));
             }
             if (right != null && right.getType() == PieceType.PAWN && !right.getTeam().equals(piece.getTeam())
                     && MoveHistory.wasLastMovePawnDoubleAdvance(right.getPosX(), right.getPosY(), right.getTeam())) {
-                moves.add(new Coordinate(right.getPosX(), y1, board.getBoardID()));
+                moves.add(new Coordinate(right.getPosX(), y1));
             }
         }
 
@@ -209,12 +206,12 @@ public class LegalMoveDetector {
                 Piece target = board.getPieceAt(nextX, nextY, Optional.of(piece), cachedPieces);
                 if (target != null) {
                     if (!target.getTeam().equals(piece.getTeam())) {
-                        moves.add(new Coordinate(nextX, nextY, board.getBoardID()));
+                        moves.add(new Coordinate(nextX, nextY));
                     }
                     break;
                 }
 
-                moves.add(new Coordinate(nextX, nextY, board.getBoardID()));
+                moves.add(new Coordinate(nextX, nextY));
                 localX = nextX;
                 localY = nextY;
                 traveled++;

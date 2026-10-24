@@ -147,7 +147,7 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
                 int pieceLogicalY = (worldY - region.y) / tileSize;
 
                 // Get the nearest piece within snapping range of the click
-                Optional<Piece> opt_piece = Utils.nearestPiece(new LegalMoveDetector.Coordinate(pieceLogicalX, pieceLogicalY, board.getBoardID()), WorldMap.getAllPiecesOfBoard(board));
+                Optional<Piece> opt_piece = Utils.nearestPiece(new LegalMoveDetector.Coordinate(pieceLogicalX, pieceLogicalY), WorldMap.getAllPiecesOfBoard(board));
                 if (opt_piece.isPresent()) {
                     selectPiece(opt_piece.get(), board, worldX, worldY);
                     return;
@@ -207,7 +207,7 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
 
         // find clicked board and the logical coordinates of where on it
         LegalMoveDetector.Coordinate logicalCoords = Utils.pxToLogicalCoords(new Point(e.getX() - cameraX, e.getY() - cameraY), selectedPiece, zoomFactor);
-        Board newBoard = WorldMap.getBoardByID(logicalCoords.boardID());
+        Board newBoard = WorldMap.getBoard();
 
         boolean sameSquare = (logicalCoords.x() == originalLogicalX && logicalCoords.y() == originalLogicalY && newBoard == selectedPiece.getBoard());
         boolean invalidMoveBase = newBoard == null || sameSquare ||
