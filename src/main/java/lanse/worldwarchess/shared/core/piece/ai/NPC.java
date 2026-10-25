@@ -4,14 +4,19 @@ import lanse.worldwarchess.shared.client.storage.Settings;
 import lanse.worldwarchess.shared.core.Timer;
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
+import lanse.worldwarchess.shared.core.piece.move.MoveContext;
 import lanse.worldwarchess.shared.core.piece.move.MoveExecutor;
+import lanse.worldwarchess.shared.core.piece.move.SimulatedMoveExecutor;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.util.*;
 
+/** Written by Lanse
+ * <br><br>
+ * This was inspired by Sebastian Lague YT. I watched his chess bot videos for ideas with Alpha Beta pruning, Iterative Deepening,
+ * and I saw a lot of other ideas but I want this to be my own creation, not a tutorial or something else. **/
 public class NPC {
-    /** remember when adding new pieces to add it to the texture key in the TextureKey class! **/
 
     //This is the central class that orders all NPC pieces to move when needed. It also stores the core logic for
     // some of the ai types like zombies, vampires, and etc.
@@ -27,7 +32,18 @@ public class NPC {
 
     public static SELECTED_AI selectedAI = SELECTED_AI.MEANIMAX;
 
-    private record MoveCandidate(Piece piece, LegalMoveDetector.Coordinate move, double score) {}
+    public record SearchResult(Piece piece, LegalMoveDetector.Coordinate move, double score, int depth) {}
+    private record RootMove(Piece livePiece, int pieceIndex, LegalMoveDetector.Coordinate move) {}
+
+    //James likes custom exceptions so I wanted to mess around with one to break out when we hit the bot time limit
+    private static final class SearchTimeout extends RuntimeException {
+        private SearchTimeout() {
+            super(null, null, false, false);
+        }
+    }
+
+    private static long jobDeadline;
+    private static long time;
 
     public static void doAllNpcLogic(String team, String ignoredTeam, boolean doOtherTeams, boolean skipTurn) {
         //moved NPC logic on a different thread because it can be laggy
@@ -43,88 +59,15 @@ public class NPC {
     }
 
     public static void performMove(String team) {
-        List<MoveCandidate> candidates = new ArrayList<>();
-        long maxTimeMillisecondsForBotToMove = Settings.getMaxTimeMillisecondsForBot();
+        SearchResult result = findBestMove(WorldMap.getBoard(), team, selectedAI, Settings.getMaxTimeMillisecondsForBot());
 
-        for (Piece piece : WorldMap.pieces) {
-            if (!piece.getTeam().equals(team)) continue;
+        if (result != null) {
+            Piece piece = result.piece();
+            LegalMoveDetector.Coordinate move = result.move();
 
-            List<LegalMoveDetector.Coordinate> moves = LegalMoveDetector.getLegalMoves(piece);
-
-            for (LegalMoveDetector.Coordinate move : moves) {
-                double score = evaluateMove(piece, move, team);
-                candidates.add(new MoveCandidate(piece, move, score));
-            }
+            MoveExecutor.executeMove(piece, piece.getBoard(), move.x(), move.y(), piece.getPosX(),
+                    piece.getPosY(), true, "move", false, false);
         }
-
-        if (candidates.isEmpty()) return;
-
-        MoveCandidate chosen = switch (selectedAI) {
-            case MINIMAX -> candidates.stream().max(Comparator.comparingDouble(MoveCandidate::score)).orElseThrow();
-
-            //this code is a bit extra confusing because it wants to get as close to 0 as possible, but will not allow
-            // itself to get into a losing position to achieve that.
-            case MEANIMAX -> candidates.stream().min(Comparator.comparingDouble(candidate -> {
-                double score = candidate.score();
-                double minimumScore = -3.0;
-
-                if (score < minimumScore) {
-                    return Math.abs(score) + (minimumScore - score) * 10;
-                }
-
-                return Math.abs(score);
-            })).orElseThrow();
-
-            case MAXIMIN -> candidates.stream().min(Comparator.comparingDouble(MoveCandidate::score)).orElseThrow();
-        };
-
-        performMove(chosen.piece(), List.of(chosen.move()));
-    }
-
-    //TODO - crappy implementation, just so it can atleast move. Prepare for searching the FUTURE!!! Currently, it is
-    // "ME SEE ROOK, ME ATTACK ROOK" -then it gets checkmated instantly because it is stupid
-    private static double evaluateMove(Piece piece, LegalMoveDetector.Coordinate move, String team) {
-        double score = 0;
-
-        Piece target = WorldMap.board.getPieceAt(move.x(), move.y(), Optional.of(piece), WorldMap.getAllPiecesOfBoard(WorldMap.board));
-
-        if (target != null && !target.getTeam().equals(team)) {
-            score += target.getValue() * 10;
-        }
-
-        if (isSquareEnemyAttacked(piece, move)) {
-            score -= piece.getValue() * 5;
-        }
-
-        return score;
-    }
-
-    private static void performMove(Piece piece, List<LegalMoveDetector.Coordinate> candidateMoves) {
-        if (candidateMoves.isEmpty()) return;
-
-        LegalMoveDetector.Coordinate chosenMove = candidateMoves.get(new Random().nextInt(candidateMoves.size()));
-        int moveX = chosenMove.x();
-        int moveY = chosenMove.y();
-
-        MoveExecutor.executeMove(piece, WorldMap.getBoard(), moveX, moveY, piece.getPosX(), piece.getPosY(), true,
-                "move", false, false);
-    }
-
-    public static List<LegalMoveDetector.Coordinate> filterCaptureMoves(Piece piece, List<LegalMoveDetector.Coordinate> moves) {
-        List<LegalMoveDetector.Coordinate> captureMoves = new ArrayList<>();
-        for (LegalMoveDetector.Coordinate move : moves) {
-            int targetX = move.x();
-            int targetY = move.y();
-            Board targetBoard = WorldMap.getBoard();
-
-            if (targetBoard != null) {
-                Piece targetPiece = targetBoard.getPieceAt(targetX, targetY, Optional.of(piece), WorldMap.getAllPiecesOfBoard(targetBoard));
-                if (targetPiece != null && !targetPiece.getTeam().equals(piece.getTeam())) {
-                    captureMoves.add(move);
-                }
-            }
-        }
-        return captureMoves;
     }
 
     public static void recalculateAttackerLocations() {
@@ -132,16 +75,217 @@ public class NPC {
         attackedSquares = WorldMap.getAllEnemyMoves();
     }
 
-    private static boolean isSquareEnemyAttacked(Piece piece, LegalMoveDetector.Coordinate move) {
-        LegalMoveDetector.Coordinate key = new LegalMoveDetector.Coordinate(move.x(), move.y());
+    public static SearchResult findBestMove(Board board, String team, NPC.SELECTED_AI ai, long timeLimitMillis) {
+        if (board == null || team == null || ai == null) {
+            return null;
+        }
 
-        List<String> attackers = NPC.attackedSquares.get(key);
-        if (attackers == null) return false;
+        MoveContext liveContext = MoveContext.contextify(board);
+        MoveContext root = copyContext(liveContext);
 
-        return attackers.stream().anyMatch(team -> !team.equals(piece.getTeam()));
+        String opponent = root.pieces().stream().map(Piece::getTeam).filter(t -> !t.equals(team)).findFirst().orElse(null);
+
+        if (opponent == null) {
+            return null;
+        }
+
+        List<RootMove> rootMoves = new ArrayList<>();
+
+        for (int i = 0; i < root.pieces().size(); i++) {
+            Piece piece = root.pieces().get(i);
+
+            if (!piece.getTeam().equals(team)) {
+                continue;
+            }
+
+            for (LegalMoveDetector.Coordinate move : LegalMoveDetector.getLegalMoves(piece, root)) {
+                rootMoves.add(new RootMove(liveContext.pieces().get(i), i, move));
+            }
+        }
+
+        if (rootMoves.isEmpty()) {
+            return null;
+        }
+
+        // Try good looking captures first to improve alpha-beta pruning, since alpha beta pruning seems to be fastest when
+        // we start with good moves. This also lets iterative deepening work, since each level we find the best of that depth,
+        // which speeds up further depths, etc
+        rootMoves.sort(Comparator.comparingInt((RootMove rm) -> capturePriority(root, rm)).reversed());
+
+        long limitNanos = Math.max(1L, timeLimitMillis) * 1_000_000L;
+        jobDeadline = System.nanoTime() + limitNanos;
+        time = 0;
+
+        RootMove fallback = rootMoves.getFirst();
+        SearchResult best = new SearchResult(fallback.livePiece(), fallback.move(), evaluate(root, team, ai), 0);
+
+        // Iterative deepening: retain the last fully completed result.
+        for (int depth = 1; ; depth++) {
+            try {
+                checkTime();
+
+                SearchResult iterationBest = null;
+                double alpha = Double.NEGATIVE_INFINITY;
+                double beta = Double.POSITIVE_INFINITY;
+
+                for (RootMove rootMove : rootMoves) {
+                    checkTime();
+
+                    MoveContext child = copyContext(root);
+                    Piece movingPiece = child.pieces().get(rootMove.pieceIndex());
+
+                    SimulatedMoveExecutor.executeMove(child, movingPiece, rootMove.move().x(), rootMove.move().y());
+
+                    double score = search(child, opponent, team, opponent, depth - 1, alpha, beta, ai);
+
+                    if (iterationBest == null || isBetter(score, iterationBest.score(), ai)) {
+                        iterationBest = new SearchResult(rootMove.livePiece(), rootMove.move(), score, depth);
+                    }
+
+                    if (ai != NPC.SELECTED_AI.MAXIMIN) {
+                        alpha = Math.max(alpha, score);
+                    } else {
+                        beta = Math.min(beta, score);
+                    }
+                }
+
+                if (iterationBest != null) {
+                    best = iterationBest;
+                }
+
+            } catch (SearchTimeout ignored) {
+                //tbh it looks kinda nice making custom exceptions that aren't like CONCURRENTMODIFICATIONEXCEPTION E which give you a heart attack, but only you not me, my heart wouldnt be foolish enough to attack me, I am too powerful, and I already won last time it tried doing that when I was born, and although it did have the upper hand for a while to the point I only had a 5% chance of living, I still won, so there is really no hope that it can win vs me. To anyone actually reading this, hello. Idk why am I typing this much for just a simple silly exception.
+                break;
+            }
+        }
+
+        return best;
     }
 
-    private static Piece getPieceAt(LegalMoveDetector.Coordinate move, Piece mover) {
-        return WorldMap.board.getPieceAt(move.x(), move.y(), Optional.of(mover), WorldMap.getAllPiecesOfBoard(WorldMap.getBoard()));
+    private static double search(MoveContext context, String teamToMove, String rootTeam, String opponentTeam, int depth, double alpha, double beta, NPC.SELECTED_AI ai) {
+        checkTime();
+
+        if (depth <= 0) {
+            return evaluate(context, rootTeam, ai);
+        }
+
+        List<Piece> pieces = context.pieces();
+        List<RootMove> moves = new ArrayList<>();
+
+        for (int i = 0; i < pieces.size(); i++) {
+            Piece piece = pieces.get(i);
+
+            if (!piece.getTeam().equals(teamToMove)) {
+                continue;
+            }
+
+            for (LegalMoveDetector.Coordinate move : LegalMoveDetector.getLegalMoves(piece, context)) {
+                moves.add(new RootMove(null, i, move));
+            }
+        }
+
+        //TODO - No moves, until checkmate/stalemate detection exists, evaluate the resulting position rather
+        // than assuming a terminal outcome.
+        if (moves.isEmpty()) {
+            return evaluate(context, rootTeam, ai);
+        }
+
+        moves.sort(Comparator.comparingInt((RootMove rm) -> capturePriority(context, rm)).reversed());
+
+        boolean rootTurn = teamToMove.equals(rootTeam);
+        boolean maximizing = (ai == NPC.SELECTED_AI.MAXIMIN) != rootTurn;
+
+        double bestScore = maximizing ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+        String nextTeam = teamToMove.equals(rootTeam) ? opponentTeam : rootTeam;
+
+        for (RootMove move : moves) {
+            checkTime();
+
+            MoveContext child = copyContext(context);
+            Piece movingPiece = child.pieces().get(move.pieceIndex());
+
+            SimulatedMoveExecutor.executeMove(child, movingPiece, move.move().x(), move.move().y());
+
+            double score = search(child, nextTeam, rootTeam, opponentTeam, depth - 1, alpha, beta, ai);
+
+            if (maximizing) {
+                bestScore = Math.max(bestScore, score);
+                alpha = Math.max(alpha, bestScore);
+            } else {
+                bestScore = Math.min(bestScore, score);
+                beta = Math.min(beta, bestScore);
+            }
+
+            if (beta <= alpha) {
+                break;
+            }
+        }
+
+        return bestScore;
+    }
+
+    private static MoveContext copyContext(MoveContext source) {
+        List<Piece> copies = new ArrayList<>(source.pieces().size());
+
+        for (Piece piece : source.pieces()) {
+            copies.add(piece.clonePiece(source.board()));
+        }
+
+        return new MoveContext(source.board(), copies);
+    }
+
+    //Good capturs are better
+    private static int capturePriority(MoveContext context, RootMove move) {
+        Piece piece = context.pieces().get(move.pieceIndex());
+        Piece target = context.getPieceAt(move.move().x(), move.move().y(), piece);
+        return target != null && !target.getTeam().equals(piece.getTeam()) ? target.getValue() * 10 - piece.getValue() : 0;
+    }
+
+    //Positive scores favor the root team, negative scores favor its opponent.
+    private static double evaluate(MoveContext context, String rootTeam, NPC.SELECTED_AI ai) {
+        double material = 0;
+
+        for (Piece piece : context.pieces()) {
+            double value = piece.getValue();
+
+            if (piece.getTeam().equals(rootTeam)) {
+                material += value;
+            } else {
+                material -= value;
+            }
+        }
+
+        return switch (ai) {
+            case MINIMAX -> material;
+
+            case MEANIMAX -> {
+                double score = -Math.abs(material);
+
+                //Thou shall not lose, only merely draw.
+                if (material < -3.0) {
+                    score -= (-3.0 - material) * 10.0;
+                }
+
+                yield score;
+            }
+
+            case MAXIMIN -> material;
+        };
+    }
+
+    private static boolean isBetter(double candidate, double current, NPC.SELECTED_AI ai) {
+        return ai == NPC.SELECTED_AI.MAXIMIN ? candidate < current : candidate > current;
+    }
+
+    private static void checkTime() {
+        time++;
+
+        //You know, recently I have liked super overcomplicated bit operations because it makes me feel like a hackerman,
+        //but when I look back at it a few minutes later, I feel stupid. What am I even doing????
+        //Also it throws an exception to escape wherever it is in the code instantly. Its weird but it works, and although
+        //Using exceptions in code is inefficient, its only for after the time limit is reached so it doesnt matter
+        if ((time & 255) == 0 && System.nanoTime() >= jobDeadline) {
+            throw new SearchTimeout();
+        }
     }
 }

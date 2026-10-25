@@ -45,7 +45,7 @@ public class CentralTick {
                 if (gameOver) {
                     for (int i = 0; i < 8; i++) {
                         if (!DeathMarker.deathRow.isEmpty()) {
-                            WorldMap.killPiece(Objects.requireNonNull(DeathMarker.deathRow.poll()), true, false);
+                            WorldMap.killPiece(Objects.requireNonNull(DeathMarker.deathRow.poll()));
                         }
                     }
                 } else {
@@ -54,7 +54,7 @@ public class CentralTick {
                     if (DeathMarker.deathRow.size() > 25) amount = 8;
                     for (int i = 0; i < amount; i++) {
                         if (!DeathMarker.deathRow.isEmpty()) {
-                            WorldMap.killPiece(Objects.requireNonNull(DeathMarker.deathRow.poll()), true, false);
+                            WorldMap.killPiece(Objects.requireNonNull(DeathMarker.deathRow.poll()));
                             SoundManager.capturePiece(null);
                         }
                     }

@@ -3,7 +3,6 @@ package lanse.worldwarchess.shared.core.screens.ingame;
 import lanse.worldwarchess.shared.core.Timer;
 import lanse.worldwarchess.shared.core.piece.PawnPromotionManager;
 import lanse.worldwarchess.shared.core.piece.Piece;
-import lanse.worldwarchess.shared.core.piece.ai.enemies.NpcPiece;
 import lanse.worldwarchess.shared.core.piece.marker.Marker;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDrawer;
@@ -212,8 +211,7 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         boolean sameSquare = (logicalCoords.x() == originalLogicalX && logicalCoords.y() == originalLogicalY && newBoard == selectedPiece.getBoard());
         boolean invalidMoveBase = newBoard == null || sameSquare ||
                 Timer.playerIDMovedList.contains(selectedPiece.getPlayerID()) ||
-                !selectedPiece.getTeam().equals((Timer.turnCounter % 2 == 0) ? "White" : "Black") ||
-                (selectedPiece instanceof NpcPiece);
+                !selectedPiece.getTeam().equals((Timer.turnCounter % 2 == 0) ? "White" : "Black");
 
         if (invalidMoveBase) {
             resetDrag();

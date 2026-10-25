@@ -3,7 +3,6 @@ package lanse.worldwarchess.shared.core.worldmap;
 import lanse.worldwarchess.shared.central.CentralTick;
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.PieceType;
-import lanse.worldwarchess.shared.core.piece.ai.enemies.NpcPiece;
 import lanse.worldwarchess.shared.core.piece.marker.DeathMarker;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
@@ -56,10 +55,6 @@ public class WorldMap {
         return attackedSquares;
     }
 
-    public static List<Piece> getAllNPCPieces() {
-        return pieces.stream().filter(p -> p instanceof NpcPiece).toList();
-    }
-
     public static List<Piece> getAllPiecesOfPlayerID(int playerID) {
         return pieces.stream().filter(p -> p.getPlayerID() == playerID).toList();
     }
@@ -82,14 +77,7 @@ public class WorldMap {
         board.tick();
     }
 
-    public static void killPiece(Piece piece, boolean doNpcCheck, boolean shouldSend) {
-        if (doNpcCheck) {
-            if (piece instanceof NpcPiece) {
-                ((NpcPiece) piece).killPiece(piece, shouldSend);
-                return;
-            }
-        }
-
+    public static void killPiece(Piece piece) {
         new DeathMarker(piece.getBoard(), piece.getPosX(), piece.getPosY(), piece.getPieceSize());
         pieces.remove(piece);
 

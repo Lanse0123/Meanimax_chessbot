@@ -4,7 +4,6 @@ import lanse.worldwarchess.shared.core.Timer;
 import lanse.worldwarchess.shared.core.piece.PawnPromotionManager;
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.PieceType;
-import lanse.worldwarchess.shared.core.piece.ai.enemies.NpcPiece;
 import lanse.worldwarchess.shared.core.sound.SoundManager;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
@@ -27,13 +26,11 @@ public class MoveExecutor {
         Piece oldPiece = new Piece(executorPiece.getPlayerID(), executorPiece.getBoard(), String.valueOf(executorPiece.getType()), executorPiece.getTeam(),
                 executorPiece.getBoardX(), executorPiece.getBoardY(), executorPiece.getPosX(), executorPiece.getPosY(), executorPiece.getPieceSize());
 
-//        new MoveMarker(oldPiece.getBoard(), oldPiece.getPosX(), oldPiece.getPosY(), oldPiece.getPieceSize());
-
         // Handle captures
         if (targetPiece != null && !targetPiece.getTeam().equals(executorPiece.getTeam())) {
             SoundManager.capturePiece(executorPiece);
             playNormalSound = false;
-            WorldMap.killPiece(targetPiece, true, false); //TODO: should it send packets sometimes?
+            WorldMap.killPiece(targetPiece);
 
         }
 
@@ -56,7 +53,7 @@ public class MoveExecutor {
                 if (capturedPawn != null && capturedPawn.getType() == PieceType.PAWN &&
                         !capturedPawn.getTeam().equals(executorPiece.getTeam())) {
 
-                    WorldMap.killPiece(capturedPawn, true, false); //TODO: should it send packets sometimes?
+                    WorldMap.killPiece(capturedPawn);
                 }
             }
         }
@@ -83,13 +80,9 @@ public class MoveExecutor {
 
         Timer.playerIDMovedList.add(executorPiece.getPlayerID());
 
-        if (executorPiece instanceof NpcPiece){
-            executorPiece.hasMoved = true;
-        } else {
-            for (Piece movedPiece : WorldMap.getAllPiecesOfPlayerID(executorPiece.getPlayerID())) movedPiece.hasMoved = true;
-        }
+        for (Piece movedPiece : WorldMap.getAllPiecesOfPlayerID(executorPiece.getPlayerID())) movedPiece.hasMoved = true;
 
-        if (playNormalSound && !(executorPiece instanceof NpcPiece)) {
+        if (playNormalSound) {
             SoundManager.validMove(executorPiece);
         }
 
@@ -100,27 +93,17 @@ public class MoveExecutor {
             if ((executorPiece.getTeam().equalsIgnoreCase("White") && newY == 0) ||
                     (executorPiece.getTeam().equalsIgnoreCase("Black") && newY == endzone)) {
 
-                if (executorPiece instanceof NpcPiece){
-                    Piece new_piece = executorPiece.promoteOverride(executorPiece);
-                    WorldMap.erasePiece(executorPiece, false);
-                    WorldMap.spawnPiece(new_piece, false);
-                    MoveHistory.addPromotionForRecord(new_piece, !isFromDecoder);
-                } else {
-                    PawnPromotionManager.getInstance().addPromotion(executorPiece, newBoard, newX, newY, isOurMove);
-                }
+                PawnPromotionManager.getInstance().addPromotion(executorPiece, newBoard, newX, newY, isOurMove);
             }
         }
 
-        // skip the turn if every piece on the team has moved.
-        if (!(executorPiece instanceof NpcPiece)){
-            String currentTeam = executorPiece.getTeam();
-            for (Piece piece1 : WorldMap.pieces){
-                if (!piece1.hasMoved && Objects.equals(piece1.getTeam(), currentTeam)){
-                    return;
-                }
+        String currentTeam = executorPiece.getTeam();
+        for (Piece piece1 : WorldMap.pieces){
+            if (!piece1.hasMoved && Objects.equals(piece1.getTeam(), currentTeam)){
+                return;
             }
-
-            Timer.currentTime = 0;
         }
+
+        Timer.currentTime = 0;
     }
 }

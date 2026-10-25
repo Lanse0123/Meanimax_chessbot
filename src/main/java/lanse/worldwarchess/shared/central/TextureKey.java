@@ -1,7 +1,6 @@
 package lanse.worldwarchess.shared.central;
 
 import lanse.worldwarchess.shared.core.piece.Piece;
-import lanse.worldwarchess.shared.core.piece.ai.enemies.NpcPiece;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -74,10 +73,6 @@ public class TextureKey {
             textureKey = replacement + textureKey.substring(1);
         }
 
-        if (piece instanceof NpcPiece) {
-            replacement = piece.getPrefixReplacement();
-            if (replacement != 0) textureKey = replacement + textureKey.substring(1);
-        }
         return textureKey;
     }
 }
