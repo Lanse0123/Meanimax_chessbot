@@ -284,15 +284,12 @@ public class NPC {
     //TODO - I also want to train an evolutionary neural net on Chess, and when I am done I am going to see if hard coding it
     // or evolutionary learning is better, because my tactics are limited.
     private static double evaluatePosition(MoveContext context, String team) {
-        double score = 0;
         int[] pawnFiles = new int[8];
+        boolean isWhite = team.equals("White");
 
+        // Count pawns before the switch so its not O(n^2)
         for (Piece piece : context.pieces()) {
-            if (!piece.getTeam().equals(team)) {
-                continue;
-            }
-
-            if (piece.getType() == PieceType.PAWN) {
+            if (piece.getTeam().equals(team) && piece.getType() == PieceType.PAWN) {
                 int x = piece.getPosX();
                 if (x >= 0 && x < 8) {
                     pawnFiles[x]++;
@@ -300,6 +297,7 @@ public class NPC {
             }
         }
 
+        double score = 0;
         for (Piece piece : context.pieces()) {
             if (!piece.getTeam().equals(team)) {
                 continue;
@@ -312,14 +310,11 @@ public class NPC {
                 continue;
             }
 
-            double center = centerScore(x, y);
+            int center = centerScore(x, y);
 
             switch (piece.getType()) {
-                //TODO - pawn might make search too laggy
                 case PAWN -> {
-                    // Pawns that complete their journey to becoming queens are rewarded with nail polish
-                    int advancement = team.equalsIgnoreCase("White") ? 6 - y : y - 1;
-
+                    int advancement = isWhite ? 6 - y : y - 1;
                     score += Math.max(0, advancement) * 0.08;
 
                     // Central pawns help control the board
@@ -333,18 +328,7 @@ public class NPC {
                     }
 
                     // Isolated pawns have no neighboring pawn support.
-                    boolean hasNeighbor = false;
-
-                    for (Piece other : context.pieces()) {
-                        if (other.getType() != PieceType.PAWN || !other.getTeam().equals(team) || other == piece) {
-                            continue;
-                        }
-
-                        if (Math.abs(other.getPosX() - x) == 1) {
-                            hasNeighbor = true;
-                            break;
-                        }
-                    }
+                    boolean hasNeighbor = (x > 0 && pawnFiles[x - 1] > 0) || (x < 7 && pawnFiles[x + 1] > 0);
 
                     if (!hasNeighbor) {
                         score -= 0.20;
@@ -354,8 +338,7 @@ public class NPC {
                 case KNIGHT -> {
                     score += center * 0.22;
 
-                    int homeRank = team.equalsIgnoreCase("White") ? 7 : 0;
-
+                    int homeRank = isWhite ? 7 : 0;
                     boolean onStartingSquare = y == homeRank && (x == 1 || x == 6);
 
                     if (piece.hasMovedEver && !onStartingSquare) {
@@ -366,8 +349,7 @@ public class NPC {
                 case BISHOP -> {
                     score += center * 0.12;
 
-                    int homeRank = team.equalsIgnoreCase("White") ? 7 : 0;
-
+                    int homeRank = isWhite ? 7 : 0;
                     boolean onStartingSquare = y == homeRank && (x == 2 || x == 5);
 
                     if (piece.hasMovedEver && !onStartingSquare) {
@@ -376,8 +358,7 @@ public class NPC {
                 }
 
                 case ROOK -> {
-                    // The rook on the 7th rank is good according to GothamchessYT
-                    int enemyBackRank = team.equalsIgnoreCase("White") ? 0 : 7;
+                    int enemyBackRank = isWhite ? 0 : 7;
 
                     if (y == enemyBackRank) {
                         score += 0.25;
@@ -387,7 +368,7 @@ public class NPC {
                 case QUEEN -> score += center * 0.06;
 
                 case KING -> {
-                    int homeRank = team.equalsIgnoreCase("White") ? 7 : 0;
+                    int homeRank = isWhite ? 7 : 0;
 
                     // Reward the king's usual castled squares.
                     if (y == homeRank && (x == 2 || x == 6) && piece.hasMovedEver) {
@@ -400,8 +381,8 @@ public class NPC {
         return score;
     }
 
-    private static double centerScore(int x, int y) {
-        return (3.5 - Math.abs(x - 3.5)) + (3.5 - Math.abs(y - 3.5));
+    private static int centerScore(int x, int y) {
+        return Math.min(x, 7 - x) + Math.min(y, 7 - y);
     }
 
     private static boolean isBetter(double candidate, double current, NPC.SELECTED_AI ai) {

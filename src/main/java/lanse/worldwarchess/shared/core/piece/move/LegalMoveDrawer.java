@@ -8,7 +8,6 @@ import lanse.worldwarchess.shared.core.worldmap.board.Board;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.Optional;
 
 public class LegalMoveDrawer {
 
@@ -47,7 +46,7 @@ public class LegalMoveDrawer {
 
         int highlightSize = (int) Math.round(scaledTile);
 
-        Piece targetPiece = moveBoard.getPieceAt(move.x(), move.y(), Optional.of(selectedPiece), WorldMap.getAllPiecesOfBoard(moveBoard));
+        Piece targetPiece = moveBoard.getPieceAt(move.x(), move.y(), selectedPiece, WorldMap.getAllPiecesOfBoard(moveBoard));
 
         BufferedImage textureToDraw = (targetPiece != null) ? captureTexture : legalMoveTexture;
 

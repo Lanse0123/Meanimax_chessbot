@@ -9,8 +9,10 @@ import lanse.worldwarchess.shared.utils.BoardLetterIDCreator;
 import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Board {
 
@@ -114,29 +116,17 @@ public class Board {
     }
     public int getBoardY() { return boardY; }
 
-    public Piece getPieceAt(int x, int y, Optional<Piece> attackerPiece, List<Piece> pieceList) {
-        int scale = 1;
+    public Piece getPieceAt(int x, int y, Piece attackerPiece, List<Piece> pieceList) {
+        for (Piece piece : pieceList) {
+            if (piece == attackerPiece || piece.getBoard() != this) {
+                continue;
+            }
 
-        //This will use a scaled block to get pieces
-
-        for (int i = 0; i < scale; i++) {
-            for (int j = 0; j < scale; j++) {
-                int bx = x + i;
-                int by = y + j;
-
-                for (Piece piece : pieceList) {
-                    if (piece.getBoard() != this) continue;
-                    int size = 1;
-                    int px = piece.getPosX();
-                    int py = piece.getPosY();
-
-                    if (bx >= px && bx < px + size && by >= py && by < py + size) {
-                        if (attackerPiece.isPresent() && piece == attackerPiece.get()) continue;
-                        return piece;
-                    }
-                }
+            if (piece.getPosX() == x && piece.getPosY() == y) {
+                return piece;
             }
         }
+
         return null;
     }
 

@@ -8,7 +8,6 @@ import lanse.worldwarchess.shared.core.worldmap.board.Board;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public class VisibleMoveDetector extends LegalMoveDetector{
 
@@ -129,14 +128,12 @@ public class VisibleMoveDetector extends LegalMoveDetector{
 
         // Forward movement
         int newY = y + dir;
-        if (newY >= 0 && newY < boardSize &&
-                board.getPieceAt(x, newY, Optional.of(piece), boardPieces) == null) {
+        if (newY >= 0 && newY < boardSize && board.getPieceAt(x, newY, piece, boardPieces) == null) {
             moves.add(new Coordinate(x, newY));
 
             if (!piece.hasMovedEver) {
                 int newY2 = y + firstMoveStep * dir;
-                if (newY2 >= 0 && newY2 < boardSize &&
-                        board.getPieceAt(x, newY2, Optional.of(piece), boardPieces) == null) {
+                if (newY2 >= 0 && newY2 < boardSize && board.getPieceAt(x, newY2, piece, boardPieces) == null) {
                     moves.add(new Coordinate(x, newY2));
                 }
             }
@@ -149,8 +146,8 @@ public class VisibleMoveDetector extends LegalMoveDetector{
         // En passant
         int enPassantRow = piece.getTeam().equals("White") ? 4 : 3;
         if (y == enPassantRow) {
-            Piece left = board.getPieceAt(x - 1, y, Optional.of(piece), boardPieces);
-            Piece right = board.getPieceAt(x + 1, y, Optional.of(piece), boardPieces);
+            Piece left = board.getPieceAt(x - 1, y, piece, boardPieces);
+            Piece right = board.getPieceAt(x + 1, y, piece, boardPieces);
 
             int y1 = y + dir;
             if (left != null && left.getType() == PieceType.PAWN && !left.getTeam().equals(piece.getTeam())

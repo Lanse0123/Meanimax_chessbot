@@ -6,7 +6,6 @@ import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
 import lanse.worldwarchess.shared.core.screens.background.Background;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
-import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;

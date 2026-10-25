@@ -9,7 +9,6 @@ import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.util.Objects;
-import java.util.Optional;
 
 public class MoveExecutor {
 
@@ -21,7 +20,7 @@ public class MoveExecutor {
 
         boolean playNormalSound = true;
 
-        Piece targetPiece = newBoard.getPieceAt(newX, newY, Optional.of(executorPiece), WorldMap.getAllPiecesOfBoard(newBoard));
+        Piece targetPiece = newBoard.getPieceAt(newX, newY, executorPiece, WorldMap.getAllPiecesOfBoard(newBoard));
 
         Piece oldPiece = new Piece(executorPiece.getPlayerID(), executorPiece.getBoard(), executorPiece.getType(), executorPiece.getTeam(),
                 executorPiece.getBoardX(), executorPiece.getBoardY(), executorPiece.getPosX(), executorPiece.getPosY());
@@ -44,11 +43,11 @@ public class MoveExecutor {
         if (executorPiece.getType() == PieceType.PAWN) {
 
             if (Math.abs(newX - originalX) == 1 && Math.abs(newY - originalY) == 1 &&
-                    newBoard.getPieceAt(newX, newY, Optional.of(executorPiece), WorldMap.getAllPiecesOfBoard(newBoard)) == null) {
+                    newBoard.getPieceAt(newX, newY, executorPiece, WorldMap.getAllPiecesOfBoard(newBoard)) == null) {
 
                 int capturedPawnY = executorPiece.getTeam().equalsIgnoreCase("White") ? newY + 1 : newY - 1;
 
-                Piece capturedPawn = newBoard.getPieceAt(newX, capturedPawnY, Optional.of(executorPiece), WorldMap.getAllPiecesOfBoard(newBoard));
+                Piece capturedPawn = newBoard.getPieceAt(newX, capturedPawnY, executorPiece, WorldMap.getAllPiecesOfBoard(newBoard));
 
                 if (capturedPawn != null && capturedPawn.getType() == PieceType.PAWN &&
                         !capturedPawn.getTeam().equals(executorPiece.getTeam())) {
@@ -66,12 +65,12 @@ public class MoveExecutor {
             SoundManager.castle();
             playNormalSound = false;
             if (newX > originalX) {
-                Piece rook = newBoard.getPieceAt(endzone, originalY, Optional.of(executorPiece), WorldMap.getAllPiecesOfBoard(newBoard));
+                Piece rook = newBoard.getPieceAt(endzone, originalY, executorPiece, WorldMap.getAllPiecesOfBoard(newBoard));
                 if (rook != null && rook.getType() == PieceType.ROOK) {
                     rook.setBoardPosition(newX - 1, originalY);
                 }
             } else {
-                Piece rook = newBoard.getPieceAt(0, originalY, Optional.of(executorPiece), WorldMap.getAllPiecesOfBoard(newBoard));
+                Piece rook = newBoard.getPieceAt(0, originalY, executorPiece, WorldMap.getAllPiecesOfBoard(newBoard));
                 if (rook != null && rook.getType() == PieceType.ROOK) {
                     rook.setBoardPosition(newX + 1, originalY);
                 }

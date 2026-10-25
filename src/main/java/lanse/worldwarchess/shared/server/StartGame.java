@@ -5,7 +5,6 @@ import lanse.worldwarchess.shared.central.Main;
 import lanse.worldwarchess.shared.core.Timer;
 import lanse.worldwarchess.shared.core.piece.ai.NPC;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
-import lanse.worldwarchess.shared.core.screens.pregame.MainMenu;
 
 import javax.swing.*;
 

@@ -6,7 +6,6 @@ import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Written by Lanse
@@ -21,6 +20,6 @@ public record MoveContext(Board board, List<Piece> pieces) {
     }
 
     public Piece getPieceAt(int x, int y, Piece ignoredPiece) {
-        return board.getPieceAt(x, y, Optional.ofNullable(ignoredPiece), pieces);
+        return board.getPieceAt(x, y, ignoredPiece, pieces);
     }
 }

@@ -1,6 +1,5 @@
 package lanse.worldwarchess.shared.central;
 
-import lanse.worldwarchess.shared.core.LineCounter;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 
 public class Main {

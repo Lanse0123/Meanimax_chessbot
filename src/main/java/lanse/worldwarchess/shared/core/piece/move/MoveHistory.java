@@ -16,7 +16,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class MoveHistory {
 
@@ -48,7 +47,7 @@ public class MoveHistory {
     }
 
     public static boolean hasRookMoved(Board board, int x, int y) {
-        Piece rook = board.getPieceAt(x, y, Optional.empty(), WorldMap.getAllPiecesOfBoard(board));
+        Piece rook = board.getPieceAt(x, y, null, WorldMap.getAllPiecesOfBoard(board));
         if (rook == null) return true;
         return rook.hasMovedEver;
     }
