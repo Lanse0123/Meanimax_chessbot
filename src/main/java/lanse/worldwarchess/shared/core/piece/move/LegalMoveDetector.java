@@ -181,28 +181,27 @@ public class LegalMoveDetector {
         List<Coordinate> moves = new ArrayList<>(16);
         int x = piece.getPosX();
         int y = piece.getPosY();
+        String team = piece.getTeam();
 
         for (int i = 0; i < directions.length; i += 2) {
-            slideIterative(piece, context, x, y, directions[i], directions[i + 1], moves, maxDistance);
+            slideIterative(context, x, y, directions[i], directions[i + 1], team, moves, maxDistance);
         }
         return moves;
     }
 
-    private static void slideIterative(Piece piece, MoveContext context, int startX, int startY, int dx, int dy, List<Coordinate> moves, int maxDistance) {
+    private static void slideIterative(MoveContext context, int startX, int startY, int dx, int dy, String team, List<Coordinate> moves, int maxDistance) {
         int x = startX;
         int y = startY;
-        int boardSize = context.board().getBoardSize();
-        String team = piece.getTeam();
 
         for (int distance = 0; distance < maxDistance; distance++) {
             x += dx;
             y += dy;
 
-            if (x < 0 || y < 0 || x >= boardSize || y >= boardSize) {
+            if ((x | y) < 0 || x >= 8 || y >= 8) {
                 break;
             }
 
-            Piece target = context.getPieceAt(x, y, piece);
+            Piece target = context.getPieceAt(x, y, null);
 
             if (target == null) {
                 moves.add(new Coordinate(x, y));
