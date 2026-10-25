@@ -52,8 +52,31 @@ public class Board {
         }
     }
 
-    //TO BE OVERRIDEN:
-    public void tick() {}
+    public static void clearBoardCache() { BOARD_CACHE.clear(); }
+    public List<Piece> getPieces() {
+        return new ArrayList<>(WorldMap.getAllPiecesOfBoard(this));
+    }
+    public int getBoardX() {
+        return boardX;
+    }
+    public int getBoardY() { return boardY; }
+
+    public Piece getPieceAt(int x, int y, Piece attackerPiece, List<Piece> pieceList) {
+        for (Piece piece : pieceList) {
+            if (piece == attackerPiece || piece.getBoard() != this) {
+                continue;
+            }
+
+            if (piece.getPosX() == x && piece.getPosY() == y) {
+                return piece;
+            }
+        }
+
+        return null;
+    }
+
+    public int getBaseTileSize() { return baseTileSize; }
+    public int getBoardSize() { return boardSize; }
 
     public void draw(Graphics2D g2d, double zoomFactor) {
         double scaledBaseTile = baseTileSize * zoomFactor;
@@ -107,32 +130,6 @@ public class Board {
         return boardImg;
     }
 
-    public static void clearBoardCache() { BOARD_CACHE.clear(); }
-    public List<Piece> getPieces() {
-        return new ArrayList<>(WorldMap.getAllPiecesOfBoard(this));
-    }
-    public int getBoardX() {
-        return boardX;
-    }
-    public int getBoardY() { return boardY; }
-
-    public Piece getPieceAt(int x, int y, Piece attackerPiece, List<Piece> pieceList) {
-        for (Piece piece : pieceList) {
-            if (piece == attackerPiece || piece.getBoard() != this) {
-                continue;
-            }
-
-            if (piece.getPosX() == x && piece.getPosY() == y) {
-                return piece;
-            }
-        }
-
-        return null;
-    }
-
-    public int getBaseTileSize() { return baseTileSize; }
-    public int getBoardSize() { return boardSize; }
-
     //this code labels the number tile, and colors it the opposite color of the current tile its on.
     protected void label(Graphics2D g) {
         BoardLetterIDCreator colLabeler = new BoardLetterIDCreator();
@@ -156,5 +153,4 @@ public class Board {
             g.drawString(colLabel, (i + 1) * baseTileSize - textWidth - borderSize, boardSize * baseTileSize - borderSize);
         }
     }
-
 }

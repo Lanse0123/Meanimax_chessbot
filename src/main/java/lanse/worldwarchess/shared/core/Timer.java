@@ -15,7 +15,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Timer {
-    public static double maxTimePerTurn = 30;
+    public static final double maxTimePerTurn = 32767; //TODO - this should probably turn into a proper clock instead of WWC clock
     public static double currentTime;
     public static int turnCounter = 0;
     public static ArrayList<Integer> playerIDMovedList = new ArrayList<>();
@@ -60,7 +60,6 @@ public class Timer {
         turnCounter++;
         playerIDMovedList.clear();
         GamePanel.sidebarEvaluator.updateEvaluation();
-        WorldMap.tickBoards();
         WorldMap.resetPieces();
         Marker.tickMarkers();
 

@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+//TODO - redo this to use minimax's evaluation and smoothly move it
 public class SidebarEvaluator extends JPanel {
 
     //This will calculate the combined piece points on both sides, and just use that number as a display

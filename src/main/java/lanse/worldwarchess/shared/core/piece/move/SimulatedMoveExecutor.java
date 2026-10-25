@@ -25,7 +25,7 @@ public final class SimulatedMoveExecutor {
             if (target.getTeam().equals(piece.getTeam())) {
                 throw new IllegalArgumentException("Cannot capture a friendly piece");
             }
-            context.pieces().remove(target);
+            context.removePiece(target);
         }
 
         // En passant
@@ -35,12 +35,12 @@ public final class SimulatedMoveExecutor {
             Piece capturedPawn = context.getPieceAt(newX, capturedPawnY, piece);
 
             if (capturedPawn != null && capturedPawn.getType() == PieceType.PAWN && !capturedPawn.getTeam().equals(piece.getTeam())) {
-                context.pieces().remove(capturedPawn);
+                context.removePiece(capturedPawn);
             }
         }
 
         piece.setMapPosition(board.getBoardX(), board.getBoardY());
-        piece.setBoardPosition(newX, newY);
+        context.movePiece(piece, newX, newY);
         piece.setBoard(board);
         piece.hasMoved = true;
         piece.hasMovedEver = true;
@@ -55,7 +55,7 @@ public final class SimulatedMoveExecutor {
 
             if (rook != null && rook.getType() == PieceType.ROOK && rook.getTeam().equals(piece.getTeam())) {
                 rook.setMapPosition(board.getBoardX(), board.getBoardY());
-                rook.setBoardPosition(rookDestinationX, originalY);
+                context.movePiece(rook, rookDestinationX, originalY);
                 rook.setBoard(board);
                 rook.hasMoved = true;
                 rook.hasMovedEver = true;
@@ -68,7 +68,7 @@ public final class SimulatedMoveExecutor {
 
             Piece promotedPiece = piece.clonePiece(board);
             promotedPiece.setType(PieceType.QUEEN);
-            promotedPiece.setBoardPosition(newX, newY);
+            context.movePiece(promotedPiece, newX, newY);
             promotedPiece.hasMoved = true;
             promotedPiece.hasMovedEver = true;
 

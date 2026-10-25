@@ -73,10 +73,6 @@ public class WorldMap {
         return board;
     }
 
-    public static void tickBoards() {
-        board.tick();
-    }
-
     public static void killPiece(Piece piece) {
         new DeathMarker(piece.getBoard(), piece.getPosX(), piece.getPosY(), 1);
         pieces.remove(piece);

@@ -10,6 +10,7 @@ import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.screens.pregame.MainMenu;
 import lanse.worldwarchess.shared.core.worldmap.MapShapePresets;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
+import lanse.worldwarchess.shared.core.worldmap.board.Board;
 import lanse.worldwarchess.shared.core.worldmap.board.BoardPresets;
 
 import javax.swing.*;
@@ -26,6 +27,7 @@ public class Returner {
         MoveHistory.moveRecords.clear();
         MoveHistory.shouldRecordHistory = false;
         NPC.attackedSquares.clear();
+        Board.clearBoardCache();
         WorldMap.pieces.clear();
         BoardPresets.resetOrder();
         MapShapePresets.playerIDCount = 1;
