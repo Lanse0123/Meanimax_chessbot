@@ -16,10 +16,22 @@ public class LegalMoveDetector {
     // can search extra far with it.
 
     public record Coordinate(int x, int y) {}
-    public static int OFFSET_CORRECTION_VALUE = 25;
-    public static int[] bishopDirections = {1, 1, 1, -1, -1, 1, -1, -1};
-    public static int[] rookDirections = {1, 0, -1, 0, 0, 1, 0, -1};
-    public static int[] queenDirections = {1, 1, 1, -1, -1, 1, -1, -1, 1, 0, -1, 0, 0, 1, 0, -1};
+    public static final int OFFSET_CORRECTION_VALUE = 25;
+    public static final int[] bishopDirections = {1, 1, 1, -1, -1, 1, -1, -1};
+    public static final int[] rookDirections = {1, 0, -1, 0, 0, 1, 0, -1};
+    public static final int[] queenDirections = {1, 1, 1, -1, -1, 1, -1, -1, 1, 0, -1, 0, 0, 1, 0, -1};
+    private static final int[][] KING_OFFSETS = {
+            {-1, -1}, {-1, 0}, {-1, 1},
+            {0, -1},             {0, 1},
+            {1, -1},  {1, 0},   {1, 1}
+    };
+
+    private static final int[][] KNIGHT_OFFSETS = {
+            {-2, -1}, {-2, 1},
+            {2, -1},  {2, 1},
+            {-1, -2}, {-1, 2},
+            {1, -2},  {1, 2}
+    };
 
     public static List<Coordinate> getLegalMoves(Piece piece) {
         if (piece == null || piece.getBoard() == null) return new ArrayList<>();
@@ -65,15 +77,8 @@ public class LegalMoveDetector {
 
     public static List<Coordinate> getKingMoves(Piece piece, MoveContext context) {
         List<Coordinate> moves = new ArrayList<>(12);
-        int stepSize = piece.getPieceSize();
 
-        int[][] offsets = {
-                {-stepSize, -stepSize}, {-stepSize, 0}, {-stepSize, stepSize},
-                {0, -stepSize}, {0, stepSize},
-                {stepSize, -stepSize}, {stepSize, 0}, {stepSize, stepSize}
-        };
-
-        for (int[] offset : offsets) {
+        for (int[] offset : KING_OFFSETS) {
             addMoveForOffset(piece, offset[0], offset[1], context, moves);
         }
 
@@ -109,15 +114,8 @@ public class LegalMoveDetector {
     public static List<Coordinate> getKnightMoves(Piece piece, MoveContext context) {
         List<Coordinate> moves = new ArrayList<>(12);
 
-        int[][] baseOffsets = {
-                {-2, -1}, {-2, 1},
-                {2, -1}, {2, 1},
-                {-1, -2}, {-1, 2},
-                {1, -2}, {1, 2}
-        };
-
         int scale = piece.getPieceSize();
-        for (int[] offset : baseOffsets) {
+        for (int[] offset : KNIGHT_OFFSETS) {
             addMoveForOffset(piece, offset[0] * scale, offset[1] * scale, context, moves);
         }
         return moves;
@@ -194,37 +192,33 @@ public class LegalMoveDetector {
     }
 
     private static void slideIterative(Piece piece, MoveContext context, int startX, int startY, int dx, int dy, List<Coordinate> moves, int maxDistance) {
-        int localX = startX;
-        int localY = startY;
-        int stepMultiplier = piece.getPieceSize();
+        int x = startX;
+        int y = startY;
+        int scale = piece.getPieceSize();
         int boardSize = context.board().getBoardSize();
-        int traveled = 0;
 
-        // fetch neighbor list once per loop iteration
-        while (traveled < maxDistance) {
-            int nextX = localX + dx * stepMultiplier;
-            int nextY = localY + dy * stepMultiplier;
+        for (int distance = 0; distance < maxDistance; distance++) {
+            x += dx * scale;
+            y += dy * scale;
 
-            if (nextX < 0 || nextX >= boardSize || nextY < 0 || nextY >= boardSize) {
+            if (x < 0 || y < 0 || x >= boardSize || y >= boardSize) {
                 break;
             }
 
-            if (!isValidMove(nextX, nextY, context, piece)) {
+            if (!isValidMove(x, y, context, piece)) {
                 break;
             }
 
-            Piece target = context.getPieceAt(nextX, nextY, piece);
+            Piece target = context.getPieceAt(x, y, piece);
+
             if (target != null) {
                 if (!target.getTeam().equals(piece.getTeam())) {
-                    moves.add(new Coordinate(nextX, nextY));
+                    moves.add(new Coordinate(x, y));
                 }
                 break;
             }
 
-            moves.add(new Coordinate(nextX, nextY));
-            localX = nextX;
-            localY = nextY;
-            traveled++;
+            moves.add(new Coordinate(x, y));
         }
     }
 
@@ -263,13 +257,23 @@ public class LegalMoveDetector {
             return false;
         }
 
-        if (!isValidMove(newX, newY, context, piece)) {
-            return false;
+        boolean capturesEnemy = false;
+
+        for (Coordinate square : piece.squaresAt(newX, newY).toList()) {
+            Piece other = context.getPieceAt(square.x(), square.y(), piece);
+
+            if (other == null || other == piece) {
+                continue;
+            }
+
+            if (other.getTeam().equals(piece.getTeam())) {
+                return false;
+            }
+
+            capturesEnemy = true;
         }
 
-        return piece.squaresAt(newX, newY).anyMatch(square -> {
-            Piece other = context.getPieceAt(square.x(), square.y(), piece);
-            return other != null && !other.getTeam().equals(piece.getTeam());
-        });
+        return capturesEnemy;
     }
+
 }

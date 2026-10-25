@@ -235,7 +235,7 @@ public class Piece {
             case KNIGHT -> 3;
             case ROOK -> 5;
             case QUEEN -> 9;
-            case KING -> 250;
+            case KING -> 2500;
         };
     }
 }

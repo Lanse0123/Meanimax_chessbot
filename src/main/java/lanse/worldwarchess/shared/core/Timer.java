@@ -68,7 +68,7 @@ public class Timer {
         MoveHistory.addNewTurn();
 
         if (turnCounter % 2 == 1){
-            NPC.doAllNpcLogic("Black", "White",true, true);
+            NPC.doAllNpcLogic("Black", "White", true);
         }
         //TODO - for when we can decide which team can move from the AI
 //        else if (turnCounter % 2 == 0) {

@@ -19,7 +19,6 @@ import java.util.*;
  * and I saw a lot of other ideas but I want this to be my own creation, not a tutorial or something else. **/
 public class NPC {
 
-    public static volatile boolean areNpcsMoving = false;
     public static Map<LegalMoveDetector.Coordinate, List<String>> attackedSquares = new HashMap<>();
 
     public enum SELECTED_AI {
@@ -43,7 +42,7 @@ public class NPC {
     private static long jobDeadline;
     private static long time;
 
-    public static void doAllNpcLogic(String team, String ignoredTeam, boolean doOtherTeams, boolean skipTurn) {
+    public static void doAllNpcLogic(String team, String ignoredTeam, boolean skipTurn) {
         //moved NPC logic on a different thread because it can be laggy
         new Thread(() -> {
             performMove(team);
@@ -51,7 +50,6 @@ public class NPC {
             if (skipTurn) {
                 Timer.currentTime = 0;
             }
-            areNpcsMoving = false;
 
         }, "NPCMover").start();
     }
@@ -121,6 +119,7 @@ public class NPC {
         for (int depth = 1; ; depth++) {
             try {
                 checkTime();
+                System.out.println(depth + ": " + time);
 
                 SearchResult iterationBest = null;
                 double alpha = Double.NEGATIVE_INFINITY;
@@ -232,7 +231,7 @@ public class NPC {
         return new MoveContext(source.board(), copies);
     }
 
-    //Good capturs are better
+    //Good captures are better
     private static int capturePriority(MoveContext context, RootMove move) {
         Piece piece = context.pieces().get(move.pieceIndex());
         Piece target = context.getPieceAt(move.move().x(), move.move().y(), piece);

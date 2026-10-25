@@ -45,7 +45,7 @@ public final class SimulatedMoveExecutor {
         piece.hasMoved = true;
         piece.hasMovedEver = true;
 
-        // Castling: move the rook alongside the king.
+        // Castling
         if (piece.getType() == PieceType.KING && Math.abs(newX - originalX) == 2) {
 
             int rookX = newX > originalX ? 7 : 0;
