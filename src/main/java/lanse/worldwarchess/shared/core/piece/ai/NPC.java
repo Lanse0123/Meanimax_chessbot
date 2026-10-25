@@ -434,8 +434,8 @@ public class NPC {
                 double balancedScore = -Math.abs(score);
 
                 //Thou shall not lose, only merely draw.
-                if (score < -3.0) {
-                    balancedScore -= (-3.0 - score) * 10.0;
+                if (score < 0.0) {
+                    balancedScore -= (0.0 - score) * 10.0;
                 }
 
                 yield balancedScore;
