@@ -4,6 +4,7 @@ import lanse.worldwarchess.shared.client.storage.Settings;
 import lanse.worldwarchess.shared.core.piece.ai.bosses.security.c.h.e.c.k.SecurityCheck;
 import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
 import lanse.worldwarchess.shared.core.screens.pregame.MainMenu;
+import lanse.worldwarchess.shared.core.thread.ThreadNames;
 
 import javax.swing.*;
 import java.util.concurrent.Executors;
@@ -35,5 +36,7 @@ public class CentralInitializer {
         MoveHistory.loadClass();
 
         Returner.clearGameData();
+
+        ThreadNames.init();
     }
 }

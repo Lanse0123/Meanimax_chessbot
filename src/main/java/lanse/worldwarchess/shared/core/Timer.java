@@ -72,7 +72,7 @@ public class Timer {
         }
         //TODO - for when we can decide which team can move from the AI
 //        else if (turnCounter % 2 == 0) {
-//            NPC.doAllNpcLogic("White", "Black", false,false);
+//            NPC.doAllNpcLogic("White", "Black", false, false);
 //        }
         Main.gamePanel.recalculateLegalMoves();
     }

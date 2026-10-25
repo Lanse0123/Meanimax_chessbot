@@ -8,6 +8,7 @@ import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.piece.move.MoveContext;
 import lanse.worldwarchess.shared.core.piece.move.MoveExecutor;
 import lanse.worldwarchess.shared.core.piece.move.SimulatedMoveExecutor;
+import lanse.worldwarchess.shared.core.thread.ThreadNames;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
@@ -51,7 +52,7 @@ public class NPC {
                 Timer.currentTime = 0;
             }
 
-        }, "NPCMover").start();
+        }, ThreadNames.NPC_MOVER).start();
     }
 
     public static void performMove(String team) {

@@ -4,8 +4,7 @@ import lanse.worldwarchess.shared.central.Main;
 import lanse.worldwarchess.shared.central.Returner;
 import lanse.worldwarchess.shared.client.storage.Settings;
 import lanse.worldwarchess.shared.core.Timer;
-import lanse.worldwarchess.shared.core.worldmap.WorldMap;
-import lanse.worldwarchess.shared.core.worldmap.board.Board;
+import lanse.worldwarchess.shared.core.thread.FlameGraphLagTester;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,22 +36,27 @@ public class SidebarMenu extends JPanel {
         JButton settingsButton = createSidebarButton("<html>Settings<br></html>");
         JButton resetCameraButton = createSidebarButton("<html>Reset<br>Camera</html>");
         JButton pauseGameButton = createSidebarButton("<html>Pause<br>Game</html>");
+        JButton flameGraphButton = createSidebarButton("<html>Flame<br>Graph</html>");
 
         homeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         settingsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         resetCameraButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         pauseGameButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        flameGraphButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        homeButton.addActionListener(e -> returnToMainMenu());
-        settingsButton.addActionListener(e -> Settings.showSettingsWindow());
-        resetCameraButton.addActionListener(e -> resetCamera());
-        pauseGameButton.addActionListener(e -> pauseGame());
+        homeButton.addActionListener(_ -> returnToMainMenu());
+        settingsButton.addActionListener(_ -> Settings.showSettingsWindow());
+        resetCameraButton.addActionListener(_ -> resetCamera());
+        pauseGameButton.addActionListener(_ -> pauseGame());
+        flameGraphButton.addActionListener(_ -> FlameGraphLagTester.toggle());
 
         menuPanel.add(homeButton);
         menuPanel.add(Box.createVerticalStrut(7));
         menuPanel.add(settingsButton);
         menuPanel.add(Box.createVerticalStrut(7));
         menuPanel.add(resetCameraButton);
+        menuPanel.add(Box.createVerticalStrut(7));
+        menuPanel.add(flameGraphButton);
         menuPanel.add(Box.createVerticalStrut(7));
 
         add(toggleButton, BorderLayout.WEST);
