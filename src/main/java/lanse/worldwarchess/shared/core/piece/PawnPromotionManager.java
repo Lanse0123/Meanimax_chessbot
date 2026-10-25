@@ -52,7 +52,7 @@ public class PawnPromotionManager {
         int boardY = promo.board.getBoardY();
         int posX = promo.logicalX;
         int posY = promo.logicalY;
-        Piece newPiece = new Piece(playerID, board, newType, pawn.getTeam(), boardX, boardY, posX, posY, 1);
+        Piece newPiece = new Piece(playerID, board, PieceType.fromName(newType), pawn.getTeam(), boardX, boardY, posX, posY, 1);
         WorldMap.erasePiece(pawn, false);
         WorldMap.spawnPiece(newPiece, false);
 

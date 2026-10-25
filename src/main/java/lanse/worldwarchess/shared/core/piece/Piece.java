@@ -18,28 +18,29 @@ import java.util.stream.Stream;
 
 import static lanse.worldwarchess.shared.core.piece.move.LegalMoveDrawer.drawMove;
 
-public class Piece {
+public final class Piece {
 
-    //This class is responsible for a piece object. There are a ton of subclasses for piece, so this is one of
-    // the most central classes. It has a ton of polymorphism and functions to be overriden.
+    // This class is responsible for a piece object. There are a ton of subclasses for piece, so this is one of
+    // the most central classes. It has a ton of polymorphism and functions to be overridden.
+    // It is now final so there will be no polymorphism or functions to be overridden.
 
-    protected int playerID;
-    protected Board board;
-    protected PieceType type;
-    protected String team;
-    protected int boardX, boardY;  // Position on the chessboard grid
-    protected int posX, posY;      // Position within the board
-    protected int pieceSize;
+    private int playerID;
+    private Board board;
+    private PieceType type;
+    private String team;
+    private int boardX, boardY;  // Position on the chessboard grid
+    private int posX, posY;      // Position within the board
+    private final int pieceSize;
     public boolean hasMoved = false;
     public boolean hasMovedEver = false;
-    protected String playerName;
+    private String playerName;
 
     /** REMEMBER TO ADD TO THE PieceClassPrefixMap.java WHEN ADDING A NEW PIECE CLASS*/
 
-    public Piece(int playerId, Board board, String type, String team, int boardX, int boardY, int posX, int posY, int pieceSize) {
+    public Piece(int playerId, Board board, PieceType type, String team, int boardX, int boardY, int posX, int posY, int pieceSize) {
         this.playerID = playerId;
         this.board = board;
-        this.type = PieceType.fromName(type);
+        this.type = type;
         this.team = team;
         this.boardX = boardX;
         this.boardY = boardY;
@@ -208,24 +209,11 @@ public class Piece {
     }
 
     public Piece clonePiece(Board newBoard) {
-        try {
-            Piece clone = this.getClass().getConstructor(
-                    int.class, Board.class, String.class, String.class,
-                    int.class, int.class, int.class, int.class, int.class
-            ).newInstance(
-                    getPlayerID(), newBoard, getType().name(), getTeam(),
-                    newBoard.getBoardX(), newBoard.getBoardY(),
-                    getPosX(), getPosY(), getPieceSize()
-            );
-
-            clone.hasMoved = this.hasMoved;
-            clone.hasMovedEver = this.hasMovedEver;
-            clone.setPlayerName(this.getPlayerName());
-
-            return clone;
-        } catch (Exception e) {
-            throw new RuntimeException("Lanse is stupid: " + getClass(), e);
-        }
+        Piece clone = new Piece(playerID, newBoard, type, team, boardX, boardY, posX, posY, pieceSize);
+        clone.hasMoved = this.hasMoved;
+        clone.hasMovedEver = this.hasMovedEver;
+        clone.setPlayerName(this.getPlayerName());
+        return clone;
     }
 
     public int getValue() {
