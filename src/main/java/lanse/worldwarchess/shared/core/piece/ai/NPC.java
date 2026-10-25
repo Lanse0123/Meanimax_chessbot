@@ -107,7 +107,7 @@ public class NPC {
         // Try good looking captures first to improve alpha-beta pruning, since alpha beta pruning seems to be fastest when
         // we start with good moves. This also lets iterative deepening work, since each level we find the best of that depth,
         // which speeds up further depths, etc
-        rootMoves.sort(Comparator.comparingInt((RootMove rm) -> capturePriority(root, rm)).reversed());
+        orderCapturesFirst(root, rootMoves);
 
         long limitNanos = Math.max(1L, timeLimitMillis) * 1_000_000L;
         jobDeadline = System.nanoTime() + limitNanos;
@@ -188,7 +188,8 @@ public class NPC {
             return evaluate(context, rootTeam, ai);
         }
 
-        moves.sort(Comparator.comparingInt((RootMove rm) -> capturePriority(context, rm)).reversed());
+        orderCapturesFirst(context, moves);
+
 
         boolean rootTurn = teamToMove.equals(rootTeam);
         boolean maximizing = (ai == NPC.SELECTED_AI.MAXIMIN) != rootTurn;
@@ -232,11 +233,24 @@ public class NPC {
         return new MoveContext(source.board(), copies);
     }
 
-    //Good captures are better
-    private static int capturePriority(MoveContext context, RootMove move) {
-        Piece piece = context.pieces().get(move.pieceIndex());
-        Piece target = context.getPieceAt(move.move().x(), move.move().y(), piece);
-        return target != null && !target.getTeam().equals(piece.getTeam()) ? target.getValue() * 10 - piece.getValue() : 0;
+    private static void orderCapturesFirst(MoveContext context, List<RootMove> moves) {
+        List<RootMove> captures = new ArrayList<>(moves.size());
+        List<RootMove> quietMoves = new ArrayList<>(moves.size());
+
+        for (RootMove move : moves) {
+            Piece piece = context.pieces().get(move.pieceIndex());
+            Piece target = context.getPieceAt(move.move().x(), move.move().y(), piece);
+
+            if (target != null && !target.getTeam().equals(piece.getTeam())) {
+                captures.add(move);
+            } else {
+                quietMoves.add(move);
+            }
+        }
+
+        moves.clear();
+        moves.addAll(captures);
+        moves.addAll(quietMoves);
     }
 
     //Positive scores favor the root team, negative scores favor its opponent.
