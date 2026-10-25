@@ -169,11 +169,11 @@ public class LegalMoveDetector {
     }
 
     private static boolean isEnPassantTarget(Piece target, Piece pawn) {
-        return target != null && target.getType() == PieceType.PAWN && !target.getTeam() == pawn.getTeam();
+        return target != null && target.getType() == PieceType.PAWN && target.getTeam() != pawn.getTeam();
     }
 
     public static List<Coordinate> getSlidingMoves(Piece piece, MoveContext context, int... directions) {
-        return getSlidingMoves(piece, context, Integer.MAX_VALUE - 1, directions);
+        return getSlidingMoves(piece, context, Integer.MAX_VALUE, directions);
     }
 
     public static List<Coordinate> getSlidingMoves(Piece piece, MoveContext context, int maxDistance, int... directions) {
@@ -181,36 +181,36 @@ public class LegalMoveDetector {
         int x = piece.getPosX();
         int y = piece.getPosY();
         boolean team = piece.getTeam();
+        int boardSize = context.board().getBoardSize();
 
         for (int i = 0; i < directions.length; i += 2) {
-            slideIterative(context, x, y, directions[i], directions[i + 1], team, moves, maxDistance);
-        }
-        return moves;
-    }
+            int dx = directions[i];
+            int dy = directions[i + 1];
+            int currentX = x;
+            int currentY = y;
 
-    private static void slideIterative(MoveContext context, int startX, int startY, int dx, int dy, boolean team, List<Coordinate> moves, int maxDistance) {
-        int x = startX;
-        int y = startY;
+            for (int distance = 1; distance <= maxDistance; distance++) {
+                currentX += dx;
+                currentY += dy;
 
-        for (int distance = 0; distance < maxDistance; distance++) {
-            x += dx;
-            y += dy;
-
-            if ((x | y) < 0 || x >= 8 || y >= 8) {
-                break;
-            }
-
-            Piece target = context.getPieceAt(x, y, null);
-
-            if (target == null) {
-                moves.add(new Coordinate(x, y));
-            } else {
-                if (target.getTeam() != team) {
-                    moves.add(new Coordinate(x, y));
+                if (currentX < 0 || currentY < 0 || currentX >= boardSize || currentY >= boardSize) {
+                    break;
                 }
-                break;
+
+                Piece target = context.getPieceAt(currentX, currentY, null);
+
+                if (target != null) {
+                    if (target.getTeam() != team) {
+                        moves.add(new Coordinate(currentX, currentY));
+                    }
+                    break;
+                }
+
+                moves.add(new Coordinate(currentX, currentY));
             }
         }
+
+        return moves;
     }
 
     protected static boolean isPathClearForCastling(MoveContext context, int x, int y, int direction) {
