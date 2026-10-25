@@ -36,6 +36,8 @@ public class NPC {
     public record SearchResult(Piece piece, LegalMoveDetector.Coordinate move, double score, int depth) {}
     private record RootMove(Piece livePiece, int pieceIndex, LegalMoveDetector.Coordinate move) {}
 
+    private static final int MAX_CAPTURE_CHAIN_DEPTH = 12;
+
     //James likes custom exceptions so I wanted to mess around with one to break out when we hit the bot time limit
     private static final class SearchTimeout extends RuntimeException {
         private SearchTimeout() {
@@ -191,6 +193,10 @@ public class NPC {
 
         checkTime();
 
+        if (depth <= 0) {
+            return quiescenceSearch(context, teamToMove, rootTeam, opponentTeam, alpha, beta, ai, 0);
+        }
+
         long hash = TranspositionTable.hashPosition(context, teamToMove, rootTeam, ai);
         double originalAlpha = alpha;
         double originalBeta = beta;
@@ -211,6 +217,7 @@ public class NPC {
             }
         }
 
+        //TODO - add quiescence search
         if (depth <= 0) {
             double score = evaluate(context, rootTeam, opponentTeam, ai);
             storePosition(transpositionTable, hash, depth, score, TranspositionTable.Bound.EXACT);
@@ -259,6 +266,8 @@ public class NPC {
                 context.undoMove(undo);
             }
 
+            //TODO - add moves length to score depending on what team is going to prefer mobility
+
             if (maximizing) {
                 bestScore = Math.max(bestScore, score);
                 alpha = Math.max(alpha, bestScore);
@@ -282,6 +291,74 @@ public class NPC {
         }
 
         storePosition(transpositionTable, hash, depth, bestScore, bound);
+        return bestScore;
+    }
+
+    private static double quiescenceSearch(MoveContext context, boolean teamToMove, boolean rootTeam,
+            boolean opponentTeam, double alpha, double beta, SELECTED_AI ai, int qDepth) {
+
+        checkTime();
+
+        double standPat = evaluate(context, rootTeam, opponentTeam, ai);
+
+        if (qDepth >= MAX_CAPTURE_CHAIN_DEPTH) {
+            return standPat;
+        }
+
+        boolean maximizing = (ai == SELECTED_AI.MAXIMIN) != (teamToMove == rootTeam);
+
+        if (maximizing) {
+            if (standPat >= beta) {
+                return standPat;
+            }
+            alpha = Math.max(alpha, standPat);
+        } else {
+            if (standPat <= alpha) {
+                return standPat;
+            }
+            beta = Math.min(beta, standPat);
+        }
+
+        double bestScore = standPat;
+        List<Piece> pieces = context.pieces();
+
+        //THIS CANT BE AN ENHANCED FOR LOOP BECAUSE CONCURRENTMODIFICATIONEXCEPTION
+        for (int i = 0; i < pieces.size(); i++) {
+            Piece piece = pieces.get(i);
+            if (piece.getTeam() != teamToMove) {
+                continue;
+            }
+
+            for (LegalMoveDetector.Coordinate move : LegalMoveDetector.getLegalMoves(piece, context)) {
+                Piece target = context.getPieceAt(move.x(), move.y(), piece);
+                if (target == null || target.getTeam() == teamToMove) {
+                    continue;
+                }
+
+                MoveContext.TemporaryMove undo = context.makeMove(piece, move.x(), move.y());
+
+                double score;
+                try {
+                    boolean nextTeam = teamToMove == rootTeam ? opponentTeam : rootTeam;
+                    score = quiescenceSearch(context, nextTeam, rootTeam, opponentTeam, alpha, beta, ai, qDepth + 1);
+                } finally {
+                    context.undoMove(undo);
+                }
+
+                if (maximizing) {
+                    bestScore = Math.max(bestScore, score);
+                    alpha = Math.max(alpha, bestScore);
+                } else {
+                    bestScore = Math.min(bestScore, score);
+                    beta = Math.min(beta, bestScore);
+                }
+
+                if (alpha >= beta) {
+                    return bestScore;
+                }
+            }
+        }
+
         return bestScore;
     }
 
@@ -319,7 +396,7 @@ public class NPC {
             Piece piece = context.pieces().get(move.pieceIndex());
             Piece target = context.getPieceAt(move.move().x(), move.move().y(), piece);
 
-            if (target != null && !target.getTeam() == piece.getTeam()) {
+            if (target != null && target.getTeam() != piece.getTeam()) {
                 captures.add(move);
             } else {
                 quietMoves.add(move);
@@ -386,7 +463,7 @@ public class NPC {
 
         double score = 0;
         for (Piece piece : pieces) {
-            if (!piece.getTeam() == team) {
+            if (piece.getTeam() != team) {
                 continue;
             }
 
