@@ -298,11 +298,14 @@ public class NPC {
     //TODO - I also want to train an evolutionary neural net on Chess, and when I am done I am going to see if hard coding it
     // or evolutionary learning is better, because my tactics are limited.
     private static double evaluatePosition(MoveContext context, String team) {
+        List<Piece> pieces = context.pieces();
         int[] pawnFiles = new int[8];
         boolean isWhite = team.equals("White");
+        int homeRank = isWhite ? 7 : 0;
+        int enemyBackRank = isWhite ? 0 : 7;
 
         // Count pawns before the switch so its not O(n^2)
-        for (Piece piece : context.pieces()) {
+        for (Piece piece : pieces) {
             if (piece.getTeam().equals(team) && piece.getType() == PieceType.PAWN) {
                 int x = piece.getPosX();
                 if (x >= 0 && x < 8) {
@@ -312,7 +315,7 @@ public class NPC {
         }
 
         double score = 0;
-        for (Piece piece : context.pieces()) {
+        for (Piece piece : pieces) {
             if (!piece.getTeam().equals(team)) {
                 continue;
             }
@@ -320,7 +323,7 @@ public class NPC {
             int x = piece.getPosX();
             int y = piece.getPosY();
 
-            if (x < 0 || x > 7 || y < 0 || y > 7) {
+            if ((x | y) < 0 || x >= 8 || y >= 8) {
                 continue;
             }
 
@@ -329,7 +332,9 @@ public class NPC {
             switch (piece.getType()) {
                 case PAWN -> {
                     int advancement = isWhite ? 6 - y : y - 1;
-                    score += Math.max(0, advancement) * 0.08;
+                    if (advancement > 0) {
+                        score += advancement * 0.08;
+                    }
 
                     // Central pawns help control the board
                     if (x == 3 || x == 4) {
@@ -337,43 +342,31 @@ public class NPC {
                     }
 
                     // Doubled pawns are bad
-                    if (pawnFiles[x] > 1) {
-                        score -= 0.25 * (pawnFiles[x] - 1) / pawnFiles[x];
+                    int filePawns = pawnFiles[x];
+                    if (filePawns > 1) {
+                        score -= 0.25 * (filePawns - 1) / filePawns;
                     }
 
-                    // Isolated pawns have no neighboring pawn support.
-                    boolean hasNeighbor = (x > 0 && pawnFiles[x - 1] > 0) || (x < 7 && pawnFiles[x + 1] > 0);
-
-                    if (!hasNeighbor) {
+                    if ((x == 0 || pawnFiles[x - 1] == 0) && (x == 7 || pawnFiles[x + 1] == 0)) {
                         score -= 0.20;
                     }
                 }
 
                 case KNIGHT -> {
                     score += center * 0.22;
-
-                    int homeRank = isWhite ? 7 : 0;
-                    boolean onStartingSquare = y == homeRank && (x == 1 || x == 6);
-
-                    if (piece.hasMovedEver && !onStartingSquare) {
+                    if (piece.hasMovedEver && !(y == homeRank && (x == 1 || x == 6))) {
                         score += 0.45;
                     }
                 }
 
                 case BISHOP -> {
                     score += center * 0.12;
-
-                    int homeRank = isWhite ? 7 : 0;
-                    boolean onStartingSquare = y == homeRank && (x == 2 || x == 5);
-
-                    if (piece.hasMovedEver && !onStartingSquare) {
+                    if (piece.hasMovedEver && !(y == homeRank && (x == 2 || x == 5))) {
                         score += 0.45;
                     }
                 }
 
                 case ROOK -> {
-                    int enemyBackRank = isWhite ? 0 : 7;
-
                     if (y == enemyBackRank) {
                         score += 0.25;
                     }
@@ -382,8 +375,6 @@ public class NPC {
                 case QUEEN -> score += center * 0.06;
 
                 case KING -> {
-                    int homeRank = isWhite ? 7 : 0;
-
                     // Reward the king's usual castled squares.
                     if (y == homeRank && (x == 2 || x == 6) && piece.hasMovedEver) {
                         score += 0.60;
