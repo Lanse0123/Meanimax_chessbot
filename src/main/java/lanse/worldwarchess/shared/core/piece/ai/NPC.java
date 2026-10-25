@@ -332,7 +332,7 @@ public class NPC {
     }
 
     //Positive scores favor the root team, negative scores favor its opponent.
-    private static double evaluate(MoveContext context, boolean rootTeam, boolean opponentTeam, NPC.SELECTED_AI ai) {
+    public static double evaluate(MoveContext context, boolean rootTeam, boolean opponentTeam, NPC.SELECTED_AI ai) {
         double material = 0;
 
         for (Piece piece : context.pieces()) {
