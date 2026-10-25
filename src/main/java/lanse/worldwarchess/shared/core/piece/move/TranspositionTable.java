@@ -10,7 +10,7 @@ import java.util.Random;
  * <br><br>
  * So in the name of efficiency, I found this idea from Sebastian Lague, where he mentions that searching duplicate
  * positions is inefficient, because you can be searching and evaluating thousands of the same positions over and over.
- * This uses Zobrist hashing, which isnt perfect, because it could technically lead to collisions, but I think its fine
+ * This uses Zobrist hashing, which isn't perfect, because it could technically lead to collisions, but I think its fine
  * because the chances are ike 1 in 18 trillion or so. **/
 public class TranspositionTable {
 
@@ -23,8 +23,7 @@ public class TranspositionTable {
     private static final int PIECE_TYPE_COUNT = PieceType.values().length;
 
     private static final long[][][] PIECE_KEYS = new long[2][PIECE_TYPE_COUNT][64];
-    private static final long[][][][] MOVE_FLAG_KEYS = new long[2][PIECE_TYPE_COUNT][64][2];
-    private static final long[][][][] EVER_MOVED_KEYS = new long[2][PIECE_TYPE_COUNT][64][2];
+    private static final long[][][] EVER_MOVED_KEYS = new long[2][PIECE_TYPE_COUNT][64];
     private static final long[] SIDE_TO_MOVE_KEYS = new long[2];
     private static final long[] ROOT_TEAM_KEYS = new long[2];
     private static final long[] AI_KEYS = new long[NPC.SELECTED_AI.values().length];
@@ -38,8 +37,7 @@ public class TranspositionTable {
                     PIECE_KEYS[team][type][square] = random.nextLong();
 
                     for (int flag = 0; flag < 2; flag++) {
-                        MOVE_FLAG_KEYS[team][type][square][flag] = random.nextLong();
-                        EVER_MOVED_KEYS[team][type][square][flag] = random.nextLong();
+                        EVER_MOVED_KEYS[team][type][square] = random.nextLong();
                     }
                 }
             }
@@ -52,33 +50,25 @@ public class TranspositionTable {
         }
     }
 
+    //Lovely going from big function to small function
     public static long hashPosition(MoveContext context, boolean teamToMove, boolean rootTeam, NPC.SELECTED_AI ai) {
-        long hash = SIDE_TO_MOVE_KEYS[teamToMove ? 1 : 0] ^ ROOT_TEAM_KEYS[rootTeam ? 1 : 0] ^ AI_KEYS[ai.ordinal()];
+        return context.positionHash() ^ SIDE_TO_MOVE_KEYS[teamToMove ? 1 : 0] ^ ROOT_TEAM_KEYS[rootTeam ? 1 : 0] ^ AI_KEYS[ai.ordinal()];
+    }
 
-        Piece[][] occupancy = context.occupancy();
+    public static long hashPiece(Piece piece, int x, int y) {
+        //TODO - this should be impossible by now, at some point I want to remove all of the bounds checks everywhere
+        if (x < 0 || y < 0 || x >= 8 || y >= 8) {
+            return 0L;
+        }
 
-        for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
-                Piece piece = occupancy[x][y];
+        int team = piece.getTeam() ? 1 : 0;
+        int type = piece.getType().ordinal();
+        int square = y * 8 + x;
 
-                if (piece == null) {
-                    continue;
-                }
+        long hash = PIECE_KEYS[team][type][square];
 
-                int team = piece.getTeam() ? 1 : 0;
-                int type = piece.getType().ordinal();
-                int square = y * 8 + x;
-
-                hash ^= PIECE_KEYS[team][type][square];
-
-                if (piece.hasMoved) {
-                    hash ^= MOVE_FLAG_KEYS[team][type][square][1];
-                }
-
-                if (piece.hasMovedEver) {
-                    hash ^= EVER_MOVED_KEYS[team][type][square][1];
-                }
-            }
+        if (piece.hasMovedEver) {
+            hash ^= EVER_MOVED_KEYS[team][type][square];
         }
 
         return hash;

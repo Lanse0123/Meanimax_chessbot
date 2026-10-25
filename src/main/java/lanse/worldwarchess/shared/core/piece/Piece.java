@@ -27,7 +27,6 @@ public final class Piece {
     private final boolean team; // 0 = white, 1 = black
     private int boardX, boardY;  // Position on the chessboard grid
     private int posX, posY;      // Position within the board
-    public boolean hasMoved = false;
     public boolean hasMovedEver = false;
     private String playerName;
 
@@ -102,9 +101,6 @@ public final class Piece {
         if (scaled == null) return;
 
         Composite old = g2d.getComposite();
-        if (this.hasMoved) {
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
-        }
 
         g2d.drawImage(scaled, drawX, drawY, null);
 
@@ -179,7 +175,6 @@ public final class Piece {
 
     public Piece clonePiece(Board newBoard) {
         Piece clone = new Piece(playerID, newBoard, type, team, boardX, boardY, posX, posY);
-        clone.hasMoved = this.hasMoved;
         clone.hasMovedEver = this.hasMovedEver;
         clone.setPlayerName(this.getPlayerName());
         return clone;

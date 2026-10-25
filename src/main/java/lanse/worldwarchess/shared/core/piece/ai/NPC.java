@@ -134,6 +134,27 @@ public class NPC {
 
                     MoveContext.TemporaryMove undo = root.makeMove(movingPiece, rootMove.move().x(), rootMove.move().y());
 
+                    //For testing Zobrist hash mismatches:
+                    ////////////////////////////////////////////////////////////////////////////////////////////
+//                    long before = root.positionHash();
+//
+//                    MoveContext.TemporaryMove undo = root.makeMove(movingPiece, rootMove.move.x(), rootMove.move.y());
+//
+//                    long incremental = root.positionHash();
+//                    long rebuilt = new MoveContext(root.board(), root.pieces()).positionHash();
+//
+//                    if (incremental != rebuilt) {
+//                        throw new IllegalStateException("Hash mismatch after makeMove()");
+//                    }
+//
+//                    root.undoMove(undo);
+//
+//                    if (root.positionHash() != before) {
+//                        throw new IllegalStateException("Hash mismatch after undoMove()");
+//                    }
+                    ////////////////////////////////////////////////////////////////////////////////////////////
+
+
                     double score;
                     try {
                         score = search(root, !team, team, !team, depth - 1, alpha, beta, ai, transpositionTable);
@@ -311,7 +332,6 @@ public class NPC {
     }
 
     //Positive scores favor the root team, negative scores favor its opponent.
-    //TODO - TRANSPOSITION TABLE
     private static double evaluate(MoveContext context, boolean rootTeam, boolean opponentTeam, NPC.SELECTED_AI ai) {
         double material = 0;
 

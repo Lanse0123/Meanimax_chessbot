@@ -87,10 +87,6 @@ public class WorldMap {
         }
     }
 
-    public static void resetPieces() {
-        pieces.forEach(p -> p.hasMoved = false);
-    }
-
     public static void spawnPiece(Piece piece, boolean shouldSend){
         WorldMap.pieces.add(piece);
         MoveHistory.spawnPieceForRecord(piece, shouldSend);

@@ -60,7 +60,6 @@ public class Timer {
         turnCounter++;
         playerIDMovedList.clear();
         GamePanel.sidebarEvaluator.updateEvaluation();
-        WorldMap.resetPieces();
         Marker.tickMarkers();
 
         MoveHistory.saveData();

@@ -75,8 +75,6 @@ public class MoveExecutor {
 
         Timer.playerIDMovedList.add(executorPiece.getPlayerID());
 
-        for (Piece movedPiece : WorldMap.getAllPiecesOfPlayerID(executorPiece.getPlayerID())) movedPiece.hasMoved = true;
-
         if (playNormalSound) {
             SoundManager.validMove(executorPiece);
         }
@@ -86,15 +84,7 @@ public class MoveExecutor {
         // Promotion
         if (executorPiece.getType() == PieceType.PAWN) {
             if ((executorPiece.getTeam() && newY == 0) || (!executorPiece.getTeam() && newY == endzone)) {
-
                 PawnPromotionManager.getInstance().addPromotion(executorPiece, newBoard, newX, newY, isOurMove);
-            }
-        }
-
-        boolean currentTeam = executorPiece.getTeam();
-        for (Piece piece1 : WorldMap.pieces){
-            if (!piece1.hasMoved && piece1.getTeam() == currentTeam){
-                return;
             }
         }
 
