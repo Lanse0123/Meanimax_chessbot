@@ -27,10 +27,10 @@ public class BoardPresets {
     private static void createBorderPreset(int boardX, int boardY, int playerID, int playerID2, Board board, boolean isCommander) {
         List<Piece> pieces = new ArrayList<>();
 
-        addPawns(pieces, boardX, boardY, "White", playerID, board);
-        addPawns(pieces, boardX, boardY, "Black", playerID2, board);
-        addBackRow(pieces, boardX, boardY, "White", playerID, board);
-        addBackRow(pieces, boardX, boardY, "Black", playerID2, board);
+        addPawns(pieces, boardX, boardY, true, playerID, board);
+        addPawns(pieces, boardX, boardY, false, playerID2, board);
+        addBackRow(pieces, boardX, boardY, true, playerID, board);
+        addBackRow(pieces, boardX, boardY, false, playerID2, board);
 
         // Add pieces to WorldMap
         WorldMap.pieces.addAll(pieces);
@@ -38,27 +38,27 @@ public class BoardPresets {
 
     private static void createWhiteTerritoryPreset(int boardX, int boardY, int playerID, Board board, boolean isCommander) {
         List<Piece> pieces = new ArrayList<>();
-        addPawns(pieces, boardX, boardY, "White", playerID, board);
-        addBackRow(pieces, boardX, boardY, "White", playerID, board);
+        addPawns(pieces, boardX, boardY, true, playerID, board);
+        addBackRow(pieces, boardX, boardY, true, playerID, board);
         WorldMap.pieces.addAll(pieces);
     }
 
     private static void createBlackTerritoryPreset(int boardX, int boardY, int playerID, Board board, boolean isCommander) {
         List<Piece> pieces = new ArrayList<>();
-        addPawns(pieces, boardX, boardY, "Black", playerID, board);
-        addBackRow(pieces, boardX, boardY, "Black", playerID, board);
+        addPawns(pieces, boardX, boardY, false, playerID, board);
+        addBackRow(pieces, boardX, boardY, false, playerID, board);
         WorldMap.pieces.addAll(pieces);
     }
 
-    private static void addPawns(List<Piece> pieces, int boardX, int boardY, String team, int playerID, Board board) {
-        int pawnRow = team.equals("White") ? 6 : 1;
+    private static void addPawns(List<Piece> pieces, int boardX, int boardY, boolean team, int playerID, Board board) {
+        int pawnRow = team ? 6 : 1;
         for (int i = 0; i < 8; i++) {
             pieces.add(new Piece(playerID, board, PieceType.fromName("Pawn"), team, boardX, boardY, i, pawnRow));
         }
     }
 
-    private static void addBackRow(List<Piece> pieces, int boardX, int boardY, String team, int playerID, Board board) {
-        int backRow = team.equals("White") ? 7 : 0;
+    private static void addBackRow(List<Piece> pieces, int boardX, int boardY, boolean team, int playerID, Board board) {
+        int backRow = team ? 7 : 0;
 
         for (int i = 0; i < 8; i++) {
             pieces.add(new Piece(playerID, board, PieceType.fromName(order[i]), team, boardX, boardY, i, backRow));

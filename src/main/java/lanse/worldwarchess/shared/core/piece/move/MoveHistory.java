@@ -37,11 +37,11 @@ public class MoveHistory {
         return moveRecords.isEmpty() ? null : moveRecords.getLast();
     }
 
-    public static boolean wasLastMovePawnDoubleAdvance(int x, int y, String color) {
+    public static boolean wasLastMovePawnDoubleAdvance(int x, int y, boolean color) {
         MoveRecord lastMove = getLastMove();
         if (lastMove == null) return false;
         return lastMove.piece().getType() == PieceType.PAWN
-                && lastMove.piece().getTeam().equalsIgnoreCase(color)
+                && lastMove.piece().getTeam() == color
                 && Math.abs(lastMove.startY() - lastMove.endY()) == 2
                 && lastMove.endX() == x && lastMove.endY() == y;
     }

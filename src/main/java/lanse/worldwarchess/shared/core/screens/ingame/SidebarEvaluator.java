@@ -28,8 +28,8 @@ public class SidebarEvaluator extends JPanel {
         blackStrength = 0;
 
         // Count strength for each team
-        List<Piece> whitePieces = WorldMap.getAllPiecesOfTeam("White");
-        List<Piece> blackPieces = WorldMap.getAllPiecesOfTeam("Black");
+        List<Piece> whitePieces = WorldMap.getAllPiecesOfTeam(true);
+        List<Piece> blackPieces = WorldMap.getAllPiecesOfTeam(false);
 
         for (Piece piece : whitePieces) {
             whiteStrength += piece.getValue();

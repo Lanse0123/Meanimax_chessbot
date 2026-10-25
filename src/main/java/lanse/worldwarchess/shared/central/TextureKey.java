@@ -68,7 +68,7 @@ public class TextureKey {
 
         char replacement;
 
-        if (piece.getTeam().equalsIgnoreCase("Black")) {
+        if (!piece.getTeam()) {
             replacement = 'b';
             textureKey = replacement + textureKey.substring(1);
         }

@@ -11,7 +11,10 @@ import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 import lanse.worldwarchess.shared.utils.LagTester;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class WorldMap {
@@ -38,11 +41,11 @@ public class WorldMap {
         return result;
     }
 
-    public static Map<LegalMoveDetector.Coordinate, List<String>> getAllEnemyMoves() {
+    public static Map<LegalMoveDetector.Coordinate, List<Boolean>> getAllEnemyMoves() {
         LagTester lagTester = new LagTester();
         lagTester.start("Get ALL Enemy Moves");
 
-        Map<LegalMoveDetector.Coordinate, List<String>> attackedSquares = new HashMap<>();
+        Map<LegalMoveDetector.Coordinate, List<Boolean>> attackedSquares = new HashMap<>();
 
         for (Piece piece : pieces) {
             List<LegalMoveDetector.Coordinate> legalMoves = VisibleMoveDetector.getVisibleMoves(piece);
@@ -59,14 +62,8 @@ public class WorldMap {
         return pieces.stream().filter(p -> p.getPlayerID() == playerID).toList();
     }
 
-    public static List<Piece> getAllKings(String team, boolean findNearestEnemy, boolean findNearestTeamate, List<Piece> pieceList) {
-        return pieceList.stream().filter(p -> p.getType() == PieceType.KING)
-                .filter(p -> (findNearestEnemy && !Objects.equals(team, p.getTeam())) || (findNearestTeamate &&
-                        Objects.equals(team, p.getTeam()))).toList();
-    }
-
-    public static List<Piece> getAllPiecesOfTeam(String team) {
-        return pieces.stream().filter(p -> Objects.equals(p.getTeam(), team)).toList();
+    public static List<Piece> getAllPiecesOfTeam(boolean team) {
+        return pieces.stream().filter(p -> p.getTeam() == team).toList();
     }
 
     public static Board getBoard() {
@@ -81,7 +78,7 @@ public class WorldMap {
             DeathMarker.deathRow.addAll(WorldMap.getAllPiecesOfPlayerID(piece.getPlayerID()));
             String winningTeam = "WHITE";
 
-            if (Objects.equals(piece.getTeam(), "white")){
+            if (piece.getTeam()){
                 winningTeam = "BLACK";
             }
 

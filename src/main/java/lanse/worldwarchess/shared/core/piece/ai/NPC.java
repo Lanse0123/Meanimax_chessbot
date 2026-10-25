@@ -11,7 +11,10 @@ import lanse.worldwarchess.shared.core.thread.ThreadNames;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Written by Lanse
  * <br><br>
@@ -19,7 +22,7 @@ import java.util.*;
  * and I saw a lot of other ideas but I want this to be my own creation, not a tutorial or something else. **/
 public class NPC {
 
-    public static Map<LegalMoveDetector.Coordinate, List<String>> attackedSquares = new HashMap<>();
+    public static Map<LegalMoveDetector.Coordinate, List<Boolean>> attackedSquares = new HashMap<>();
 
     public enum SELECTED_AI {
         MINIMAX,
@@ -42,7 +45,7 @@ public class NPC {
     private static long jobDeadline;
     private static long time;
 
-    public static void doAllNpcLogic(String team, String ignoredTeam, boolean skipTurn) {
+    public static void doAllNpcLogic(boolean team, boolean ignoredTeam, boolean skipTurn) {
         //moved NPC logic on a different thread because it can be laggy
         new Thread(() -> {
             performMove(team);
@@ -54,7 +57,7 @@ public class NPC {
         }, ThreadNames.NPC_MOVER).start();
     }
 
-    public static void performMove(String team) {
+    public static void performMove(boolean team) {
         SearchResult result = findBestMove(WorldMap.getBoard(), team, selectedAI, Settings.getMaxTimeMillisecondsForBot());
 
         if (result != null) {
@@ -71,26 +74,20 @@ public class NPC {
         attackedSquares = WorldMap.getAllEnemyMoves();
     }
 
-    public static SearchResult findBestMove(Board board, String team, NPC.SELECTED_AI ai, long timeLimitMillis) {
-        if (board == null || team == null || ai == null) {
+    public static SearchResult findBestMove(Board board, boolean team, NPC.SELECTED_AI ai, long timeLimitMillis) {
+        if (board == null || ai == null) {
             return null;
         }
 
         MoveContext liveContext = MoveContext.contextify(board);
         MoveContext root = copyContext(liveContext);
 
-        String opponent = root.pieces().stream().map(Piece::getTeam).filter(t -> !t.equals(team)).findFirst().orElse(null);
-
-        if (opponent == null) {
-            return null;
-        }
-
         List<RootMove> rootMoves = new ArrayList<>();
 
         for (int i = 0; i < root.pieces().size(); i++) {
             Piece piece = root.pieces().get(i);
 
-            if (!piece.getTeam().equals(team)) {
+            if (piece.getTeam() != team) {
                 continue;
             }
 
@@ -113,7 +110,7 @@ public class NPC {
         time = 0;
 
         RootMove fallback = rootMoves.getFirst();
-        SearchResult best = new SearchResult(fallback.livePiece(), fallback.move(), evaluate(root, team, opponent, ai), 0);
+        SearchResult best = new SearchResult(fallback.livePiece(), fallback.move(), evaluate(root, team, !team, ai), 0);
 
         // Iterative deepening: retain the last fully completed result.
         for (int depth = 1; ; depth++) {
@@ -134,7 +131,8 @@ public class NPC {
 
                     double score;
                     try {
-                        score = search(root, opponent, team, opponent, depth - 1, alpha, beta, ai);
+                        //TODO - this can be better LOL
+                        score = search(root, !team, team, !team, depth - 1, alpha, beta, ai);
                     } finally {
                         root.undoMove(undo);
                     }
@@ -163,7 +161,7 @@ public class NPC {
         return best;
     }
 
-    private static double search(MoveContext context, String teamToMove, String rootTeam, String opponentTeam, int depth, double alpha, double beta, NPC.SELECTED_AI ai) {
+    private static double search(MoveContext context, boolean teamToMove, boolean rootTeam, boolean opponentTeam, int depth, double alpha, double beta, NPC.SELECTED_AI ai) {
         checkTime();
 
         if (depth <= 0) {
@@ -176,7 +174,7 @@ public class NPC {
         for (int i = 0; i < pieces.size(); i++) {
             Piece piece = pieces.get(i);
 
-            if (!piece.getTeam().equals(teamToMove)) {
+            if (piece.getTeam() != teamToMove) {
                 continue;
             }
 
@@ -194,11 +192,11 @@ public class NPC {
         orderCapturesFirst(context, moves);
 
 
-        boolean rootTurn = teamToMove.equals(rootTeam);
+        boolean rootTurn = teamToMove == rootTeam;
         boolean maximizing = (ai == NPC.SELECTED_AI.MAXIMIN) != rootTurn;
 
         double bestScore = maximizing ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-        String nextTeam = teamToMove.equals(rootTeam) ? opponentTeam : rootTeam;
+        boolean nextTeam = teamToMove == rootTeam ? opponentTeam : rootTeam;
 
         for (RootMove move : moves) {
             checkTime();
@@ -248,7 +246,7 @@ public class NPC {
             Piece piece = context.pieces().get(move.pieceIndex());
             Piece target = context.getPieceAt(move.move().x(), move.move().y(), piece);
 
-            if (target != null && !target.getTeam().equals(piece.getTeam())) {
+            if (target != null && !target.getTeam() == piece.getTeam()) {
                 captures.add(move);
             } else {
                 quietMoves.add(move);
@@ -261,13 +259,13 @@ public class NPC {
     }
 
     //Positive scores favor the root team, negative scores favor its opponent.
-    private static double evaluate(MoveContext context, String rootTeam, String opponentTeam, NPC.SELECTED_AI ai) {
+    private static double evaluate(MoveContext context, boolean rootTeam, boolean opponentTeam, NPC.SELECTED_AI ai) {
         double material = 0;
 
         for (Piece piece : context.pieces()) {
             double value = piece.getValue();
 
-            if (piece.getTeam().equals(rootTeam)) {
+            if (piece.getTeam() == rootTeam) {
                 material += value;
             } else {
                 material -= value;
@@ -297,16 +295,16 @@ public class NPC {
 
     //TODO - I also want to train an evolutionary neural net on Chess, and when I am done I am going to see if hard coding it
     // or evolutionary learning is better, because my tactics are limited.
-    private static double evaluatePosition(MoveContext context, String team) {
+    private static double evaluatePosition(MoveContext context, boolean team) {
         List<Piece> pieces = context.pieces();
         int[] pawnFiles = new int[8];
-        boolean isWhite = team.equals("White");
+        boolean isWhite = team;
         int homeRank = isWhite ? 7 : 0;
         int enemyBackRank = isWhite ? 0 : 7;
 
         // Count pawns before the switch so its not O(n^2)
         for (Piece piece : pieces) {
-            if (piece.getTeam().equals(team) && piece.getType() == PieceType.PAWN) {
+            if (piece.getTeam() == team && piece.getType() == PieceType.PAWN) {
                 int x = piece.getPosX();
                 if (x >= 0 && x < 8) {
                     pawnFiles[x]++;
@@ -316,7 +314,7 @@ public class NPC {
 
         double score = 0;
         for (Piece piece : pieces) {
-            if (!piece.getTeam().equals(team)) {
+            if (!piece.getTeam() == team) {
                 continue;
             }
 

@@ -106,7 +106,7 @@ public class LegalMoveDetector {
     }
 
     private static boolean isARookThatCanCastleAtThisExactMomentInTime(Piece rook, Piece king) {
-        return rook != null && rook.getType() == PieceType.ROOK && rook.getTeam().equals(king.getTeam()) && !rook.hasMovedEver;
+        return rook != null && rook.getType() == PieceType.ROOK && rook.getTeam() == king.getTeam() && !rook.hasMovedEver;
     }
 
     public static List<Coordinate> getKnightMoves(Piece piece, MoveContext context) {
@@ -123,7 +123,7 @@ public class LegalMoveDetector {
         List<Coordinate> moves = new ArrayList<>(4);
         Board board = context.board();
 
-        int dir = piece.getTeam().equalsIgnoreCase("White") ? -1 : 1;
+        int dir = piece.getTeam() ? -1 : 1;
         int x = piece.getPosX();
         int y = piece.getPosY();
         int boardSize = board.getBoardSize();
@@ -146,7 +146,7 @@ public class LegalMoveDetector {
         addCaptureMoveForOffset(piece, 1, dir, context, moves);
 
         //TODO - I HATE EN PASSANT, ITS STILL PROBABLY BROKEN
-        int enPassantRow = piece.getTeam().equalsIgnoreCase("White") ? 4 : 3;
+        int enPassantRow = piece.getTeam() ? 4 : 3;
         if (y == enPassantRow) {
             Piece left = context.getPieceAt(x - 1, y, piece);
             Piece right = context.getPieceAt(x + 1, y, piece);
@@ -159,8 +159,7 @@ public class LegalMoveDetector {
             }
 
             if (isEnPassantTarget(right, piece)) {
-                if (MoveHistory.wasLastMovePawnDoubleAdvance(
-                        right.getPosX(), right.getPosY(), right.getTeam())) {
+                if (MoveHistory.wasLastMovePawnDoubleAdvance(right.getPosX(), right.getPosY(), right.getTeam())) {
                     moves.add(new Coordinate(right.getPosX(), y1));
                 }
             }
@@ -170,7 +169,7 @@ public class LegalMoveDetector {
     }
 
     private static boolean isEnPassantTarget(Piece target, Piece pawn) {
-        return target != null && target.getType() == PieceType.PAWN && !target.getTeam().equals(pawn.getTeam());
+        return target != null && target.getType() == PieceType.PAWN && !target.getTeam() == pawn.getTeam();
     }
 
     public static List<Coordinate> getSlidingMoves(Piece piece, MoveContext context, int... directions) {
@@ -181,7 +180,7 @@ public class LegalMoveDetector {
         List<Coordinate> moves = new ArrayList<>(16);
         int x = piece.getPosX();
         int y = piece.getPosY();
-        String team = piece.getTeam();
+        boolean team = piece.getTeam();
 
         for (int i = 0; i < directions.length; i += 2) {
             slideIterative(context, x, y, directions[i], directions[i + 1], team, moves, maxDistance);
@@ -189,7 +188,7 @@ public class LegalMoveDetector {
         return moves;
     }
 
-    private static void slideIterative(MoveContext context, int startX, int startY, int dx, int dy, String team, List<Coordinate> moves, int maxDistance) {
+    private static void slideIterative(MoveContext context, int startX, int startY, int dx, int dy, boolean team, List<Coordinate> moves, int maxDistance) {
         int x = startX;
         int y = startY;
 
@@ -206,7 +205,7 @@ public class LegalMoveDetector {
             if (target == null) {
                 moves.add(new Coordinate(x, y));
             } else {
-                if (!target.getTeam().equals(team)) {
+                if (target.getTeam() != team) {
                     moves.add(new Coordinate(x, y));
                 }
                 break;
@@ -236,7 +235,7 @@ public class LegalMoveDetector {
         }
 
         Piece other = context.getPieceAt(newX, newY, piece);
-        return other == null || other == piece || !other.getTeam().equals(piece.getTeam());
+        return other == null || other == piece || !other.getTeam() == piece.getTeam();
     }
 
     protected static boolean isValidCapture(int newX, int newY, MoveContext context, Piece piece) {
@@ -248,6 +247,6 @@ public class LegalMoveDetector {
         }
 
         Piece other = context.getPieceAt(newX, newY, piece);
-        return other != null && other != piece && !other.getTeam().equals(piece.getTeam());
+        return other != null && other != piece && !other.getTeam() == piece.getTeam();
     }
 }

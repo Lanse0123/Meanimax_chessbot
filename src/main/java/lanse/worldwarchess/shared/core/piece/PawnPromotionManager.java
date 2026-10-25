@@ -92,7 +92,7 @@ public class PawnPromotionManager {
             g.setColor(new Color(0, 0, 0, 200));
             g.fillRoundRect(promoX - 10, bubbleY - 10, bubbleWidth, bubbleHeight, 10, 10);
 
-            String prefix = pawn.getTeam().equalsIgnoreCase("White") ? "w" : "b";
+            String prefix = pawn.getTeam() ? "w" : "b";
 
             BufferedImage queenImg = TextureKey.textures.get(prefix + "q");
             BufferedImage knightImg = TextureKey.textures.get(prefix + "n");

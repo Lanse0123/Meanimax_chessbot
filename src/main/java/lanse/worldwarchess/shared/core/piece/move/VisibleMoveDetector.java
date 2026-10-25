@@ -119,7 +119,7 @@ public class VisibleMoveDetector extends LegalMoveDetector{
 
     public static List<Coordinate> getPawnMoves(Piece piece, Board board) {
         List<Coordinate> moves = new ArrayList<>(4);
-        int dir = piece.getTeam().equals("White") ? -1 : 1;
+        int dir = piece.getTeam() ? -1 : 1;
         int x = piece.getPosX(), y = piece.getPosY();
         int firstMoveStep = 2;
         int boardSize = board.getBoardSize();
@@ -144,17 +144,17 @@ public class VisibleMoveDetector extends LegalMoveDetector{
         addCaptureMoveForOffset(piece, 1, dir, board, moves);
 
         // En passant
-        int enPassantRow = piece.getTeam().equals("White") ? 4 : 3;
+        int enPassantRow = piece.getTeam() ? 4 : 3;
         if (y == enPassantRow) {
             Piece left = board.getPieceAt(x - 1, y, piece, boardPieces);
             Piece right = board.getPieceAt(x + 1, y, piece, boardPieces);
 
             int y1 = y + dir;
-            if (left != null && left.getType() == PieceType.PAWN && !left.getTeam().equals(piece.getTeam())
+            if (left != null && left.getType() == PieceType.PAWN && left.getTeam() != piece.getTeam()
                     && MoveHistory.wasLastMovePawnDoubleAdvance(left.getPosX(), left.getPosY(), left.getTeam())) {
                 moves.add(new Coordinate(left.getPosX(), y1));
             }
-            if (right != null && right.getType() == PieceType.PAWN && !right.getTeam().equals(piece.getTeam())
+            if (right != null && right.getType() == PieceType.PAWN && right.getTeam() != piece.getTeam()
                     && MoveHistory.wasLastMovePawnDoubleAdvance(right.getPosX(), right.getPosY(), right.getTeam())) {
                 moves.add(new Coordinate(right.getPosX(), y1));
             }
@@ -189,7 +189,6 @@ public class VisibleMoveDetector extends LegalMoveDetector{
             int nextX = localX + dx;
             int nextY = localY + dy;
 
-            // same-board move
             if (nextX >= 0 && nextX < boardSize && nextY >= 0 && nextY < boardSize) {
                 if (!isValidMove(nextX, nextY, board, piece)) break;
 

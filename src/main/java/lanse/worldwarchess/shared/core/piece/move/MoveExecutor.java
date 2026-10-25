@@ -8,8 +8,6 @@ import lanse.worldwarchess.shared.core.sound.SoundManager;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
-import java.util.Objects;
-
 public class MoveExecutor {
 
     //This class is responsible for moving a piece to a new spot, checking if it is legal, and doing logic for
@@ -26,7 +24,7 @@ public class MoveExecutor {
                 executorPiece.getBoardX(), executorPiece.getBoardY(), executorPiece.getPosX(), executorPiece.getPosY());
 
         // Handle captures
-        if (targetPiece != null && !targetPiece.getTeam().equals(executorPiece.getTeam())) {
+        if (targetPiece != null && !targetPiece.getTeam() == executorPiece.getTeam()) {
             SoundManager.capturePiece(executorPiece);
             playNormalSound = false;
             WorldMap.killPiece(targetPiece);
@@ -45,13 +43,11 @@ public class MoveExecutor {
             if (Math.abs(newX - originalX) == 1 && Math.abs(newY - originalY) == 1 &&
                     newBoard.getPieceAt(newX, newY, executorPiece, WorldMap.getAllPiecesOfBoard(newBoard)) == null) {
 
-                int capturedPawnY = executorPiece.getTeam().equalsIgnoreCase("White") ? newY + 1 : newY - 1;
+                int capturedPawnY = executorPiece.getTeam() ? newY + 1 : newY - 1;
 
                 Piece capturedPawn = newBoard.getPieceAt(newX, capturedPawnY, executorPiece, WorldMap.getAllPiecesOfBoard(newBoard));
 
-                if (capturedPawn != null && capturedPawn.getType() == PieceType.PAWN &&
-                        !capturedPawn.getTeam().equals(executorPiece.getTeam())) {
-
+                if (capturedPawn != null && capturedPawn.getType() == PieceType.PAWN && capturedPawn.getTeam() != executorPiece.getTeam()) {
                     WorldMap.killPiece(capturedPawn);
                 }
             }
@@ -89,16 +85,15 @@ public class MoveExecutor {
 
         // Promotion
         if (executorPiece.getType() == PieceType.PAWN) {
-            if ((executorPiece.getTeam().equalsIgnoreCase("White") && newY == 0) ||
-                    (executorPiece.getTeam().equalsIgnoreCase("Black") && newY == endzone)) {
+            if ((executorPiece.getTeam() && newY == 0) || (!executorPiece.getTeam() && newY == endzone)) {
 
                 PawnPromotionManager.getInstance().addPromotion(executorPiece, newBoard, newX, newY, isOurMove);
             }
         }
 
-        String currentTeam = executorPiece.getTeam();
+        boolean currentTeam = executorPiece.getTeam();
         for (Piece piece1 : WorldMap.pieces){
-            if (!piece1.hasMoved && Objects.equals(piece1.getTeam(), currentTeam)){
+            if (!piece1.hasMoved && piece1.getTeam() == currentTeam){
                 return;
             }
         }

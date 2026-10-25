@@ -209,9 +209,9 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         Board newBoard = WorldMap.getBoard();
 
         boolean sameSquare = (logicalCoords.x() == originalLogicalX && logicalCoords.y() == originalLogicalY && newBoard == selectedPiece.getBoard());
+        boolean currentTeam = Timer.turnCounter % 2 == 0;
         boolean invalidMoveBase = newBoard == null || sameSquare ||
-                Timer.playerIDMovedList.contains(selectedPiece.getPlayerID()) ||
-                !selectedPiece.getTeam().equals((Timer.turnCounter % 2 == 0) ? "White" : "Black");
+                Timer.playerIDMovedList.contains(selectedPiece.getPlayerID()) || selectedPiece.getTeam() != currentTeam;
 
         if (invalidMoveBase) {
             resetDrag();

@@ -24,7 +24,7 @@ public final class Piece {
     private final int playerID;
     private Board board;
     private PieceType type;
-    private final String team;
+    private final boolean team; // 0 = white, 1 = black
     private int boardX, boardY;  // Position on the chessboard grid
     private int posX, posY;      // Position within the board
     public boolean hasMoved = false;
@@ -33,7 +33,7 @@ public final class Piece {
 
     /** REMEMBER TO ADD TO THE PieceClassPrefixMap.java WHEN ADDING A NEW PIECE CLASS*/
 
-    public Piece(int playerId, Board board, PieceType type, String team, int boardX, int boardY, int posX, int posY) {
+    public Piece(int playerId, Board board, PieceType type, boolean team, int boardX, int boardY, int posX, int posY) {
         this.playerID = playerId;
         this.board = board;
         this.type = type;
@@ -49,7 +49,9 @@ public final class Piece {
     public int getPlayerID() { return playerID; }
     public Board getBoard() { return board; }
     public PieceType getType() { return type; }
-    public String getTeam() { return team; }
+
+    /** True = White, False = Black. **/
+    public boolean getTeam() { return team; }
     public int getPosX() { return posX; }
     public int getPosY() { return posY; }
     public int getBoardX() { return boardX; }

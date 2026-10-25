@@ -22,7 +22,7 @@ public final class SimulatedMoveExecutor {
 
         // Capture
         if (target != null) {
-            if (target.getTeam().equals(piece.getTeam())) {
+            if (target.getTeam() == piece.getTeam()) {
                 throw new IllegalArgumentException("Cannot capture a friendly piece");
             }
             context.removePiece(target);
@@ -30,11 +30,11 @@ public final class SimulatedMoveExecutor {
 
         // En passant
         if (piece.getType() == PieceType.PAWN && Math.abs(newX - originalX) == 1 && Math.abs(newY - originalY) == 1 && target == null) {
-            int capturedPawnY = piece.getTeam().equalsIgnoreCase("White") ? newY + 1 : newY - 1;
+            int capturedPawnY = piece.getTeam() ? newY + 1 : newY - 1;
 
             Piece capturedPawn = context.getPieceAt(newX, capturedPawnY, piece);
 
-            if (capturedPawn != null && capturedPawn.getType() == PieceType.PAWN && !capturedPawn.getTeam().equals(piece.getTeam())) {
+            if (capturedPawn != null && capturedPawn.getType() == PieceType.PAWN && !capturedPawn.getTeam() == piece.getTeam()) {
                 context.removePiece(capturedPawn);
             }
         }
@@ -53,7 +53,7 @@ public final class SimulatedMoveExecutor {
 
             Piece rook = context.getPieceAt(rookX, originalY, piece);
 
-            if (rook != null && rook.getType() == PieceType.ROOK && rook.getTeam().equals(piece.getTeam())) {
+            if (rook != null && rook.getType() == PieceType.ROOK && rook.getTeam() == piece.getTeam()) {
                 rook.setMapPosition(board.getBoardX(), board.getBoardY());
                 context.movePiece(rook, rookDestinationX, originalY);
                 rook.setBoard(board);
@@ -63,9 +63,7 @@ public final class SimulatedMoveExecutor {
         }
 
         // Promotion to queen and only queen because lazy.
-        if (piece.getType() == PieceType.PAWN && ((piece.getTeam().equalsIgnoreCase("White") && newY == 0)
-                || (piece.getTeam().equalsIgnoreCase("Black") && newY == 7))) {
-
+        if (piece.getType() == PieceType.PAWN && ((piece.getTeam() && newY == 0) || (!piece.getTeam() && newY == 7))) {
             Piece promotedPiece = piece.clonePiece(board);
             promotedPiece.setType(PieceType.QUEEN);
             context.movePiece(promotedPiece, newX, newY);
