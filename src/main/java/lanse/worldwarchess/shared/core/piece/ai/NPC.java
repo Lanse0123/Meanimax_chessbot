@@ -7,6 +7,7 @@ import lanse.worldwarchess.shared.core.piece.PieceType;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.piece.move.MoveContext;
 import lanse.worldwarchess.shared.core.piece.move.MoveExecutor;
+import lanse.worldwarchess.shared.core.piece.move.TranspositionTable;
 import lanse.worldwarchess.shared.core.thread.ThreadNames;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
@@ -112,7 +113,11 @@ public class NPC {
         RootMove fallback = rootMoves.getFirst();
         SearchResult best = new SearchResult(fallback.livePiece(), fallback.move(), evaluate(root, team, !team, ai), 0);
 
-        // Iterative deepening: retain the last fully completed result.
+        //For not evaluating duplicate positions
+        Map<Long, TranspositionTable.TranspositionTableEntry> transpositionTable = new HashMap<>(1 << 16);
+
+        // Iterative deepening. Start at depth 1, find the best, then search depth 2. Since it keeps in mind the best
+        // Of each depth, it can guess the alpha beta pruning quickly, making it more efficient
         for (int depth = 1; ; depth++) {
             try {
                 checkTime();
@@ -131,8 +136,7 @@ public class NPC {
 
                     double score;
                     try {
-                        //TODO - this can be better LOL
-                        score = search(root, !team, team, !team, depth - 1, alpha, beta, ai);
+                        score = search(root, !team, team, !team, depth - 1, alpha, beta, ai, transpositionTable);
                     } finally {
                         root.undoMove(undo);
                     }
@@ -161,11 +165,35 @@ public class NPC {
         return best;
     }
 
-    private static double search(MoveContext context, boolean teamToMove, boolean rootTeam, boolean opponentTeam, int depth, double alpha, double beta, NPC.SELECTED_AI ai) {
+    private static double search(MoveContext context, boolean teamToMove, boolean rootTeam, boolean opponentTeam, int depth,
+            double alpha, double beta, SELECTED_AI ai, Map<Long, TranspositionTable.TranspositionTableEntry> transpositionTable) {
+
         checkTime();
 
+        long hash = TranspositionTable.hashPosition(context, teamToMove, rootTeam, ai);
+        double originalAlpha = alpha;
+        double originalBeta = beta;
+
+        TranspositionTable.TranspositionTableEntry cached = transpositionTable.get(hash);
+
+        if (cached != null && cached.depth() >= depth) {
+            switch (cached.bound()) {
+                case EXACT -> {
+                    return cached.score();
+                }
+                case LOWER -> alpha = Math.max(alpha, cached.score());
+                case UPPER -> beta = Math.min(beta, cached.score());
+            }
+
+            if (alpha >= beta) {
+                return cached.score();
+            }
+        }
+
         if (depth <= 0) {
-            return evaluate(context, rootTeam, opponentTeam, ai);
+            double score = evaluate(context, rootTeam, opponentTeam, ai);
+            storePosition(transpositionTable, hash, depth, score, TranspositionTable.Bound.EXACT);
+            return score;
         }
 
         List<Piece> pieces = context.pieces();
@@ -183,21 +211,19 @@ public class NPC {
             }
         }
 
-        //TODO - No moves, until checkmate/stalemate detection exists, evaluate the resulting position rather
-        // than assuming a terminal outcome.
         if (moves.isEmpty()) {
-            return evaluate(context, rootTeam, opponentTeam, ai);
+            double score = evaluate(context, rootTeam, opponentTeam, ai);
+            storePosition(transpositionTable, hash, depth, score, TranspositionTable.Bound.EXACT);
+            return score;
         }
 
         orderCapturesFirst(context, moves);
 
-
         boolean rootTurn = teamToMove == rootTeam;
-        boolean maximizing = (ai == NPC.SELECTED_AI.MAXIMIN) != rootTurn;
-
-        double bestScore = maximizing ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+        boolean maximizing = (ai == SELECTED_AI.MAXIMIN) != rootTurn;
         boolean nextTeam = teamToMove == rootTeam ? opponentTeam : rootTeam;
 
+        double bestScore = maximizing ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
         for (RootMove move : moves) {
             checkTime();
 
@@ -207,7 +233,7 @@ public class NPC {
 
             double score;
             try {
-                score = search(context, nextTeam, rootTeam, opponentTeam, depth - 1, alpha, beta, ai);
+                score = search(context, nextTeam, rootTeam, opponentTeam, depth - 1, alpha, beta, ai, transpositionTable);
             } finally {
                 context.undoMove(undo);
             }
@@ -225,7 +251,33 @@ public class NPC {
             }
         }
 
+        TranspositionTable.Bound bound;
+        if (bestScore <= originalAlpha) {
+            bound = TranspositionTable.Bound.UPPER;
+        } else if (bestScore >= originalBeta) {
+            bound = TranspositionTable.Bound.LOWER;
+        } else {
+            bound = TranspositionTable.Bound.EXACT;
+        }
+
+        storePosition(transpositionTable, hash, depth, bestScore, bound);
         return bestScore;
+    }
+
+    private static void storePosition(Map<Long, TranspositionTable.TranspositionTableEntry> table,
+            long hash, int depth, double score, TranspositionTable.Bound bound) {
+
+        TranspositionTable.TranspositionTableEntry existing = table.get(hash);
+
+        // Prefer deeper results because THE FUTUREEE
+        if (existing == null || depth > existing.depth() || (depth == existing.depth() && bound == TranspositionTable.Bound.EXACT && existing.bound() != TranspositionTable.Bound.EXACT)) {
+            table.put(hash, new TranspositionTable.TranspositionTableEntry(depth, score, bound));
+        }
+
+        // If we are searching forever, don't let the Transposition table grow to infinity
+        if (table.size() > 500_000) {
+            table.clear();
+        }
     }
 
     private static MoveContext copyContext(MoveContext source) {
@@ -259,6 +311,7 @@ public class NPC {
     }
 
     //Positive scores favor the root team, negative scores favor its opponent.
+    //TODO - TRANSPOSITION TABLE
     private static double evaluate(MoveContext context, boolean rootTeam, boolean opponentTeam, NPC.SELECTED_AI ai) {
         double material = 0;
 
@@ -298,9 +351,8 @@ public class NPC {
     private static double evaluatePosition(MoveContext context, boolean team) {
         List<Piece> pieces = context.pieces();
         int[] pawnFiles = new int[8];
-        boolean isWhite = team;
-        int homeRank = isWhite ? 7 : 0;
-        int enemyBackRank = isWhite ? 0 : 7;
+        int homeRank = team ? 7 : 0;
+        int enemyBackRank = team ? 0 : 7;
 
         // Count pawns before the switch so its not O(n^2)
         for (Piece piece : pieces) {
@@ -329,7 +381,7 @@ public class NPC {
 
             switch (piece.getType()) {
                 case PAWN -> {
-                    int advancement = isWhite ? 6 - y : y - 1;
+                    int advancement = team ? 6 - y : y - 1;
                     if (advancement > 0) {
                         score += advancement * 0.08;
                     }
