@@ -45,7 +45,7 @@ public class Settings {
                 showDeathMarkers = json.optBoolean("showDeathMarkers", true);
                 playMainMenuStartup = json.optBoolean("playMainMenuStartup", false);
                 playIllegalMoveSound = json.optBoolean("playIllegalMoveSound", false);
-                maxTimeMillisecondsForBot = json.optLong("maxTimeMillisecondsForBot", 5000);
+                maxTimeMillisecondsForBot = json.optLong("maxTimeMillisecondsForBot", 3000);
             } catch (IOException e) {
                 e.printStackTrace();
                 setDefaultSettings();
@@ -62,7 +62,7 @@ public class Settings {
         playMainMenuStartup = false;
         playIllegalMoveSound = false;
         background = "Warped Plane";
-        maxTimeMillisecondsForBot = 5000;
+        maxTimeMillisecondsForBot = 3000;
         saveSettings();
     }
 
@@ -94,7 +94,7 @@ public class Settings {
         JFrame frame = new JFrame("Settings");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(1440, 810);
-        frame.setLayout(new GridLayout(6, 1, 10, 10)); // Add spacing between rows
+        frame.setLayout(new GridLayout(7, 1, 10, 10)); // Add spacing between rows
         frame.setIconImages(LogoManager.getLogos());
         frame.getContentPane().setBackground(new Color(45, 45, 45)); // Dark background
 
@@ -138,6 +138,20 @@ public class Settings {
         backgroundPanel.add(backgroundDropdown);
         frame.add(backgroundPanel);
 
+        // Maximum time lansebot can think
+        JPanel maxTimePanel = new JPanel();
+        maxTimePanel.setBackground(panelColor);
+
+        JLabel maxTimeLabel = new JLabel("Max Bot Thinking Time (ms):");
+        maxTimeLabel.setForeground(labelColor);
+
+        JSpinner maxTimeSpinner = new JSpinner(new SpinnerNumberModel(maxTimeMillisecondsForBot, 1L, Long.MAX_VALUE, 100L));
+        maxTimeSpinner.setPreferredSize(new Dimension(150, 30));
+
+        maxTimePanel.add(maxTimeLabel);
+        maxTimePanel.add(maxTimeSpinner);
+        frame.add(maxTimePanel);
+
         // Checkboxes
         JCheckBox deathMarkersCheck = new JCheckBox("Show Death Markers", showDeathMarkers);
         JCheckBox illegalMoveSoundCheck = new JCheckBox("Play Illegal Move Sound", playIllegalMoveSound);
@@ -163,6 +177,7 @@ public class Settings {
             playMainMenuStartup = playMainMenuCheck.isSelected();
             playIllegalMoveSound = illegalMoveSoundCheck.isSelected();
             background = (String) backgroundDropdown.getSelectedItem();
+            maxTimeMillisecondsForBot = ((Number) maxTimeSpinner.getValue()).longValue();
             saveSettings();
             frame.dispose();
         });
@@ -170,12 +185,13 @@ public class Settings {
         JButton defaultButton = new JButton("Return to Default");
         defaultButton.setBackground(new Color(70, 70, 70));
         defaultButton.setForeground(Color.WHITE);
-        defaultButton.addActionListener(e -> {
+        defaultButton.addActionListener(_ -> {
             setDefaultSettings();
             volumeSlider.setValue(volume);
             gothamSoundCheck.setSelected(playGothamSound);
             backgroundDropdown.setSelectedItem(background);
             deathMarkersCheck.setSelected(showDeathMarkers);
+            maxTimeSpinner.setValue(maxTimeMillisecondsForBot);
             playMainMenuCheck.setSelected(playMainMenuStartup);
             illegalMoveSoundCheck.setSelected(playIllegalMoveSound);
         });
@@ -195,6 +211,6 @@ public class Settings {
     public static boolean isPlayIllegalMoveSound() { return playIllegalMoveSound; }
 
     public static long getMaxTimeMillisecondsForBot() {
-        return 5000;
+        return maxTimeMillisecondsForBot;
     }
 }

@@ -3,6 +3,7 @@ package lanse.worldwarchess.shared.core.piece.ai;
 import lanse.worldwarchess.shared.client.storage.Settings;
 import lanse.worldwarchess.shared.core.Timer;
 import lanse.worldwarchess.shared.core.piece.Piece;
+import lanse.worldwarchess.shared.core.piece.PieceType;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.piece.move.MoveContext;
 import lanse.worldwarchess.shared.core.piece.move.MoveExecutor;
@@ -17,9 +18,6 @@ import java.util.*;
  * This was inspired by Sebastian Lague YT. I watched his chess bot videos for ideas with Alpha Beta pruning, Iterative Deepening,
  * and I saw a lot of other ideas but I want this to be my own creation, not a tutorial or something else. **/
 public class NPC {
-
-    //This is the central class that orders all NPC pieces to move when needed. It also stores the core logic for
-    // some of the ai types like zombies, vampires, and etc.
 
     public static volatile boolean areNpcsMoving = false;
     public static Map<LegalMoveDetector.Coordinate, List<String>> attackedSquares = new HashMap<>();
@@ -244,6 +242,8 @@ public class NPC {
     //Positive scores favor the root team, negative scores favor its opponent.
     private static double evaluate(MoveContext context, String rootTeam, NPC.SELECTED_AI ai) {
         double material = 0;
+        double rootPosition = 0;
+        double enemyPosition = 0;
 
         for (Piece piece : context.pieces()) {
             double value = piece.getValue();
@@ -255,22 +255,153 @@ public class NPC {
             }
         }
 
+        rootPosition = evaluatePosition(context, rootTeam);
+
+        String enemyTeam = context.pieces().stream().map(Piece::getTeam).filter(team -> !team.equals(rootTeam)).findFirst().orElse(null);
+
+        if (enemyTeam != null) {
+            enemyPosition = evaluatePosition(context, enemyTeam);
+        }
+
+        double score = material + rootPosition - enemyPosition;
+
         return switch (ai) {
-            case MINIMAX -> material;
+            case MINIMAX, MAXIMIN -> score;
 
             case MEANIMAX -> {
-                double score = -Math.abs(material);
+                double balancedScore = -Math.abs(score);
 
                 //Thou shall not lose, only merely draw.
-                if (material < -3.0) {
-                    score -= (-3.0 - material) * 10.0;
+                if (score < -3.0) {
+                    balancedScore -= (-3.0 - score) * 10.0;
                 }
 
-                yield score;
+                yield balancedScore;
+            }
+        };
+    }
+
+    //TODO - I also want to train an evolutionary neural net on Chess, and when I am done I am going to see if hard coding it
+    // or evolutionary learning is better, because my tactics are limited.
+    private static double evaluatePosition(MoveContext context, String team) {
+        double score = 0;
+        int[] pawnFiles = new int[8];
+
+        for (Piece piece : context.pieces()) {
+            if (!piece.getTeam().equals(team)) {
+                continue;
             }
 
-            case MAXIMIN -> material;
-        };
+            if (piece.getType() == PieceType.PAWN) {
+                int x = piece.getPosX();
+                if (x >= 0 && x < 8) {
+                    pawnFiles[x]++;
+                }
+            }
+        }
+
+        for (Piece piece : context.pieces()) {
+            if (!piece.getTeam().equals(team)) {
+                continue;
+            }
+
+            int x = piece.getPosX();
+            int y = piece.getPosY();
+
+            if (x < 0 || x > 7 || y < 0 || y > 7) {
+                continue;
+            }
+
+            double center = centerScore(x, y);
+
+            switch (piece.getType()) {
+                //TODO - pawn might make search too laggy
+                case PAWN -> {
+                    // Pawns that complete their journey to becoming queens are rewarded with nail polish
+                    int advancement = team.equalsIgnoreCase("White") ? 6 - y : y - 1;
+
+                    score += Math.max(0, advancement) * 0.08;
+
+                    // Central pawns help control the board
+                    if (x == 3 || x == 4) {
+                        score += 0.15;
+                    }
+
+                    // Doubled pawns are bad
+                    if (pawnFiles[x] > 1) {
+                        score -= 0.25 * (pawnFiles[x] - 1) / pawnFiles[x];
+                    }
+
+                    // Isolated pawns have no neighboring pawn support.
+                    boolean hasNeighbor = false;
+
+                    for (Piece other : context.pieces()) {
+                        if (other.getType() != PieceType.PAWN || !other.getTeam().equals(team) || other == piece) {
+                            continue;
+                        }
+
+                        if (Math.abs(other.getPosX() - x) == 1) {
+                            hasNeighbor = true;
+                            break;
+                        }
+                    }
+
+                    if (!hasNeighbor) {
+                        score -= 0.20;
+                    }
+                }
+
+                case KNIGHT -> {
+                    score += center * 0.22;
+
+                    int homeRank = team.equalsIgnoreCase("White") ? 7 : 0;
+
+                    boolean onStartingSquare = y == homeRank && (x == 1 || x == 6);
+
+                    if (piece.hasMovedEver && !onStartingSquare) {
+                        score += 0.45;
+                    }
+                }
+
+                case BISHOP -> {
+                    score += center * 0.12;
+
+                    int homeRank = team.equalsIgnoreCase("White") ? 7 : 0;
+
+                    boolean onStartingSquare = y == homeRank && (x == 2 || x == 5);
+
+                    if (piece.hasMovedEver && !onStartingSquare) {
+                        score += 0.45;
+                    }
+                }
+
+                case ROOK -> {
+                    // The rook on the 7th rank is good according to GothamchessYT
+                    int enemyBackRank = team.equalsIgnoreCase("White") ? 0 : 7;
+
+                    if (y == enemyBackRank) {
+                        score += 0.25;
+                    }
+                }
+
+                case QUEEN -> score += center * 0.06;
+
+                case KING -> {
+                    int homeRank = team.equalsIgnoreCase("White") ? 7 : 0;
+
+                    // Reward the king's usual castled squares.
+                    if (y == homeRank && (x == 2 || x == 6) && piece.hasMovedEver) {
+                        score += 0.60;
+                    }
+                }
+            }
+        }
+
+        return score;
+    }
+
+    private static double centerScore(int x, int y) {
+        return (3.5 - Math.abs(x - 3.5)) + (3.5 - Math.abs(y - 3.5));
     }
 
     private static boolean isBetter(double candidate, double current, NPC.SELECTED_AI ai) {
