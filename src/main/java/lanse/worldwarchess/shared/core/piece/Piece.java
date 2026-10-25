@@ -9,11 +9,8 @@ import lanse.worldwarchess.shared.core.worldmap.board.Board;
 import java.awt.*;
 import java.awt.font.GlyphVector;
 import java.awt.image.BufferedImage;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static lanse.worldwarchess.shared.core.piece.move.LegalMoveDrawer.drawMove;
@@ -24,20 +21,19 @@ public final class Piece {
     // the most central classes. It has a ton of polymorphism and functions to be overridden.
     // It is now final so there will be no polymorphism or functions to be overridden.
 
-    private int playerID;
+    private final int playerID;
     private Board board;
     private PieceType type;
-    private String team;
+    private final String team;
     private int boardX, boardY;  // Position on the chessboard grid
     private int posX, posY;      // Position within the board
-    private final int pieceSize;
     public boolean hasMoved = false;
     public boolean hasMovedEver = false;
     private String playerName;
 
     /** REMEMBER TO ADD TO THE PieceClassPrefixMap.java WHEN ADDING A NEW PIECE CLASS*/
 
-    public Piece(int playerId, Board board, PieceType type, String team, int boardX, int boardY, int posX, int posY, int pieceSize) {
+    public Piece(int playerId, Board board, PieceType type, String team, int boardX, int boardY, int posX, int posY) {
         this.playerID = playerId;
         this.board = board;
         this.type = type;
@@ -46,7 +42,6 @@ public final class Piece {
         this.boardY = boardY;
         this.posX = posX;
         this.posY = posY;
-        this.pieceSize = pieceSize;
 
         this.playerName = "";
     }
@@ -59,17 +54,16 @@ public final class Piece {
     public int getPosY() { return posY; }
     public int getBoardX() { return boardX; }
     public int getBoardY() { return boardY; }
-    public int getPieceSize() { return pieceSize; }
     public int getPieceClassPrefix() { return PieceClassPrefixMap.getPrefixIndex(this.getClass()); }
     public String getPlayerName(){ return playerName; }
 
     public void setMapPosition(int boardX, int boardY) {
-        this.boardX = (boardX / pieceSize) * pieceSize;
-        this.boardY = (boardY / pieceSize) * pieceSize;
+        this.boardX = (boardX);
+        this.boardY = (boardY);
     }
     public void setBoardPosition(int posX, int posY) {
-        this.posX = (posX / pieceSize) * pieceSize; // Snap to grid of piece size
-        this.posY = (posY / pieceSize) * pieceSize;
+        this.posX = (posX); // Snap to grid of piece size
+        this.posY = (posY);
     }
 
     public void setBoard(Board board) {
@@ -78,23 +72,6 @@ public final class Piece {
 
     public void setPlayerName(String name) {
         this.playerName = name;
-    }
-    public void setPlayerID(int playerID) { this.playerID = playerID; }
-
-    //TO BE OVERRIDEN:
-    public void move(){}
-    public void heal(int amount){}
-    public void setHealth(int bossHealth) {}
-    public int getCurrentHealth() { return 0; }
-    public Piece promoteOverride(Piece piece) {return null;}
-    public char getPrefixReplacement(){return 0;}
-    public String getTexture() { return null; }
-    public int getBarPoints() { return 0; }
-    public Collection<LegalMoveDetector.Coordinate> getMovementOverride() { return Collections.emptyList(); }
-
-    public void setSandboxInfo(PieceType chosenType, String chosenTeam) {
-        this.type = chosenType;
-        this.team = chosenTeam;
     }
 
     public void setType(PieceType type){
@@ -105,7 +82,7 @@ public final class Piece {
         Board board = this.getBoard();
         int baseTile = board.getBaseTileSize();
         double scaledBaseTile = baseTile * zoomFactor;
-        int pieceSize = (int) (this.getPieceSize() * scaledBaseTile);
+        int pieceSize = (int) scaledBaseTile;
         int drawX = (int) (board.getBoardX() * zoomFactor + this.getPosX() * scaledBaseTile);
         int drawY = (int) (board.getBoardY() * zoomFactor + this.getPosY() * scaledBaseTile);
 
@@ -162,7 +139,7 @@ public final class Piece {
 
         if (pieceDragging && selectedBoard != null) {
             int baseTile = selectedBoard.getBaseTileSize();
-            int scaledPieceSize = (int) (pieceSize * baseTile * zoomFactor);
+            int scaledPieceSize = (int) (baseTile * zoomFactor);
             int drawX = currentDragPoint.x - LegalMoveDetector.OFFSET_CORRECTION_VALUE;
             int drawY = currentDragPoint.y - LegalMoveDetector.OFFSET_CORRECTION_VALUE;
             String textureKey = TextureKey.getTextureKey(this);
@@ -194,22 +171,12 @@ public final class Piece {
         }
     }
 
-    //Written by James, you can tell because wtf is this map stuff
     public Stream<LegalMoveDetector.Coordinate> squares() {
-        return IntStream.range(0, pieceSize).mapToObj(
-                (x) -> IntStream.range(0, pieceSize).mapToObj((y) -> new LegalMoveDetector.Coordinate(posX + x, posY + y))
-        ).flatMap((x) -> x);
-    }
-
-    public Stream<LegalMoveDetector.Coordinate> squaresAt(int newX, int newY) {
-        return IntStream.range(0, pieceSize).mapToObj(
-                (x) -> IntStream.range(0, pieceSize).mapToObj(
-                        (y) -> new LegalMoveDetector.Coordinate(newX + x, newY + y))
-        ).flatMap((x) -> x);
+        return Stream.of(new LegalMoveDetector.Coordinate(posX, posY));
     }
 
     public Piece clonePiece(Board newBoard) {
-        Piece clone = new Piece(playerID, newBoard, type, team, boardX, boardY, posX, posY, pieceSize);
+        Piece clone = new Piece(playerID, newBoard, type, team, boardX, boardY, posX, posY);
         clone.hasMoved = this.hasMoved;
         clone.hasMovedEver = this.hasMovedEver;
         clone.setPlayerName(this.getPlayerName());

@@ -73,7 +73,7 @@ public class VisibleMoveDetector extends LegalMoveDetector{
 
     public static List<Coordinate> getKingMoves(Piece piece, Board board) {
         List<Coordinate> moves = new ArrayList<>(12);
-        int stepSize = piece.getPieceSize();
+        int stepSize = 1;
 
         int[][] offsets = {
                 {-stepSize, -stepSize}, {-stepSize, 0}, {-stepSize, stepSize},
@@ -112,9 +112,8 @@ public class VisibleMoveDetector extends LegalMoveDetector{
                 {1, -2}, {1, 2}
         };
 
-        int scale = piece.getPieceSize();
         for (int[] offset : baseOffsets) {
-            addMoveForOffset(piece, offset[0] * scale, offset[1] * scale, board, moves);
+            addMoveForOffset(piece, offset[0], offset[1], board, moves);
         }
         return moves;
     }
@@ -123,14 +122,13 @@ public class VisibleMoveDetector extends LegalMoveDetector{
         List<Coordinate> moves = new ArrayList<>(4);
         int dir = piece.getTeam().equals("White") ? -1 : 1;
         int x = piece.getPosX(), y = piece.getPosY();
-        int stepSize = piece.getPieceSize();
-        int firstMoveStep = 2 * stepSize;
+        int firstMoveStep = 2;
         int boardSize = board.getBoardSize();
 
         List<Piece> boardPieces = WorldMap.getAllPiecesOfBoard(board);
 
         // Forward movement
-        int newY = y + stepSize * dir;
+        int newY = y + dir;
         if (newY >= 0 && newY < boardSize &&
                 board.getPieceAt(x, newY, Optional.of(piece), boardPieces) == null) {
             moves.add(new Coordinate(x, newY));
@@ -185,15 +183,14 @@ public class VisibleMoveDetector extends LegalMoveDetector{
     private static void slideIterative(Piece piece, Board board, int startX, int startY, int dx, int dy, List<Coordinate> moves, int maxDistance) {
         int localX = startX;
         int localY = startY;
-        final int stepMultiplier = piece.getPieceSize();
 
         int boardSize = board.getBoardSize();
         int traveled = 0;
 
         // fetch neighbor list once per loop iteration
         while (traveled < maxDistance) {
-            int nextX = localX + dx * stepMultiplier;
-            int nextY = localY + dy * stepMultiplier;
+            int nextX = localX + dx;
+            int nextY = localY + dy;
 
             // same-board move
             if (nextX >= 0 && nextX < boardSize && nextY >= 0 && nextY < boardSize) {
@@ -216,11 +213,5 @@ public class VisibleMoveDetector extends LegalMoveDetector{
 
     protected static boolean isValidCapture(int x, int y, Board board, Piece piece) {
         return LegalMoveDetector.isValidCapture(x, y, MoveContext.contextify(board), piece);
-    }
-
-    private static int getMoveRange(Board board, Piece piece) {
-        int boardSize = board.getBoardSize();
-        int pieceSize = piece.getPieceSize();
-        return boardSize / Math.max(1, pieceSize);
     }
 }

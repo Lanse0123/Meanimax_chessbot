@@ -45,7 +45,7 @@ public class LegalMoveDrawer {
         int drawX = (int) Math.round(rawX);
         int drawY = (int) Math.round(rawY);
 
-        int highlightSize = (int) Math.round(selectedPiece.getPieceSize() * scaledTile);
+        int highlightSize = (int) Math.round(scaledTile);
 
         Piece targetPiece = moveBoard.getPieceAt(move.x(), move.y(), Optional.of(selectedPiece), WorldMap.getAllPiecesOfBoard(moveBoard));
 

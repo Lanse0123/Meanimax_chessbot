@@ -78,7 +78,7 @@ public class WorldMap {
     }
 
     public static void killPiece(Piece piece) {
-        new DeathMarker(piece.getBoard(), piece.getPosX(), piece.getPosY(), piece.getPieceSize());
+        new DeathMarker(piece.getBoard(), piece.getPosX(), piece.getPosY(), 1);
         pieces.remove(piece);
 
         if (piece.getType() == PieceType.KING) {

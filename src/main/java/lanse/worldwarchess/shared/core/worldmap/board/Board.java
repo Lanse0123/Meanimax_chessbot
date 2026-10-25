@@ -115,7 +115,7 @@ public class Board {
     public int getBoardY() { return boardY; }
 
     public Piece getPieceAt(int x, int y, Optional<Piece> attackerPiece, List<Piece> pieceList) {
-        int scale = attackerPiece.map(Piece::getPieceSize).orElse(1);
+        int scale = 1;
 
         //This will use a scaled block to get pieces
 
@@ -126,7 +126,7 @@ public class Board {
 
                 for (Piece piece : pieceList) {
                     if (piece.getBoard() != this) continue;
-                    int size = piece.getPieceSize();
+                    int size = 1;
                     int px = piece.getPosX();
                     int py = piece.getPosY();
 

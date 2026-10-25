@@ -71,14 +71,14 @@ public class Utils {
     private static LegalMoveDetector.Coordinate recursivePxToLogicalCoords(Point px, Piece pieceForScale, double zoomFactor, Iterator<Point> offsets) {
         Point offset = offsets.next();
 
-        double worldX = px.x - LegalMoveDetector.OFFSET_CORRECTION_VALUE * pieceForScale.getPieceSize() * offset.x;
-        double worldY = px.y - LegalMoveDetector.OFFSET_CORRECTION_VALUE * pieceForScale.getPieceSize() * offset.y;
+        double worldX = px.x - LegalMoveDetector.OFFSET_CORRECTION_VALUE * offset.x;
+        double worldY = px.y - LegalMoveDetector.OFFSET_CORRECTION_VALUE * offset.y;
 
         Board board = WorldMap.board;
         Rectangle region = getBoardRegion(board, zoomFactor);
 
         int baseTile = board.getBaseTileSize();
-        int pieceTileSize = (int) (pieceForScale.getPieceSize() * baseTile * zoomFactor);
+        int pieceTileSize = (int) (baseTile * zoomFactor);
 
         double newLogicalX = (worldX - region.x) / pieceTileSize;
         double newLogicalY = (worldY - region.y) / pieceTileSize;
@@ -86,8 +86,8 @@ public class Utils {
 
         if (newLogicalX >= 0 && newLogicalY >= 0 && newLogicalX < boardSize - 1 && newLogicalY < boardSize - 1) {
 
-            return new LegalMoveDetector.Coordinate((int) Math.round(newLogicalX * pieceForScale.getPieceSize()),
-                    (int) Math.round(newLogicalY * pieceForScale.getPieceSize()));
+            return new LegalMoveDetector.Coordinate((int) Math.round(newLogicalX),
+                    (int) Math.round(newLogicalY));
         }
 
         if (offsets.hasNext()) {
@@ -96,11 +96,6 @@ public class Utils {
 
         //TODO - this is supposed to be an invalid move
         return new LegalMoveDetector.Coordinate(0, 0);
-    }
-
-    // The distance we should try and move a piece to snap it into place on this board size
-    private static double snapDistance(int boardSize) {
-        return Math.pow(boardSize / 4.0, 2);
     }
 
     /**

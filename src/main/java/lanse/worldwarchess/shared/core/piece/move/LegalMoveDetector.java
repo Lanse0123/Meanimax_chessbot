@@ -114,7 +114,7 @@ public class LegalMoveDetector {
     public static List<Coordinate> getKnightMoves(Piece piece, MoveContext context) {
         List<Coordinate> moves = new ArrayList<>(12);
 
-        int scale = piece.getPieceSize();
+        int scale = 1;
         for (int[] offset : KNIGHT_OFFSETS) {
             addMoveForOffset(piece, offset[0] * scale, offset[1] * scale, context, moves);
         }
@@ -128,16 +128,15 @@ public class LegalMoveDetector {
         int dir = piece.getTeam().equalsIgnoreCase("White") ? -1 : 1;
         int x = piece.getPosX();
         int y = piece.getPosY();
-        int stepSize = piece.getPieceSize();
         int boardSize = board.getBoardSize();
 
         // Forward movement
-        int newY = y + stepSize * dir;
+        int newY = y + dir;
         if (newY >= 0 && newY < boardSize && context.getPieceAt(x, newY, piece) == null) {
             moves.add(new Coordinate(x, newY));
 
             if (!piece.hasMovedEver) {
-                int newY2 = y + 2 * stepSize * dir;
+                int newY2 = y + 2 * dir;
                 if (newY2 >= 0 && newY2 < boardSize && context.getPieceAt(x, newY2, piece) == null) {
                     moves.add(new Coordinate(x, newY2));
                 }
@@ -145,15 +144,15 @@ public class LegalMoveDetector {
         }
 
         // Captures
-        addCaptureMoveForOffset(piece, -stepSize, stepSize * dir, context, moves);
-        addCaptureMoveForOffset(piece, stepSize, stepSize * dir, context, moves);
+        addCaptureMoveForOffset(piece, -1, dir, context, moves);
+        addCaptureMoveForOffset(piece, 1, dir, context, moves);
 
         //TODO - I HATE EN PASSANT, ITS STILL PROBABLY BROKEN
         int enPassantRow = piece.getTeam().equalsIgnoreCase("White") ? 4 : 3;
         if (y == enPassantRow) {
-            Piece left = context.getPieceAt(x - stepSize, y, piece);
-            Piece right = context.getPieceAt(x + stepSize, y, piece);
-            int y1 = y + stepSize * dir;
+            Piece left = context.getPieceAt(x - 1, y, piece);
+            Piece right = context.getPieceAt(x + 1, y, piece);
+            int y1 = y + dir;
 
             if (isEnPassantTarget(left, piece)) {
                 if (MoveHistory.wasLastMovePawnDoubleAdvance(left.getPosX(), left.getPosY(), left.getTeam())) {
@@ -194,12 +193,11 @@ public class LegalMoveDetector {
     private static void slideIterative(Piece piece, MoveContext context, int startX, int startY, int dx, int dy, List<Coordinate> moves, int maxDistance) {
         int x = startX;
         int y = startY;
-        int scale = piece.getPieceSize();
         int boardSize = context.board().getBoardSize();
 
         for (int distance = 0; distance < maxDistance; distance++) {
-            x += dx * scale;
-            y += dy * scale;
+            x += dx;
+            y += dy;
 
             if (x < 0 || y < 0 || x >= boardSize || y >= boardSize) {
                 break;
@@ -238,42 +236,24 @@ public class LegalMoveDetector {
     protected static boolean isValidMove(int newX, int newY, MoveContext context, Piece piece) {
         Board board = context.board();
         int boardSize = board.getBoardSize();
-        int size = piece.getPieceSize();
-        if (newX < 0 || newY < 0 || newX + size > boardSize || newY + size > boardSize) {
+
+        if (newX < 0 || newY < 0 || newX >= boardSize || newY >= boardSize) {
             return false;
         }
 
-        return piece.squaresAt(newX, newY).allMatch(square -> {
-            Piece other = context.getPieceAt(square.x(), square.y(), piece);
-            return other == null || other == piece || !other.getTeam().equals(piece.getTeam());
-        });
+        Piece other = context.getPieceAt(newX, newY, piece);
+        return other == null || other == piece || !other.getTeam().equals(piece.getTeam());
     }
 
     protected static boolean isValidCapture(int newX, int newY, MoveContext context, Piece piece) {
         Board board = context.board();
         int boardSize = board.getBoardSize();
-        int size = piece.getPieceSize();
-        if (newX < 0 || newY < 0 || newX + size > boardSize || newY + size > boardSize) {
+
+        if (newX < 0 || newY < 0 || newX >= boardSize || newY >= boardSize) {
             return false;
         }
 
-        boolean capturesEnemy = false;
-
-        for (Coordinate square : piece.squaresAt(newX, newY).toList()) {
-            Piece other = context.getPieceAt(square.x(), square.y(), piece);
-
-            if (other == null || other == piece) {
-                continue;
-            }
-
-            if (other.getTeam().equals(piece.getTeam())) {
-                return false;
-            }
-
-            capturesEnemy = true;
-        }
-
-        return capturesEnemy;
+        Piece other = context.getPieceAt(newX, newY, piece);
+        return other != null && other != piece && !other.getTeam().equals(piece.getTeam());
     }
-
 }

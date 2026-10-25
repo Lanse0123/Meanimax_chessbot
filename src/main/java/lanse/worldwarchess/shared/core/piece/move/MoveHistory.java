@@ -159,11 +159,10 @@ public class MoveHistory {
     }
 
     public static void spawnPieceForRecord(Piece newPiece, boolean shouldSend) {
-        String move = String.format("spawn,%d,%d,%s,%s,%d,%s,%d",
+        String move = String.format("spawn,%d,%d,%s,%s,%s,%d",
                 newPiece.getPosX(), newPiece.getPosY(),
                 newPiece.getType().getDisplayName(),
                 newPiece.getTeam(),
-                newPiece.getPieceSize(),
                 newPiece.getPlayerID(),
                 newPiece.getPieceClassPrefix());
 
