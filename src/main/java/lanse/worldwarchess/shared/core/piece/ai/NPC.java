@@ -129,7 +129,6 @@ public class NPC {
 
     public static void recalculateAttackerLocations() {
         attackedSquares.clear();
-
         attackedSquares = WorldMap.getAllEnemyMoves();
     }
 

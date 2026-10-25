@@ -89,12 +89,12 @@ public class VisibleMoveDetector extends LegalMoveDetector{
         if (!piece.hasMovedEver) {
             int y = piece.getPosY();
             if (!MoveHistory.hasRookMoved(piece.getBoard(), 0, y) &&
-                    LegalMoveDetector.isPathClearForCastling(board, piece.getPosX(), y, -1)) {
+                    LegalMoveDetector.isPathClearForCastling(MoveContext.contextify(board), piece.getPosX(), y, -1)) {
                 int newX = piece.getPosX() - 2;
                 if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y));
             }
             if (!MoveHistory.hasRookMoved(piece.getBoard(), 7, y) &&
-                    LegalMoveDetector.isPathClearForCastling(board, piece.getPosX(), y, 1)) {
+                    LegalMoveDetector.isPathClearForCastling(MoveContext.contextify(board), piece.getPosX(), y, 1)) {
                 int newX = piece.getPosX() + 2;
                 if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y));
             }
@@ -211,11 +211,11 @@ public class VisibleMoveDetector extends LegalMoveDetector{
     }
 
     protected static boolean isValidMove(int x, int y, Board board, Piece piece) {
-        return LegalMoveDetector.isValidMove(x, y, board, piece);
+        return LegalMoveDetector.isValidMove(x, y, MoveContext.contextify(board), piece);
     }
 
     protected static boolean isValidCapture(int x, int y, Board board, Piece piece) {
-        return LegalMoveDetector.isValidCapture(x, y, board, piece);
+        return LegalMoveDetector.isValidCapture(x, y, MoveContext.contextify(board), piece);
     }
 
     private static int getMoveRange(Board board, Piece piece) {

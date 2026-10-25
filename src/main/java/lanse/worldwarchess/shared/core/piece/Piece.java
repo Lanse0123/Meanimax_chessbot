@@ -193,33 +193,38 @@ public class Piece {
         }
     }
 
+    //Written by James, you can tell because wtf is this map stuff
     public Stream<LegalMoveDetector.Coordinate> squares() {
         return IntStream.range(0, pieceSize).mapToObj(
-                (x) -> IntStream.range(0, pieceSize).mapToObj((y) -> new LegalMoveDetector.Coordinate(posX + x, posY + y)
-                )
+                (x) -> IntStream.range(0, pieceSize).mapToObj((y) -> new LegalMoveDetector.Coordinate(posX + x, posY + y))
         ).flatMap((x) -> x);
     }
 
-    public Stream<LegalMoveDetector.Coordinate> squaresAt(int newX, int newY, Board newBoard) {
+    public Stream<LegalMoveDetector.Coordinate> squaresAt(int newX, int newY) {
         return IntStream.range(0, pieceSize).mapToObj(
                 (x) -> IntStream.range(0, pieceSize).mapToObj(
-                        (y) -> new LegalMoveDetector.Coordinate(newX + x, newY + y)
-                )
+                        (y) -> new LegalMoveDetector.Coordinate(newX + x, newY + y))
         ).flatMap((x) -> x);
     }
 
     public Piece clonePiece(Board newBoard) {
         try {
-            return this.getClass().getConstructor(
+            Piece clone = this.getClass().getConstructor(
                     int.class, Board.class, String.class, String.class,
                     int.class, int.class, int.class, int.class, int.class
             ).newInstance(
-                    this.getPlayerID(), newBoard, this.getType().name(), this.getTeam(),
-                    newBoard.getBoardX(), newBoard.getBoardY(), this.getPosX(),
-                    this.getPosY(), this.getPieceSize()
+                    getPlayerID(), newBoard, getType().name(), getTeam(),
+                    newBoard.getBoardX(), newBoard.getBoardY(),
+                    getPosX(), getPosY(), getPieceSize()
             );
+
+            clone.hasMoved = this.hasMoved;
+            clone.hasMovedEver = this.hasMovedEver;
+            clone.setPlayerName(this.getPlayerName());
+
+            return clone;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to clone piece: " + this.getClass(), e);
+            throw new RuntimeException("Lanse is stupid: " + getClass(), e);
         }
     }
 

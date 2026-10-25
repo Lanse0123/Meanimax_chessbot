@@ -1,19 +1,19 @@
+
 package lanse.worldwarchess.shared.core.piece.move;
 
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.PieceType;
-import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public class LegalMoveDetector {
 
-    //This class is responsible for calculating all the base piece movements in chess. Like rooks move horrizontally
+    // This class is responsible for calculating all the base piece movements in chess. Like rooks move horrizontally
     // and vertically, while bishops move diagonally, knights move in an L, and queens are like a rook + bishop.
+    // Extra work was needed to make it use a context window board instead of the global board so AI algorithms
+    // can search extra far with it.
 
     public record Coordinate(int x, int y) {}
     public static int OFFSET_CORRECTION_VALUE = 25;
@@ -22,58 +22,48 @@ public class LegalMoveDetector {
     public static int[] queenDirections = {1, 1, 1, -1, -1, 1, -1, -1, 1, 0, -1, 0, 0, 1, 0, -1};
 
     public static List<Coordinate> getLegalMoves(Piece piece) {
-        try {
-            List<Coordinate> legalMoves = new ArrayList<>(16);
-            Board currentBoard = piece.getBoard();
-            if (currentBoard == null) return legalMoves;
-            PieceType type = piece.getType();
+        if (piece == null || piece.getBoard() == null) return new ArrayList<>();
+        return getLegalMoves(piece, MoveContext.contextify(piece.getBoard()));
+    }
 
-            Collection<Coordinate> newMoves = switch (type) {
-                case PAWN -> getPawnMoves(piece, currentBoard);
-                case KNIGHT -> getKnightMoves(piece, currentBoard);
-                case BISHOP -> getSlidingMoves(piece, currentBoard, bishopDirections);
-                case ROOK -> getSlidingMoves(piece, currentBoard, rookDirections);
-                case QUEEN -> getSlidingMoves(piece, currentBoard, queenDirections);
-                case KING -> getKingMoves(piece, currentBoard);
-            };
-
-            legalMoves.addAll(newMoves);
-
-            return legalMoves;
-
-        } catch (Exception e){
-            System.err.println("ERROR WITH MOVING PIECE!");
-            e.printStackTrace();
+    public static List<Coordinate> getLegalMoves(Piece piece, MoveContext context) {
+        if (piece == null || context == null || context.board() == null || piece.getBoard() != context.board() || !context.pieces().contains(piece)) {
             return new ArrayList<>();
         }
+
+        return switch (piece.getType()) {
+            case PAWN -> getPawnMoves(piece, context);
+            case KNIGHT -> getKnightMoves(piece, context);
+            case BISHOP -> getSlidingMoves(piece, context, bishopDirections);
+            case ROOK -> getSlidingMoves(piece, context, rookDirections);
+            case QUEEN -> getSlidingMoves(piece, context, queenDirections);
+            case KING -> getKingMoves(piece, context);
+        };
     }
 
-    // Add one-tile offset; if off-board delegate to boardFinder
-    protected static void addMoveForOffset(Piece piece, int offsetX, int offsetY, Board currentBoard, List<Coordinate> moves) {
-        int boardSize = currentBoard.getBoardSize();
+    protected static void addMoveForOffset(Piece piece, int offsetX, int offsetY, MoveContext context, List<Coordinate> moves) {
+        Board board = context.board();
         int localX = piece.getPosX() + offsetX;
         int localY = piece.getPosY() + offsetY;
+        int boardSize = board.getBoardSize();
 
-        if (localX >= 0 && localX < boardSize && localY >= 0 && localY < boardSize) {
-            if (isValidMove(localX, localY, currentBoard, piece)) {
-                moves.add(new Coordinate(localX, localY));
-            }
+        if (localX >= 0 && localX < boardSize && localY >= 0 && localY < boardSize && isValidMove(localX, localY, context, piece)) {
+            moves.add(new Coordinate(localX, localY));
         }
     }
 
-    private static void addCaptureMoveForOffset(Piece piece, int offsetX, int offsetY, Board currentBoard, List<Coordinate> moves) {
-        int boardSize = currentBoard.getBoardSize();
+    private static void addCaptureMoveForOffset(Piece piece, int offsetX, int offsetY, MoveContext context, List<Coordinate> moves) {
+        Board board = context.board();
         int localX = piece.getPosX() + offsetX;
         int localY = piece.getPosY() + offsetY;
+        int boardSize = board.getBoardSize();
 
-        if (localX >= 0 && localX < boardSize && localY >= 0 && localY < boardSize) {
-            if (isValidCapture(localX, localY, currentBoard, piece)) {
-                moves.add(new Coordinate(localX, localY));
-            }
+        if (localX >= 0 && localX < boardSize && localY >= 0 && localY < boardSize && isValidCapture(localX, localY, context, piece)) {
+            moves.add(new Coordinate(localX, localY));
         }
     }
 
-    public static List<Coordinate> getKingMoves(Piece piece, Board board) {
+    public static List<Coordinate> getKingMoves(Piece piece, MoveContext context) {
         List<Coordinate> moves = new ArrayList<>(12);
         int stepSize = piece.getPieceSize();
 
@@ -84,27 +74,39 @@ public class LegalMoveDetector {
         };
 
         for (int[] offset : offsets) {
-            addMoveForOffset(piece, offset[0], offset[1], board, moves);
+            addMoveForOffset(piece, offset[0], offset[1], context, moves);
         }
 
         // Castling
         if (!piece.hasMovedEver) {
             int y = piece.getPosY();
-            if (!MoveHistory.hasRookMoved(piece.getBoard(), 0, y) &&
-                    isPathClearForCastling(board, piece.getPosX(), y, -1)) {
+
+            Piece leftRook = context.getPieceAt(0, y, piece);
+            if (isARookThatCanCastleAtThisExactMomentInTime(leftRook, piece) && isPathClearForCastling(context, piece.getPosX(), y, -1)) {
                 int newX = piece.getPosX() - 2;
-                if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y));
+                if (newX >= 0 && newX < context.board().getBoardSize()) {
+                    moves.add(new Coordinate(newX, y));
+                }
             }
-            if (!MoveHistory.hasRookMoved(piece.getBoard(), 7, y) &&
-                    isPathClearForCastling(board, piece.getPosX(), y, 1)) {
+
+            Piece rightRook = context.getPieceAt(7, y, piece);
+            if (isARookThatCanCastleAtThisExactMomentInTime(rightRook, piece)
+                    && isPathClearForCastling(context, piece.getPosX(), y, 1)) {
                 int newX = piece.getPosX() + 2;
-                if (newX >= 0 && newX < 8) moves.add(new Coordinate(newX, y));
+                if (newX >= 0 && newX < context.board().getBoardSize()) {
+                    moves.add(new Coordinate(newX, y));
+                }
             }
         }
+
         return moves;
     }
 
-    public static List<Coordinate> getKnightMoves(Piece piece, Board board) {
+    private static boolean isARookThatCanCastleAtThisExactMomentInTime(Piece rook, Piece king) {
+        return rook != null && rook.getType() == PieceType.ROOK && rook.getTeam().equals(king.getTeam()) && !rook.hasMovedEver;
+    }
+
+    public static List<Coordinate> getKnightMoves(Piece piece, MoveContext context) {
         List<Coordinate> moves = new ArrayList<>(12);
 
         int[][] baseOffsets = {
@@ -116,82 +118,86 @@ public class LegalMoveDetector {
 
         int scale = piece.getPieceSize();
         for (int[] offset : baseOffsets) {
-            addMoveForOffset(piece, offset[0] * scale, offset[1] * scale, board, moves);
+            addMoveForOffset(piece, offset[0] * scale, offset[1] * scale, context, moves);
         }
         return moves;
     }
 
-    public static List<Coordinate> getPawnMoves(Piece piece, Board board) {
+    public static List<Coordinate> getPawnMoves(Piece piece, MoveContext context) {
         List<Coordinate> moves = new ArrayList<>(4);
-        int dir = piece.getTeam().equals("White") ? -1 : 1;
-        int x = piece.getPosX(), y = piece.getPosY();
-        int stepSize = piece.getPieceSize();
-        int firstMoveStep = 2 * stepSize;
-        int boardSize = board.getBoardSize();
+        Board board = context.board();
 
-        List<Piece> boardPieces = WorldMap.getAllPiecesOfBoard(board);
+        int dir = piece.getTeam().equalsIgnoreCase("White") ? -1 : 1;
+        int x = piece.getPosX();
+        int y = piece.getPosY();
+        int stepSize = piece.getPieceSize();
+        int boardSize = board.getBoardSize();
 
         // Forward movement
         int newY = y + stepSize * dir;
-        if (newY >= 0 && newY < boardSize &&
-                board.getPieceAt(x, newY, Optional.of(piece), boardPieces) == null) {
+        if (newY >= 0 && newY < boardSize && context.getPieceAt(x, newY, piece) == null) {
             moves.add(new Coordinate(x, newY));
 
             if (!piece.hasMovedEver) {
-                int newY2 = y + firstMoveStep * dir;
-                if (newY2 >= 0 && newY2 < boardSize &&
-                        board.getPieceAt(x, newY2, Optional.of(piece), boardPieces) == null) {
+                int newY2 = y + 2 * stepSize * dir;
+                if (newY2 >= 0 && newY2 < boardSize && context.getPieceAt(x, newY2, piece) == null) {
                     moves.add(new Coordinate(x, newY2));
                 }
             }
         }
 
         // Captures
-        addCaptureMoveForOffset(piece, -1, dir, board, moves);
-        addCaptureMoveForOffset(piece, 1, dir, board, moves);
+        addCaptureMoveForOffset(piece, -stepSize, stepSize * dir, context, moves);
+        addCaptureMoveForOffset(piece, stepSize, stepSize * dir, context, moves);
 
-        // En passant
-        //TODO - make sure this works
-        int enPassantRow = piece.getTeam().equals("White") ? 4 : 3;
+        //TODO - I HATE EN PASSANT, ITS STILL PROBABLY BROKEN
+        int enPassantRow = piece.getTeam().equalsIgnoreCase("White") ? 4 : 3;
         if (y == enPassantRow) {
-            Piece left = board.getPieceAt(x - 1, y, Optional.of(piece), boardPieces);
-            Piece right = board.getPieceAt(x + 1, y, Optional.of(piece), boardPieces);
+            Piece left = context.getPieceAt(x - stepSize, y, piece);
+            Piece right = context.getPieceAt(x + stepSize, y, piece);
+            int y1 = y + stepSize * dir;
 
-            int y1 = y + dir;
-            if (left != null && left.getType() == PieceType.PAWN && !left.getTeam().equals(piece.getTeam())
-                    && MoveHistory.wasLastMovePawnDoubleAdvance(left.getPosX(), left.getPosY(), left.getTeam())) {
-                moves.add(new Coordinate(left.getPosX(), y1));
+            if (isEnPassantTarget(left, piece)) {
+                if (MoveHistory.wasLastMovePawnDoubleAdvance(left.getPosX(), left.getPosY(), left.getTeam())) {
+                    moves.add(new Coordinate(left.getPosX(), y1));
+                }
             }
-            if (right != null && right.getType() == PieceType.PAWN && !right.getTeam().equals(piece.getTeam())
-                    && MoveHistory.wasLastMovePawnDoubleAdvance(right.getPosX(), right.getPosY(), right.getTeam())) {
-                moves.add(new Coordinate(right.getPosX(), y1));
+
+            if (isEnPassantTarget(right, piece)) {
+                if (MoveHistory.wasLastMovePawnDoubleAdvance(
+                        right.getPosX(), right.getPosY(), right.getTeam())) {
+                    moves.add(new Coordinate(right.getPosX(), y1));
+                }
             }
         }
 
         return moves;
     }
 
-    public static List<Coordinate> getSlidingMoves(Piece piece, Board board, int... directions) {
-        return getSlidingMoves(piece, board, Integer.MAX_VALUE - 1, directions);
+    private static boolean isEnPassantTarget(Piece target, Piece pawn) {
+        return target != null && target.getType() == PieceType.PAWN && !target.getTeam().equals(pawn.getTeam());
     }
 
-    public static List<Coordinate> getSlidingMoves(Piece piece, Board board, int maxDistance, int... directions) {
+    public static List<Coordinate> getSlidingMoves(Piece piece, MoveContext context, int... directions) {
+        return getSlidingMoves(piece, context, Integer.MAX_VALUE - 1, directions);
+    }
+
+    public static List<Coordinate> getSlidingMoves(Piece piece, MoveContext context, int maxDistance, int... directions) {
         List<Coordinate> moves = new ArrayList<>(16);
-        int x = piece.getPosX(), y = piece.getPosY();
+        int x = piece.getPosX();
+        int y = piece.getPosY();
+
         for (int i = 0; i < directions.length; i += 2) {
-            int dx = directions[i], dy = directions[i + 1];
-            slideIterative(piece, board, x, y, dx, dy, moves, maxDistance);
+            slideIterative(piece, context, x, y, directions[i], directions[i + 1], moves, maxDistance);
         }
         return moves;
     }
 
-    private static void slideIterative(Piece piece, Board board, int startX, int startY, int dx, int dy, List<Coordinate> moves, int maxDistance) {
+    private static void slideIterative(Piece piece, MoveContext context, int startX, int startY, int dx, int dy, List<Coordinate> moves, int maxDistance) {
         int localX = startX;
         int localY = startY;
-        final int stepMultiplier = piece.getPieceSize();
-        List<Piece> cachedPieces = WorldMap.getAllPiecesOfBoard(board);
-
-        int boardSize = board.getBoardSize();
+        int stepMultiplier = piece.getPieceSize();
+        int boardSize = context.board().getBoardSize();
         int traveled = 0;
 
         // fetch neighbor list once per loop iteration
@@ -199,62 +205,71 @@ public class LegalMoveDetector {
             int nextX = localX + dx * stepMultiplier;
             int nextY = localY + dy * stepMultiplier;
 
-            // same-board move
-            if (nextX >= 0 && nextX < boardSize && nextY >= 0 && nextY < boardSize) {
-                if (!isValidMove(nextX, nextY, board, piece)) break;
-
-                Piece target = board.getPieceAt(nextX, nextY, Optional.of(piece), cachedPieces);
-                if (target != null) {
-                    if (!target.getTeam().equals(piece.getTeam())) {
-                        moves.add(new Coordinate(nextX, nextY));
-                    }
-                    break;
-                }
-
-                moves.add(new Coordinate(nextX, nextY));
-                localX = nextX;
-                localY = nextY;
-                traveled++;
-                continue;
+            if (nextX < 0 || nextX >= boardSize || nextY < 0 || nextY >= boardSize) {
+                break;
             }
 
-            break;
+            if (!isValidMove(nextX, nextY, context, piece)) {
+                break;
+            }
+
+            Piece target = context.getPieceAt(nextX, nextY, piece);
+            if (target != null) {
+                if (!target.getTeam().equals(piece.getTeam())) {
+                    moves.add(new Coordinate(nextX, nextY));
+                }
+                break;
+            }
+
+            moves.add(new Coordinate(nextX, nextY));
+            localX = nextX;
+            localY = nextY;
+            traveled++;
         }
     }
 
-    protected static boolean isPathClearForCastling(Board board, int x, int y, int direction) {
-        int step = (direction > 0) ? 1 : -1;
-        List<Piece> boardPieces = WorldMap.getAllPiecesOfBoard(board);
-        int limit = (direction > 0) ? 7 : 0;
+    protected static boolean isPathClearForCastling(MoveContext context, int x, int y, int direction) {
+        int step = direction > 0 ? 1 : -1;
+        int limit = direction > 0 ? 7 : 0;
         int i = x + step;
         while (i != limit && i >= 0 && i <= 7) {
-            if (board.getPieceAt(i, y, Optional.empty(), boardPieces) != null) return false;
+            if (context.getPieceAt(i, y, null) != null) {
+                return false;
+            }
             i += step;
         }
         return true;
     }
 
-    protected static boolean isValidMove(int newX, int newY, Board board, Piece piece) {
+    protected static boolean isValidMove(int newX, int newY, MoveContext context, Piece piece) {
+        Board board = context.board();
         int boardSize = board.getBoardSize();
         int size = piece.getPieceSize();
-        if (newX < 0 || newY < 0 || newX + size > boardSize || newY + size > boardSize) return false;
+        if (newX < 0 || newY < 0 || newX + size > boardSize || newY + size > boardSize) {
+            return false;
+        }
 
-        List<Piece> boardPieces = WorldMap.getAllPiecesOfBoard(board);
-        return piece.squaresAt(newX, newY, board).allMatch((square) -> {
-            Piece p = board.getPieceAt(square.x(), square.y(), Optional.empty(), boardPieces);
-            return p == null || p == piece || !p.getTeam().equals(piece.getTeam());
+        return piece.squaresAt(newX, newY).allMatch(square -> {
+            Piece other = context.getPieceAt(square.x(), square.y(), piece);
+            return other == null || other == piece || !other.getTeam().equals(piece.getTeam());
         });
     }
 
-    protected static boolean isValidCapture(int newX, int newY, Board board, Piece piece) {
+    protected static boolean isValidCapture(int newX, int newY, MoveContext context, Piece piece) {
+        Board board = context.board();
         int boardSize = board.getBoardSize();
         int size = piece.getPieceSize();
-        if (newX < 0 || newY < 0 || newX + size > boardSize || newY + size > boardSize) return false;
+        if (newX < 0 || newY < 0 || newX + size > boardSize || newY + size > boardSize) {
+            return false;
+        }
 
-        List<Piece> boardPieces = WorldMap.getAllPiecesOfBoard(board);
-        return isValidMove(newX, newY, board, piece) && piece.squaresAt(newX, newY, board).anyMatch((square) -> {
-            Piece p = board.getPieceAt(square.x(), square.y(), Optional.empty(), boardPieces);
-            return p != null && !p.getTeam().equals(piece.getTeam());
+        if (!isValidMove(newX, newY, context, piece)) {
+            return false;
+        }
+
+        return piece.squaresAt(newX, newY).anyMatch(square -> {
+            Piece other = context.getPieceAt(square.x(), square.y(), piece);
+            return other != null && !other.getTeam().equals(piece.getTeam());
         });
     }
 }

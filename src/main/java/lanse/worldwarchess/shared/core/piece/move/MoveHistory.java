@@ -35,7 +35,7 @@ public class MoveHistory {
 
 
     public static MoveRecord getLastMove() {
-        return moveRecords.isEmpty() ? null : moveRecords.get(moveRecords.size() - 1);
+        return moveRecords.isEmpty() ? null : moveRecords.getLast();
     }
 
     public static boolean wasLastMovePawnDoubleAdvance(int x, int y, String color) {
@@ -128,6 +128,14 @@ public class MoveHistory {
 
     public static void addMoveForRecord(Piece oldPiece, Piece newPiece, boolean shouldSend, String moveType, int bossHealth) {
         newPiece.hasMovedEver = true;
+
+        boolean isCapture = oldPiece.getPosX() != newPiece.getPosX() || oldPiece.getPosY() != newPiece.getPosY();
+
+        moveRecords.add(new MoveRecord(newPiece,
+                oldPiece.getPosX(), oldPiece.getPosY(),
+                newPiece.getPosX(), newPiece.getPosY(),
+                isCapture
+        ));
 
         String health = (bossHealth == -40404) ? "" : String.valueOf(bossHealth);
 
