@@ -7,7 +7,6 @@ import lanse.worldwarchess.shared.core.piece.PieceType;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.piece.move.MoveContext;
 import lanse.worldwarchess.shared.core.piece.move.MoveExecutor;
-import lanse.worldwarchess.shared.core.piece.move.SimulatedMoveExecutor;
 import lanse.worldwarchess.shared.core.thread.ThreadNames;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
@@ -114,7 +113,7 @@ public class NPC {
         time = 0;
 
         RootMove fallback = rootMoves.getFirst();
-        SearchResult best = new SearchResult(fallback.livePiece(), fallback.move(), evaluate(root, team, ai), 0);
+        SearchResult best = new SearchResult(fallback.livePiece(), fallback.move(), evaluate(root, team, opponent, ai), 0);
 
         // Iterative deepening: retain the last fully completed result.
         for (int depth = 1; ; depth++) {
@@ -129,12 +128,16 @@ public class NPC {
                 for (RootMove rootMove : rootMoves) {
                     checkTime();
 
-                    MoveContext child = copyContext(root);
-                    Piece movingPiece = child.pieces().get(rootMove.pieceIndex());
+                    Piece movingPiece = root.pieces().get(rootMove.pieceIndex());
 
-                    SimulatedMoveExecutor.executeMove(child, movingPiece, rootMove.move().x(), rootMove.move().y());
+                    MoveContext.TemporaryMove undo = root.makeMove(movingPiece, rootMove.move().x(), rootMove.move().y());
 
-                    double score = search(child, opponent, team, opponent, depth - 1, alpha, beta, ai);
+                    double score;
+                    try {
+                        score = search(root, opponent, team, opponent, depth - 1, alpha, beta, ai);
+                    } finally {
+                        root.undoMove(undo);
+                    }
 
                     if (iterationBest == null || isBetter(score, iterationBest.score(), ai)) {
                         iterationBest = new SearchResult(rootMove.livePiece(), rootMove.move(), score, depth);
@@ -164,7 +167,7 @@ public class NPC {
         checkTime();
 
         if (depth <= 0) {
-            return evaluate(context, rootTeam, ai);
+            return evaluate(context, rootTeam, opponentTeam, ai);
         }
 
         List<Piece> pieces = context.pieces();
@@ -185,7 +188,7 @@ public class NPC {
         //TODO - No moves, until checkmate/stalemate detection exists, evaluate the resulting position rather
         // than assuming a terminal outcome.
         if (moves.isEmpty()) {
-            return evaluate(context, rootTeam, ai);
+            return evaluate(context, rootTeam, opponentTeam, ai);
         }
 
         orderCapturesFirst(context, moves);
@@ -200,12 +203,16 @@ public class NPC {
         for (RootMove move : moves) {
             checkTime();
 
-            MoveContext child = copyContext(context);
-            Piece movingPiece = child.pieces().get(move.pieceIndex());
+            Piece movingPiece = pieces.get(move.pieceIndex());
 
-            SimulatedMoveExecutor.executeMove(child, movingPiece, move.move().x(), move.move().y());
+            MoveContext.TemporaryMove undo = context.makeMove(movingPiece, move.move().x(), move.move().y());
 
-            double score = search(child, nextTeam, rootTeam, opponentTeam, depth - 1, alpha, beta, ai);
+            double score;
+            try {
+                score = search(context, nextTeam, rootTeam, opponentTeam, depth - 1, alpha, beta, ai);
+            } finally {
+                context.undoMove(undo);
+            }
 
             if (maximizing) {
                 bestScore = Math.max(bestScore, score);
@@ -254,10 +261,8 @@ public class NPC {
     }
 
     //Positive scores favor the root team, negative scores favor its opponent.
-    private static double evaluate(MoveContext context, String rootTeam, NPC.SELECTED_AI ai) {
+    private static double evaluate(MoveContext context, String rootTeam, String opponentTeam, NPC.SELECTED_AI ai) {
         double material = 0;
-        double rootPosition = 0;
-        double enemyPosition = 0;
 
         for (Piece piece : context.pieces()) {
             double value = piece.getValue();
@@ -269,13 +274,8 @@ public class NPC {
             }
         }
 
-        rootPosition = evaluatePosition(context, rootTeam);
-
-        String enemyTeam = context.pieces().stream().map(Piece::getTeam).filter(team -> !team.equals(rootTeam)).findFirst().orElse(null);
-
-        if (enemyTeam != null) {
-            enemyPosition = evaluatePosition(context, enemyTeam);
-        }
+        double rootPosition = evaluatePosition(context, rootTeam);
+        double enemyPosition = evaluatePosition(context, opponentTeam);
 
         double score = material + rootPosition - enemyPosition;
 
