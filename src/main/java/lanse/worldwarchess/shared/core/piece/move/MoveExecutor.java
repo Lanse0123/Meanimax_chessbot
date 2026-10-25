@@ -4,6 +4,8 @@ import lanse.worldwarchess.shared.core.Timer;
 import lanse.worldwarchess.shared.core.piece.PawnPromotionManager;
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.PieceType;
+import lanse.worldwarchess.shared.core.piece.marker.Marker;
+import lanse.worldwarchess.shared.core.piece.marker.MoveMarker;
 import lanse.worldwarchess.shared.core.sound.SoundManager;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
@@ -17,6 +19,9 @@ public class MoveExecutor {
                                    boolean shouldSend, String moveType, boolean isOurMove, boolean isFromDecoder) {
 
         boolean playNormalSound = true;
+
+        Marker.markers.add(new MoveMarker(newBoard, newX, newY, 1));
+        Marker.markers.add(new MoveMarker(newBoard, originalX, originalY, 1));
 
         Piece targetPiece = newBoard.getPieceAt(newX, newY, executorPiece, WorldMap.getAllPiecesOfBoard(newBoard));
 
