@@ -42,9 +42,6 @@ public class WorldMap {
     }
 
     public static Map<LegalMoveDetector.Coordinate, List<Boolean>> getAllEnemyMoves() {
-        LagTester lagTester = new LagTester();
-        lagTester.start("Get ALL Enemy Moves");
-
         Map<LegalMoveDetector.Coordinate, List<Boolean>> attackedSquares = new HashMap<>();
 
         for (Piece piece : pieces) {
@@ -54,7 +51,6 @@ public class WorldMap {
             }
         }
 
-        lagTester.stop();
         return attackedSquares;
     }
 

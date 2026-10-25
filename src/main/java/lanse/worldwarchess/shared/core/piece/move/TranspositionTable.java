@@ -56,11 +56,6 @@ public class TranspositionTable {
     }
 
     public static long hashPiece(Piece piece, int x, int y) {
-        //TODO - this should be impossible by now, at some point I want to remove all of the bounds checks everywhere
-        if (x < 0 || y < 0 || x >= 8 || y >= 8) {
-            return 0L;
-        }
-
         int team = piece.getTeam() ? 1 : 0;
         int type = piece.getType().ordinal();
         int square = y * 8 + x;

@@ -23,6 +23,7 @@ import java.util.Map;
  * and I saw a lot of other ideas but I want this to be my own creation, not a tutorial or something else. **/
 public class NPC {
 
+    //TODO - invent check
     public static Map<LegalMoveDetector.Coordinate, List<Boolean>> attackedSquares = new HashMap<>();
 
     public enum SELECTED_AI {
@@ -36,7 +37,8 @@ public class NPC {
     public record SearchResult(Piece piece, LegalMoveDetector.Coordinate move, double score, int depth) {}
     private record RootMove(Piece livePiece, int pieceIndex, LegalMoveDetector.Coordinate move) {}
 
-    private static final int MAX_CAPTURE_CHAIN_DEPTH = 12;
+    //TODO - mess around with this number to see what depth is strongest, 12 is original, or comment out to remove an if statement
+    private static final int MAX_CAPTURE_CHAIN_DEPTH = 120;
 
     //James likes custom exceptions so I wanted to mess around with one to break out when we hit the bot time limit
     private static final class SearchTimeout extends RuntimeException {
@@ -118,6 +120,9 @@ public class NPC {
         //For not evaluating duplicate positions
         Map<Long, TranspositionTable.TranspositionTableEntry> transpositionTable = new HashMap<>(1 << 16);
 
+        //spacing
+        System.out.println();
+
         // Iterative deepening. Start at depth 1, find the best, then search depth 2. Since it keeps in mind the best
         // Of each depth, it can guess the alpha beta pruning quickly, making it more efficient
         for (int depth = 1; ; depth++) {
@@ -135,27 +140,6 @@ public class NPC {
                     Piece movingPiece = root.pieces().get(rootMove.pieceIndex());
 
                     MoveContext.TemporaryMove undo = root.makeMove(movingPiece, rootMove.move().x(), rootMove.move().y());
-
-                    //For testing Zobrist hash mismatches:
-                    ////////////////////////////////////////////////////////////////////////////////////////////
-//                    long before = root.positionHash();
-//
-//                    MoveContext.TemporaryMove undo = root.makeMove(movingPiece, rootMove.move.x(), rootMove.move.y());
-//
-//                    long incremental = root.positionHash();
-//                    long rebuilt = new MoveContext(root.board(), root.pieces()).positionHash();
-//
-//                    if (incremental != rebuilt) {
-//                        throw new IllegalStateException("Hash mismatch after makeMove()");
-//                    }
-//
-//                    root.undoMove(undo);
-//
-//                    if (root.positionHash() != before) {
-//                        throw new IllegalStateException("Hash mismatch after undoMove()");
-//                    }
-                    ////////////////////////////////////////////////////////////////////////////////////////////
-
 
                     double score;
                     try {
@@ -215,13 +199,6 @@ public class NPC {
             if (alpha >= beta) {
                 return cached.score();
             }
-        }
-
-        //TODO - add quiescence search
-        if (depth <= 0) {
-            double score = evaluate(context, rootTeam, opponentTeam, ai);
-            storePosition(transpositionTable, hash, depth, score, TranspositionTable.Bound.EXACT);
-            return score;
         }
 
         List<Piece> pieces = context.pieces();
@@ -469,10 +446,6 @@ public class NPC {
 
             int x = piece.getPosX();
             int y = piece.getPosY();
-
-            if ((x | y) < 0 || x >= 8 || y >= 8) {
-                continue;
-            }
 
             int center = centerScore(x, y);
 

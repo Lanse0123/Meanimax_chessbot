@@ -46,10 +46,8 @@ public final class MoveContext {
                 int x = piece.getPosX();
                 int y = piece.getPosY();
 
-                if (isInBounds(x, y)) {
-                    occupancy[x][y] = piece;
-                    positionHash ^= TranspositionTable.hashPiece(piece, x, y);
-                }
+                occupancy[x][y] = piece;
+                positionHash ^= TranspositionTable.hashPiece(piece, x, y);
             }
         }
     }
@@ -59,8 +57,6 @@ public final class MoveContext {
     }
 
     public Piece getPieceAt(int x, int y, Piece ignoredPiece) {
-        if (!isInBounds(x, y)) return null;
-
         Piece piece = occupancy[x][y];
         return piece == ignoredPiece ? null : piece;
     }
@@ -69,22 +65,20 @@ public final class MoveContext {
         int oldX = piece.getPosX();
         int oldY = piece.getPosY();
 
-        if (isInBounds(oldX, oldY) && occupancy[oldX][oldY] == piece) {
+        if (occupancy[oldX][oldY] == piece) {
             occupancy[oldX][oldY] = null;
         }
 
         piece.setBoardPosition(newX, newY);
 
-        if (isInBounds(newX, newY)) {
-            occupancy[newX][newY] = piece;
-        }
+        occupancy[newX][newY] = piece;
     }
 
     public void removePiece(Piece piece) {
         int x = piece.getPosX();
         int y = piece.getPosY();
 
-        if (isInBounds(x, y) && occupancy[x][y] == piece) {
+        if (occupancy[x][y] == piece) {
             occupancy[x][y] = null;
         }
 
@@ -99,13 +93,9 @@ public final class MoveContext {
         int x = piece.getPosX();
         int y = piece.getPosY();
 
-        if (piece.getBoard() == board && isInBounds(x, y)) {
+        if (piece.getBoard() == board) {
             occupancy[x][y] = piece;
         }
-    }
-
-    private boolean isInBounds(int x, int y) {
-        return x >= 0 && y >= 0 && x < occupancy.length && y < occupancy.length;
     }
 
     public record TemporaryMove(Piece movingPiece, int oldX, int oldY, boolean oldHasMovedEver,
@@ -124,7 +114,6 @@ public final class MoveContext {
         Piece rook = null;
         int rookOldX = -1;
         int rookOldY = -1;
-        boolean rookOldHasMoved = false;
         boolean rookOldHasMovedEver = false;
 
         // Castling made this so much more verbose

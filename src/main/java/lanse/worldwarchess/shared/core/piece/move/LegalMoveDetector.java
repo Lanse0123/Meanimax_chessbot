@@ -147,7 +147,7 @@ public class LegalMoveDetector {
 
         //TODO - I HATE EN PASSANT, ITS STILL PROBABLY BROKEN
         int enPassantRow = piece.getTeam() ? 4 : 3;
-        if (y == enPassantRow) {
+        if (y == enPassantRow && x > 0 && x < 7) {
             Piece left = context.getPieceAt(x - 1, y, piece);
             Piece right = context.getPieceAt(x + 1, y, piece);
             int y1 = y + dir;
@@ -227,10 +227,7 @@ public class LegalMoveDetector {
     }
 
     protected static boolean isValidMove(int newX, int newY, MoveContext context, Piece piece) {
-        Board board = context.board();
-        int boardSize = board.getBoardSize();
-
-        if (newX < 0 || newY < 0 || newX >= boardSize || newY >= boardSize) {
+        if (newX < 0 || newY < 0 || newX >= 8 || newY >= 8) {
             return false;
         }
 
@@ -239,10 +236,7 @@ public class LegalMoveDetector {
     }
 
     protected static boolean isValidCapture(int newX, int newY, MoveContext context, Piece piece) {
-        Board board = context.board();
-        int boardSize = board.getBoardSize();
-
-        if (newX < 0 || newY < 0 || newX >= boardSize || newY >= boardSize) {
+        if (newX < 0 || newY < 0 || newX >= 8 || newY >= 8) {
             return false;
         }
 
