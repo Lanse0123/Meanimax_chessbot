@@ -33,14 +33,16 @@ public class LegalMoveDetector {
             {1, -2},  {1, 2}
     };
 
+    private static final List<Coordinate> NO_MOVES = List.of();
+
     public static List<Coordinate> getLegalMoves(Piece piece) {
-        if (piece == null || piece.getBoard() == null) return new ArrayList<>();
+        if (piece == null || piece.getBoard() == null) return NO_MOVES;
         return getLegalMoves(piece, MoveContext.contextify(piece.getBoard()));
     }
 
     public static List<Coordinate> getLegalMoves(Piece piece, MoveContext context) {
         if (piece == null || context == null || context.board() == null || piece.getBoard() != context.board() || !context.pieces().contains(piece)) {
-            return new ArrayList<>();
+            return NO_MOVES;
         }
 
         return switch (piece.getType()) {
@@ -54,24 +56,20 @@ public class LegalMoveDetector {
     }
 
     protected static void addMoveForOffset(Piece piece, int offsetX, int offsetY, MoveContext context, List<Coordinate> moves) {
-        Board board = context.board();
-        int localX = piece.getPosX() + offsetX;
-        int localY = piece.getPosY() + offsetY;
-        int boardSize = board.getBoardSize();
+        int x = piece.getPosX() + offsetX;
+        int y = piece.getPosY() + offsetY;
 
-        if (localX >= 0 && localX < boardSize && localY >= 0 && localY < boardSize && isValidMove(localX, localY, context, piece)) {
-            moves.add(new Coordinate(localX, localY));
+        if (isValidMove(x, y, context, piece)) {
+            moves.add(new Coordinate(x, y));
         }
     }
 
     private static void addCaptureMoveForOffset(Piece piece, int offsetX, int offsetY, MoveContext context, List<Coordinate> moves) {
-        Board board = context.board();
-        int localX = piece.getPosX() + offsetX;
-        int localY = piece.getPosY() + offsetY;
-        int boardSize = board.getBoardSize();
+        int x = piece.getPosX() + offsetX;
+        int y = piece.getPosY() + offsetY;
 
-        if (localX >= 0 && localX < boardSize && localY >= 0 && localY < boardSize && isValidCapture(localX, localY, context, piece)) {
-            moves.add(new Coordinate(localX, localY));
+        if (isValidCapture(x, y, context, piece)) {
+            moves.add(new Coordinate(x, y));
         }
     }
 
@@ -194,6 +192,7 @@ public class LegalMoveDetector {
         int x = startX;
         int y = startY;
         int boardSize = context.board().getBoardSize();
+        String team = piece.getTeam();
 
         for (int distance = 0; distance < maxDistance; distance++) {
             x += dx;
@@ -203,20 +202,16 @@ public class LegalMoveDetector {
                 break;
             }
 
-            if (!isValidMove(x, y, context, piece)) {
-                break;
-            }
-
             Piece target = context.getPieceAt(x, y, piece);
 
-            if (target != null) {
-                if (!target.getTeam().equals(piece.getTeam())) {
+            if (target == null) {
+                moves.add(new Coordinate(x, y));
+            } else {
+                if (!target.getTeam().equals(team)) {
                     moves.add(new Coordinate(x, y));
                 }
                 break;
             }
-
-            moves.add(new Coordinate(x, y));
         }
     }
 

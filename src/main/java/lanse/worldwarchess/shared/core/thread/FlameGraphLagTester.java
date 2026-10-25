@@ -108,6 +108,7 @@ public class FlameGraphLagTester {
         if (running){
             stop();
         } else {
+            flameSamples.clear();
             start();
         }
     }
