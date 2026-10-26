@@ -53,7 +53,7 @@ public class BoardPresets {
     private static void addPawns(List<Piece> pieces, int boardX, int boardY, boolean team, int playerID, Board board) {
         int pawnRow = team ? 6 : 1;
         for (int i = 0; i < 8; i++) {
-            pieces.add(new Piece(playerID, board, PieceType.fromName("Pawn"), team, boardX, boardY, i, pawnRow));
+            pieces.add(new Piece(playerID, board, PieceType.fromName("Pawn"), team, i, pawnRow));
         }
     }
 
@@ -61,7 +61,7 @@ public class BoardPresets {
         int backRow = team ? 7 : 0;
 
         for (int i = 0; i < 8; i++) {
-            pieces.add(new Piece(playerID, board, PieceType.fromName(order[i]), team, boardX, boardY, i, backRow));
+            pieces.add(new Piece(playerID, board, PieceType.fromName(order[i]), team, i, backRow));
         }
     }
 

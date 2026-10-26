@@ -26,7 +26,7 @@ public class MoveExecutor {
         Piece targetPiece = newBoard.getPieceAt(newX, newY, executorPiece, WorldMap.getAllPiecesOfBoard(newBoard));
 
         Piece oldPiece = new Piece(executorPiece.getPlayerID(), executorPiece.getBoard(), executorPiece.getType(), executorPiece.getTeam(),
-                executorPiece.getBoardX(), executorPiece.getBoardY(), executorPiece.getPosX(), executorPiece.getPosY());
+                executorPiece.getPosX(), executorPiece.getPosY());
 
         // Handle captures
         if (targetPiece != null && !targetPiece.getTeam() == executorPiece.getTeam()) {
@@ -37,7 +37,6 @@ public class MoveExecutor {
         }
 
         // Move the piece
-        executorPiece.setMapPosition(newBoard.getBoardX(), newBoard.getBoardY());
         executorPiece.setBoardPosition(newX, newY);
         executorPiece.setBoard(newBoard);
 

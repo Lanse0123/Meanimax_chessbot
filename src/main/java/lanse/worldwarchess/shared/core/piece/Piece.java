@@ -25,20 +25,17 @@ public final class Piece {
     private Board board;
     private PieceType type;
     private final boolean team; // 0 = white, 1 = black
-    private int boardX, boardY;  // Position on the chessboard grid
     private int posX, posY;      // Position within the board
     public boolean hasMovedEver = false;
     private String playerName;
 
     /** REMEMBER TO ADD TO THE PieceClassPrefixMap.java WHEN ADDING A NEW PIECE CLASS*/
 
-    public Piece(int playerId, Board board, PieceType type, boolean team, int boardX, int boardY, int posX, int posY) {
+    public Piece(int playerId, Board board, PieceType type, boolean team, int posX, int posY) {
         this.playerID = playerId;
         this.board = board;
         this.type = type;
         this.team = team;
-        this.boardX = boardX;
-        this.boardY = boardY;
         this.posX = posX;
         this.posY = posY;
 
@@ -53,15 +50,9 @@ public final class Piece {
     public boolean getTeam() { return team; }
     public int getPosX() { return posX; }
     public int getPosY() { return posY; }
-    public int getBoardX() { return boardX; }
-    public int getBoardY() { return boardY; }
     public int getPieceClassPrefix() { return PieceClassPrefixMap.getPrefixIndex(this.getClass()); }
     public String getPlayerName(){ return playerName; }
 
-    public void setMapPosition(int boardX, int boardY) {
-        this.boardX = (boardX);
-        this.boardY = (boardY);
-    }
     public void setBoardPosition(int posX, int posY) {
         this.posX = (posX); // Snap to grid of piece size
         this.posY = (posY);
@@ -174,7 +165,7 @@ public final class Piece {
     }
 
     public Piece clonePiece(Board newBoard) {
-        Piece clone = new Piece(playerID, newBoard, type, team, boardX, boardY, posX, posY);
+        Piece clone = new Piece(playerID, newBoard, type, team, posX, posY);
         clone.hasMovedEver = this.hasMovedEver;
         clone.setPlayerName(this.getPlayerName());
         return clone;

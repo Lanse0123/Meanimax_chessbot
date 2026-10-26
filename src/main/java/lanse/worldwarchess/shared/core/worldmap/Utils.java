@@ -17,25 +17,6 @@ import static lanse.worldwarchess.shared.core.screens.ingame.GamePanel.getBoardR
 public class Utils {
     //for healers and maybe terrestrials etc needing to know how to find a piece
 
-    // Pixel distance between the two pieces
-    public static int distance(Piece a, Piece b) {
-        return distance(a.getBoardX(), a.getBoardY(), a.getBoard(), b.getBoardX(), b.getBoardY(), b.getBoard());
-    }
-
-    // Pixel distance between the two points
-    public static int distance(int x1, int y1, Board board1, int x2, int y2, Board board2) {
-        if (board1 == null || board2 == null) return Integer.MAX_VALUE;
-
-        // Convert local board coords to global coords
-        int globalX1 = (board1.getBoardX() / board1.getBaseTileSize()) + x1;
-        int globalY1 = (board1.getBoardY() / board1.getBaseTileSize()) + y1;
-
-        int globalX2 = (board2.getBoardX() / board2.getBaseTileSize()) + x2;
-        int globalY2 = (board2.getBoardY() / board2.getBaseTileSize()) + y2;
-
-        return Math.abs(globalX1 - globalX2) + Math.abs(globalY1 - globalY2);
-    }
-
     // Returns the distance between a piece and a coordinate on the same board, or +∞ if they are on separate boards
     public static double localDistance(Piece p, LegalMoveDetector.Coordinate c) {
         return p.squares().map((square) -> localDistance(square, c)).min(Double::compareTo).orElse(Double.POSITIVE_INFINITY);
