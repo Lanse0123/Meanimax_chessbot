@@ -15,15 +15,9 @@ public class TextureKey {
 
     public static final Map<String, BufferedImage> textures = new HashMap<>();
 
-    //TODO - this should be converted to how Bonk Universe's Texture Key works because this is ew
-    public final static String[] tiles = {"bs", "ws", "us", "is"};
+    public final static String[] tiles = {"bs", "ws", "us"};
 
-    public final static String[] pieces = {"bb", "bk", "bn", "bp", "bq", "br", "wb", "wk", "wn", "wp", "wq",
-            "wr", "zb", "zk", "zn", "zp", "zq", "zr", "zs", "vb", "vk", "vn", "vp", "vq", "vr", "vs",
-            "hb", "hk", "hn", "hp", "hq", "hr", "hs", "mb", "mk", "mn", "mp", "mq", "mr", "pb", "pk",
-            "pn", "pq", "pr", "sb", "sk", "sn", "sp", "sq", "sr", "ab", "ak", "an", "ap", "aq", "ar",
-            "ib", "ik", "in", "iq", "ir", "nb", "nk", "nn", "np", "nq", "nr", "bkc", "bc", "wc", "wkc",
-            "cb", "ck", "cn", "cp", "cq", "cr", "eb", "ek", "en", "ep", "eq", "er", "ss", "2s"};
+    public final static String[] pieces = {"bb", "bk", "bn", "bp", "bq", "br", "wb", "wk", "wn", "wp", "wq", "wr",};
 
     public final static String[] highlights = {"CaptureSquare", "LegalSquare", "VisibleSquare", "VisibleCapture"};
 
