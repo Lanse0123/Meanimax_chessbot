@@ -18,7 +18,6 @@ public final class MoveContext {
     private final Board board;
     private final List<Piece> pieces;
     private final Piece[][] occupancy;
-    private long positionHash;
 
     public Board board() {
         return board;
@@ -32,10 +31,6 @@ public final class MoveContext {
         return occupancy;
     }
 
-    public long positionHash() {
-        return positionHash;
-    }
-
     public MoveContext(Board board, List<Piece> pieces) {
         this.board = board;
         this.pieces = new ArrayList<>(pieces);
@@ -47,7 +42,6 @@ public final class MoveContext {
                 int y = piece.getPosY();
 
                 occupancy[x][y] = piece;
-                positionHash ^= TranspositionTable.hashPiece(piece, x, y);
             }
         }
     }
@@ -133,16 +127,8 @@ public final class MoveContext {
         TemporaryMove undo = new TemporaryMove(piece, oldX, oldY, piece.hasMovedEver, captured,
                 capturedX, capturedY, capturedIndex, rook, rookOldX, rookOldY, rookOldHasMovedEver);
 
-        //Transposition tables make this so much harder to read...
-        positionHash ^= TranspositionTable.hashPiece(piece, oldX, oldY);
-
         if (captured != null) {
-            positionHash ^= TranspositionTable.hashPiece(captured, capturedX, capturedY);
             removePiece(captured);
-        }
-
-        if (rook != null) {
-            positionHash ^= TranspositionTable.hashPiece(rook, rookOldX, rookOldY);
         }
 
         movePiece(piece, newX, newY);
@@ -152,10 +138,7 @@ public final class MoveContext {
             int rookNewX = newX > oldX ? newX - 1 : newX + 1;
             movePiece(rook, rookNewX, oldY);
             rook.hasMovedEver = true;
-            positionHash ^= TranspositionTable.hashPiece(rook, rookNewX, oldY);
         }
-
-        positionHash ^= TranspositionTable.hashPiece(piece, newX, newY);
 
         return undo;
     }
@@ -163,16 +146,7 @@ public final class MoveContext {
     public void undoMove(TemporaryMove undo) {
         Piece piece = undo.movingPiece();
 
-        int currentX = piece.getPosX();
-        int currentY = piece.getPosY();
-
-        // Remove the current contributions before restoring the old state because it makes transposition table faster
-        positionHash ^= TranspositionTable.hashPiece(piece, currentX, currentY);
-
         Piece rook = undo.castlingRook();
-        if (rook != null) {
-            positionHash ^= TranspositionTable.hashPiece(rook, rook.getPosX(), rook.getPosY());
-        }
 
         movePiece(piece, undo.oldX(), undo.oldY());
         piece.hasMovedEver = undo.oldHasMovedEver();
@@ -186,16 +160,6 @@ public final class MoveContext {
         if (captured != null) {
             pieces.add(undo.capturedPieceIndex(), captured);
             occupancy[undo.capturedX()][undo.capturedY()] = captured;
-        }
-
-        positionHash ^= TranspositionTable.hashPiece(piece, undo.oldX(), undo.oldY());
-
-        if (rook != null) {
-            positionHash ^= TranspositionTable.hashPiece(rook, undo.rookOldX(), undo.rookOldY());
-        }
-
-        if (captured != null) {
-            positionHash ^= TranspositionTable.hashPiece(captured, undo.capturedX(), undo.capturedY());
         }
     }
 }

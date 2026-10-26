@@ -7,7 +7,6 @@ import lanse.worldwarchess.shared.core.piece.PieceType;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.piece.move.MoveContext;
 import lanse.worldwarchess.shared.core.piece.move.MoveExecutor;
-import lanse.worldwarchess.shared.core.piece.move.TranspositionTable;
 import lanse.worldwarchess.shared.core.thread.ThreadNames;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
@@ -117,9 +116,6 @@ public class NPC {
         RootMove fallback = rootMoves.getFirst();
         SearchResult best = new SearchResult(fallback.livePiece(), fallback.move(), evaluate(root, team, !team, ai), 0);
 
-        //For not evaluating duplicate positions
-        Map<Long, TranspositionTable.TranspositionTableEntry> transpositionTable = new HashMap<>(1 << 16);
-
         //spacing
         System.out.println();
 
@@ -143,7 +139,7 @@ public class NPC {
 
                     double score;
                     try {
-                        score = search(root, !team, team, !team, depth - 1, alpha, beta, ai, transpositionTable);
+                        score = search(root, !team, team, !team, depth - 1, alpha, beta, ai);
                     } finally {
                         root.undoMove(undo);
                     }
@@ -173,15 +169,13 @@ public class NPC {
     }
 
     private static double search(MoveContext context, boolean teamToMove, boolean rootTeam, boolean opponentTeam, int depth,
-            double alpha, double beta, SELECTED_AI ai, Map<Long, TranspositionTable.TranspositionTableEntry> transpositionTable) {
+            double alpha, double beta, SELECTED_AI ai) {
 
         checkTime();
 
         if (depth <= 0) {
             return quiescenceSearch(context, teamToMove, rootTeam, opponentTeam, alpha, beta, ai, 0);
         }
-
-        long hash = TranspositionTable.hashPosition(context, teamToMove, rootTeam, ai);
 
 //        if (depth <= 0) {
 //            double score = evaluate(context, rootTeam, opponentTeam, ai);
@@ -191,22 +185,6 @@ public class NPC {
 
         double originalAlpha = alpha;
         double originalBeta = beta;
-
-        TranspositionTable.TranspositionTableEntry cached = transpositionTable.get(hash);
-
-        if (cached != null && cached.depth() >= depth) {
-            switch (cached.bound()) {
-                case EXACT -> {
-                    return cached.score();
-                }
-                case LOWER -> alpha = Math.max(alpha, cached.score());
-                case UPPER -> beta = Math.min(beta, cached.score());
-            }
-
-            if (alpha >= beta) {
-                return cached.score();
-            }
-        }
 
         List<Piece> pieces = context.pieces();
         List<RootMove> moves = new ArrayList<>();
@@ -225,7 +203,6 @@ public class NPC {
 
         if (moves.isEmpty()) {
             double score = evaluate(context, rootTeam, opponentTeam, ai);
-            storePosition(transpositionTable, hash, depth, score, TranspositionTable.Bound.EXACT);
             return score;
         }
 
@@ -245,7 +222,7 @@ public class NPC {
 
             double score;
             try {
-                score = search(context, nextTeam, rootTeam, opponentTeam, depth - 1, alpha, beta, ai, transpositionTable);
+                score = search(context, nextTeam, rootTeam, opponentTeam, depth - 1, alpha, beta, ai);
             } finally {
                 context.undoMove(undo);
             }
@@ -265,16 +242,6 @@ public class NPC {
             }
         }
 
-        TranspositionTable.Bound bound;
-        if (bestScore <= originalAlpha) {
-            bound = TranspositionTable.Bound.UPPER;
-        } else if (bestScore >= originalBeta) {
-            bound = TranspositionTable.Bound.LOWER;
-        } else {
-            bound = TranspositionTable.Bound.EXACT;
-        }
-
-        storePosition(transpositionTable, hash, depth, bestScore, bound);
         return bestScore;
     }
 
@@ -344,22 +311,6 @@ public class NPC {
         }
 
         return bestScore;
-    }
-
-    private static void storePosition(Map<Long, TranspositionTable.TranspositionTableEntry> table,
-            long hash, int depth, double score, TranspositionTable.Bound bound) {
-
-        TranspositionTable.TranspositionTableEntry existing = table.get(hash);
-
-        // Prefer deeper results because THE FUTUREEE
-        if (existing == null || depth > existing.depth() || (depth == existing.depth() && bound == TranspositionTable.Bound.EXACT && existing.bound() != TranspositionTable.Bound.EXACT)) {
-            table.put(hash, new TranspositionTable.TranspositionTableEntry(depth, score, bound));
-        }
-
-        // If we are searching forever, don't let the Transposition table grow to infinity
-        if (table.size() > 500_000) {
-            table.clear();
-        }
     }
 
     private static MoveContext copyContext(MoveContext source) {
