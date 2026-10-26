@@ -205,7 +205,7 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         if (!pieceDragging || selectedPiece == null || selectedBoard == null) return;
 
         // find clicked board and the logical coordinates of where on it
-        LegalMoveDetector.Coordinate logicalCoords = Utils.pxToLogicalCoords(new Point(e.getX() - cameraX, e.getY() - cameraY), selectedPiece, zoomFactor);
+        LegalMoveDetector.Coordinate logicalCoords = Utils.pxToLogicalCoords(new Point(e.getX() - cameraX, e.getY() - cameraY), zoomFactor);
         Board newBoard = WorldMap.getBoard();
 
         boolean sameSquare = (logicalCoords.x() == originalLogicalX && logicalCoords.y() == originalLogicalY && newBoard == selectedPiece.getBoard());

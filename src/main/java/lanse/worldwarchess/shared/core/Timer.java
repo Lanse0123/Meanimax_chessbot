@@ -9,7 +9,6 @@ import lanse.worldwarchess.shared.core.screens.history.HistoryPanel;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.screens.ingame.SidebarMenu;
 import lanse.worldwarchess.shared.core.sound.SoundManager;
-import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 
 import java.awt.*;
 import java.util.ArrayList;

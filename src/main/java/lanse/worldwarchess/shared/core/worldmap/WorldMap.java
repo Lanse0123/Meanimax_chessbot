@@ -9,13 +9,11 @@ import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
 import lanse.worldwarchess.shared.core.piece.move.VisibleMoveDetector;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
-import lanse.worldwarchess.shared.utils.LagTester;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class WorldMap {
 
@@ -24,11 +22,11 @@ public class WorldMap {
      */
 
     public static Board board;
-    public static List<Piece> pieces = new CopyOnWriteArrayList<>();
+    public static List<Piece> pieces = new ArrayList<>();
 
     public static void initializeBoards() {
         System.out.println("Adding board...");
-        MapShapePresets.setBoard(0, 0);
+        WorldMap.board = new Board(0, 0, "Border", 0, 1, false, true);
     }
 
     public static List<Piece> getAllPiecesOfBoard(Board board) {

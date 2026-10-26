@@ -18,7 +18,6 @@ public class SidebarMenu extends JPanel {
     private final int closedWidth = 30;
     private final JButton toggleButton;
     private final JPanel menuPanel;
-    public boolean slowMode = false;
     private boolean flameGraphEnabled = false;
 
     public SidebarMenu() {

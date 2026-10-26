@@ -2,7 +2,6 @@ package lanse.worldwarchess.shared.core.worldmap;
 
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
-import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.awt.*;
@@ -10,7 +9,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static lanse.worldwarchess.shared.core.screens.ingame.GamePanel.getBoardRegion;
 
@@ -35,12 +33,11 @@ public class Utils {
     /**
      * Converts a pixel location into a logical coordinate (x, y, boardID)
      * @param px The point on the screen
-     * @param pieceForScale A piece to give the size for where to snap to the grid
      * @param zoomFactor The current screen zoom factor
      * @return The nearest logical coordinate the piece could land on, or (0, 0, -404) if there is none within range.
      */
-    public static LegalMoveDetector.Coordinate pxToLogicalCoords(Point px, Piece pieceForScale, double zoomFactor) {
-        return recursivePxToLogicalCoords(px, pieceForScale, zoomFactor, List.of(
+    public static LegalMoveDetector.Coordinate pxToLogicalCoords(Point px, double zoomFactor) {
+        return recursivePxToLogicalCoords(px, zoomFactor, List.of(
                 new Point(0, 0),
                 new Point(-1, 0), new Point(1, 0),
                 new Point(0, -1), new Point(0, 1),
@@ -49,7 +46,7 @@ public class Utils {
         ).iterator());
     }
 
-    private static LegalMoveDetector.Coordinate recursivePxToLogicalCoords(Point px, Piece pieceForScale, double zoomFactor, Iterator<Point> offsets) {
+    private static LegalMoveDetector.Coordinate recursivePxToLogicalCoords(Point px, double zoomFactor, Iterator<Point> offsets) {
         Point offset = offsets.next();
 
         double worldX = px.x - LegalMoveDetector.OFFSET_CORRECTION_VALUE * offset.x;
@@ -72,7 +69,7 @@ public class Utils {
         }
 
         if (offsets.hasNext()) {
-            return recursivePxToLogicalCoords(px, pieceForScale, zoomFactor, offsets);
+            return recursivePxToLogicalCoords(px, zoomFactor, offsets);
         }
 
         //TODO - this is supposed to be an invalid move
@@ -107,46 +104,7 @@ public class Utils {
                 .min(Comparator.comparing(piece -> localDistance(piece, coord)));
     }
 
-    /** Returns the distance of a point on a line to a region from start to start+length on that line
-     * @param spot Point on the line to compare
-     * @param start Start of region to compare
-     * @param length Size of region to compare
-     * @return Distance from spot to the nearest of start and start+length,
-     * unless it is between them, in which case it returns 0
-     */
-    private static double distance1D(double spot, double start, double length) {
-        if (spot > start && spot <= start + length) {
-            return 0;
-        }
-        else {
-            return Math.min(Math.abs(start - spot), Math.abs(spot - (start + length)));
-        }
-
-    }
-
-    /**
-     * @param x The x coordinate of the point to compare
-     * @param y The y coordinate of the point to compare
-     * @param region A rectangle bounding a region on the XY plane
-     * @return The distance (squared) from the point to the nearest location in that region.
-     */
-    public static double distance(int x, int y, Rectangle region) {
-        return Math.pow(distance1D(x, region.x, region.width), 2) + Math.pow(distance1D(y, region.y, region.height), 2);
-    }
-
-    /**
-     * Returns the nearest board to coord, from the list of validBoards
-     * @param x The coordinate to start the search at
-     * @param y The coordinate to start the search at
-     * @param validBoards The boards to check
-     * @return The board in validBoards that is nearest to coord, while being within a certain snapping distance
-     */
-    public static Optional<Board> nearestBoard(int x, int y, Stream<Board> validBoards, double zoomFactor) {
-        return validBoards.min(Comparator.comparing((board) -> distance(x, y, GamePanel.getBoardRegion(board, zoomFactor))));
-    }
-
     public static int boardPxSize(Board board) {
         return (board.getBoardSize() * board.getBaseTileSize());
     }
-
 }

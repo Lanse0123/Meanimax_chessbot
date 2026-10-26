@@ -46,7 +46,9 @@ public final class Piece {
     public boolean getTeam() { return team; }
     public int getPosX() { return posX; }
     public int getPosY() { return posY; }
-    public int getPieceClassPrefix() { return PieceClassPrefixMap.getPrefixIndex(this.getClass()); }
+    public int getPieceClassPrefix() {
+        return 1;
+    }
 
     public void setBoardPosition(int posX, int posY) {
         this.posX = (posX); // Snap to grid of piece size
@@ -101,7 +103,7 @@ public final class Piece {
             BufferedImage img = TextureKey.textures.get(textureKey);
 
             // Draw a texture showing where it will end up
-            LegalMoveDetector.Coordinate real_point = Utils.pxToLogicalCoords(currentDragPoint, this, zoomFactor);
+            LegalMoveDetector.Coordinate real_point = Utils.pxToLogicalCoords(currentDragPoint, zoomFactor);
 
             boolean onOriginalSquare = squares().anyMatch((square) -> square.equals(real_point));
 

@@ -15,12 +15,7 @@ public class TextureKey {
 
     public static final Map<String, BufferedImage> textures = new HashMap<>();
 
-    /** remember to add new pieces to this texture key!!! **/
-
-    //This class will initialize all the textures, so it doesn't need to keep doing the lookup to the PNGs library.
-
-    //TODO - considering merging this all into 1 buffered image texture atlas since its apparently faster to
-    // use 1 image instead of constantly accessing different images. Maybe its because its stored into a cache but idk.
+    //TODO - this should be converted to how Bonk Universe's Texture Key works because this is ew
     public final static String[] tiles = {"bs", "ws", "us", "is"};
 
     public final static String[] pieces = {"bb", "bk", "bn", "bp", "bq", "br", "wb", "wk", "wn", "wp", "wq",
@@ -30,23 +25,11 @@ public class TextureKey {
             "ib", "ik", "in", "iq", "ir", "nb", "nk", "nn", "np", "nq", "nr", "bkc", "bc", "wc", "wkc",
             "cb", "ck", "cn", "cp", "cq", "cr", "eb", "ek", "en", "ep", "eq", "er", "ss", "2s"};
 
-    public final static String[] fairies = {"wamazon", "bamazon", "wcamel", "bcamel", "wflamingo", "bflamingo",
-            "wzebra", "bzebra"};
-
     public final static String[] highlights = {"CaptureSquare", "LegalSquare", "VisibleSquare", "VisibleCapture"};
-
-    public final static String[] bosses = {"electroking", "trojanknight", "MysteryBoss", "pointer", "Amalgamation", "weepingknight",
-            "illusioner", "zoo", "healerqueen", "conway", "sultan"};
-
-    public final static String[] attacks = {"FireAttack", "FreezeAttack", "MageAttack", "ThunderAttack", "Barrier", "HealPulse"};
-
-    public final static String[] ui = {"TextBubble"};
-
 
     //preload all these textures
     public static void loadTextures() {
-        String[] textureKeys = Stream.of(tiles, pieces, fairies, highlights, bosses, attacks, ui)
-                .flatMap(Arrays::stream).toArray(String[]::new);
+        String[] textureKeys = Stream.of(tiles, pieces, highlights).flatMap(Arrays::stream).toArray(String[]::new);
 
         for (String key : textureKeys) {
             try {
@@ -54,7 +37,6 @@ public class TextureKey {
             } catch (IOException | NullPointerException ignored) {}
         }
     }
-
 
     public static String getTextureKey(Piece piece) {
         String textureKey = switch (piece.getType()) {

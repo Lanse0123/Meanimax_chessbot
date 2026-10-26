@@ -16,15 +16,14 @@ import java.util.Map;
 
 public class Board {
 
+    public static final int TILE_SIZE = 80;
+
     //This class represents a chess board.
 
     protected int boardX;
     protected int boardY;
-    protected int baseTileSize;
     protected int boardSize;
     protected int tileScale;
-    protected final int playerID;
-    protected final int playerID2;
     protected float borderSize = 10;
     protected Color borderColor;
     protected char whiteTexturePrefix;
@@ -35,15 +34,12 @@ public class Board {
 
     /** REMEMBER TO ADD TO THE BoardClassPrefixMap.java WHEN ADDING A NEW BOARD CLASS*/
 
-    public Board(int boardX, int boardY, int baseTileSize, String preset, int playerID, int playerID2, boolean isCommander, boolean shouldSetBoardPreset) {
+    public Board(int boardX, int boardY, String preset, int playerID, int playerID2, boolean isCommander, boolean shouldSetBoardPreset) {
         this.boardX = boardX;
         this.boardY = boardY;
-        this.baseTileSize = baseTileSize;
         this.boardSize = 8;
         this.tileScale = 1;
         this.borderColor = new Color(100, 100, 100);
-        this.playerID = playerID;
-        this.playerID2 = playerID2;
         this.whiteTexturePrefix = 'w';
         this.blackTexturePrefix = 'b';
 
@@ -75,11 +71,11 @@ public class Board {
         return null;
     }
 
-    public int getBaseTileSize() { return baseTileSize; }
+    public int getBaseTileSize() { return TILE_SIZE; }
     public int getBoardSize() { return boardSize; }
 
     public void draw(Graphics2D g2d, double zoomFactor) {
-        double scaledBaseTile = baseTileSize * zoomFactor;
+        double scaledBaseTile = TILE_SIZE * zoomFactor;
         int boardPixelSize = (int) Math.round(boardSize * scaledBaseTile);
 
         int drawX = (int) Math.round(boardX * zoomFactor);
@@ -112,15 +108,15 @@ public class Board {
 
         BufferedImage originalWhite = TextureKey.textures.get(this.whiteTexturePrefix + "s");
         BufferedImage originalBlack = TextureKey.textures.get(prefix + "s");
-        BufferedImage whiteTile = RenderCache.getUnscaled("ws", originalWhite, baseTileSize, baseTileSize);
-        BufferedImage blackTile = RenderCache.getUnscaled(prefix + "s", originalBlack, baseTileSize, baseTileSize);
+        BufferedImage whiteTile = RenderCache.getUnscaled("ws", originalWhite, TILE_SIZE, TILE_SIZE);
+        BufferedImage blackTile = RenderCache.getUnscaled(prefix + "s", originalBlack, TILE_SIZE, TILE_SIZE);
 
         for (int row = 0; row < boardSize; row++) {
             for (int col = 0; col < boardSize; col++) {
                 int logicalRow = row / tileScale;
                 int logicalCol = col / tileScale;
                 BufferedImage tile = ((logicalRow + logicalCol) % 2 == 0) ? whiteTile : blackTile;
-                g.drawImage(tile, col * baseTileSize, row * baseTileSize, null);
+                g.drawImage(tile, col * TILE_SIZE, row * TILE_SIZE, null);
             }
         }
 
@@ -144,13 +140,13 @@ public class Board {
             g.setColor(rowTileIsWhite ? new Color(80, 60, 40) : Color.WHITE);
 
             float textHeight = (float) font.getStringBounds(rowLabel, g.getFontRenderContext()).getHeight();
-            g.drawString(rowLabel, borderSize, i * baseTileSize + textHeight);
+            g.drawString(rowLabel, borderSize, i * TILE_SIZE + textHeight);
 
             boolean colTileIsWhite = (((boardSize - 1) / tileScale + i / tileScale) % 2 == 0);
             g.setColor(colTileIsWhite ? new Color(80, 60, 40) : Color.WHITE);
 
             float textWidth = (float) font.getStringBounds(colLabel, g.getFontRenderContext()).getWidth();
-            g.drawString(colLabel, (i + 1) * baseTileSize - textWidth - borderSize, boardSize * baseTileSize - borderSize);
+            g.drawString(colLabel, (i + 1) * TILE_SIZE - textWidth - borderSize, boardSize * TILE_SIZE - borderSize);
         }
     }
 }

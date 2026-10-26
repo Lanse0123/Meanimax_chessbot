@@ -31,8 +31,6 @@ public class BoardPresets {
         addPawns(pieces, boardX, boardY, false, playerID2, board);
         addBackRow(pieces, boardX, boardY, true, playerID, board);
         addBackRow(pieces, boardX, boardY, false, playerID2, board);
-
-        // Add pieces to WorldMap
         WorldMap.pieces.addAll(pieces);
     }
 

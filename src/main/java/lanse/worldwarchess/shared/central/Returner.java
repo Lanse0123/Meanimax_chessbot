@@ -8,7 +8,6 @@ import lanse.worldwarchess.shared.core.piece.marker.Marker;
 import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
 import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.screens.pregame.MainMenu;
-import lanse.worldwarchess.shared.core.worldmap.MapShapePresets;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 import lanse.worldwarchess.shared.core.worldmap.board.BoardPresets;
@@ -30,7 +29,6 @@ public class Returner {
         Board.clearBoardCache();
         WorldMap.pieces.clear();
         BoardPresets.resetOrder();
-        MapShapePresets.playerIDCount = 1;
         Marker.markers.clear();
         RenderCache.clear();
         CentralTick.tickCount = 0;

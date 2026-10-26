@@ -15,12 +15,12 @@ public class Marker {
     //or other indicators from pieces.
     public static List<Marker> markers = new CopyOnWriteArrayList<>();
 
-    protected Board board;
-    protected int posX;
-    protected int posY;
-    protected Color color;
+    protected final Board board;
+    protected final int posX;
+    protected final int posY;
+    protected final Color color;
     protected int lifeSpan;
-    protected int size;
+    protected final int size;
 
     public Marker(Board board, int posX, int posY, Color color, int lifeSpan, int size){
         this.board = board;
