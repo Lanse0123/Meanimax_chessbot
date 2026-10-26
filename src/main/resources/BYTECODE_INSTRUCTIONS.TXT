@@ -27,6 +27,7 @@ DCONST_0 = Push the double value 0.0 onto the operand stack.
 CHECKCAST = (Clazz) orElse ClassCastException
 I2D = convert integer to double
 
+A = *pointer
 Z = boolean
 I = int
 J = long
