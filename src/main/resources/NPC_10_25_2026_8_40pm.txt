@@ -1,0 +1,1676 @@
+// class version 69.0 (69)
+// access flags 0x21
+public class lanse/worldwarchess/shared/core/piece/ai/NPC {
+
+  NESTMEMBER lanse/worldwarchess/shared/core/piece/ai/NPC$1
+  NESTMEMBER lanse/worldwarchess/shared/core/piece/ai/NPC$SearchTimeout
+  NESTMEMBER lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove
+  NESTMEMBER lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult
+  NESTMEMBER lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI
+  // access flags 0x4019
+  public final static enum INNERCLASS lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI lanse/worldwarchess/shared/core/piece/ai/NPC SELECTED_AI
+  // access flags 0x19
+  public final static INNERCLASS lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult lanse/worldwarchess/shared/core/piece/ai/NPC SearchResult
+  // access flags 0x19
+  public final static INNERCLASS lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector Coordinate
+  // access flags 0x1A
+  private final static INNERCLASS lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/ai/NPC RootMove
+  // access flags 0x19
+  public final static INNERCLASS lanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove lanse/worldwarchess/shared/core/piece/move/MoveContext TemporaryMove
+  // access flags 0x1A
+  private final static INNERCLASS lanse/worldwarchess/shared/core/piece/ai/NPC$SearchTimeout lanse/worldwarchess/shared/core/piece/ai/NPC SearchTimeout
+  // access flags 0x19
+  public final static INNERCLASS lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry lanse/worldwarchess/shared/core/piece/move/TranspositionTable TranspositionTableEntry
+  // access flags 0x1008
+  static synthetic INNERCLASS lanse/worldwarchess/shared/core/piece/ai/NPC$1 null null
+  // access flags 0x4019
+  public final static enum INNERCLASS lanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound lanse/worldwarchess/shared/core/piece/move/TranspositionTable Bound
+  // access flags 0x19
+  public final static INNERCLASS java/lang/invoke/MethodHandles$Lookup java/lang/invoke/MethodHandles Lookup
+
+  // access flags 0x9
+  // signature Ljava/util/Map<Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;Ljava/util/List<Ljava/lang/Boolean;>;>;
+  // declaration: attackedSquares extends java.util.Map<lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector$Coordinate, java.util.List<java.lang.Boolean>>
+  public static Ljava/util/Map; attackedSquares
+
+  // access flags 0x9
+  public static Llanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI; selectedAI
+
+  // access flags 0x1A
+  private final static I MAX_CAPTURE_CHAIN_DEPTH = 120
+
+  // access flags 0xA
+  private static J jobDeadline
+
+  // access flags 0xA
+  private static J time
+
+  // access flags 0x1
+  public <init>()V
+    ALOAD 0
+    INVOKESPECIAL java/lang/Object.<init> ()V
+    RETURN
+    MAXSTACK = 1
+    MAXLOCALS = 1
+
+  // access flags 0x9
+  public static doAllNpcLogic(ZZZ)V
+    NEW java/lang/Thread
+    DUP
+    ILOAD 0
+    ILOAD 2
+    INVOKEDYNAMIC run(ZZ)Ljava/lang/Runnable; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      ()V, 
+      // handle kind 0x6 : INVOKESTATIC
+      lanse/worldwarchess/shared/core/piece/ai/NPC.lambda$doAllNpcLogic$0(ZZ)V, 
+      ()V
+    ]
+    LDC "NPCMover"
+    INVOKESPECIAL java/lang/Thread.<init> (Ljava/lang/Runnable;Ljava/lang/String;)V
+    INVOKEVIRTUAL java/lang/Thread.start ()V
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 3
+
+  // access flags 0x9
+  public static performMove(Z)V
+    INVOKESTATIC lanse/worldwarchess/shared/core/worldmap/WorldMap.getBoard ()Llanse/worldwarchess/shared/core/worldmap/board/Board;
+    ILOAD 0
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.selectedAI : Llanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;
+    INVOKESTATIC lanse/worldwarchess/shared/client/storage/Settings.getMaxTimeMillisecondsForBot ()J
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.findBestMove (Llanse/worldwarchess/shared/core/worldmap/board/Board;ZLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;J)Llanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult;
+    ASTORE 1
+    ALOAD 1
+    IFNULL L0
+    ALOAD 1
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult.piece ()Llanse/worldwarchess/shared/core/piece/Piece;
+    ASTORE 2
+    ALOAD 1
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult.move ()Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;
+    ASTORE 3
+    ALOAD 2
+    ALOAD 2
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getBoard ()Llanse/worldwarchess/shared/core/worldmap/board/Board;
+    ALOAD 3
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.x ()I
+    ALOAD 3
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.y ()I
+    ALOAD 2
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getPosX ()I
+    ALOAD 2
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getPosY ()I
+    ICONST_1
+    LDC "move"
+    ICONST_0
+    ICONST_0
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/move/MoveExecutor.executeMove (Llanse/worldwarchess/shared/core/piece/Piece;Llanse/worldwarchess/shared/core/worldmap/board/Board;IIIIZLjava/lang/String;ZZ)V
+   L0
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult]
+    RETURN
+    MAXSTACK = 10
+    MAXLOCALS = 4
+
+  // access flags 0x9
+  public static recalculateAttackerLocations()V
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.attackedSquares : Ljava/util/Map;
+    INVOKEINTERFACE java/util/Map.clear ()V (itf)
+    INVOKESTATIC lanse/worldwarchess/shared/core/worldmap/WorldMap.getAllEnemyMoves ()Ljava/util/Map;
+    PUTSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.attackedSquares : Ljava/util/Map;
+    RETURN
+    MAXSTACK = 1
+    MAXLOCALS = 0
+
+  // access flags 0x9
+  public static findBestMove(Llanse/worldwarchess/shared/core/worldmap/board/Board;ZLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;J)Llanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult;
+    TRYCATCHBLOCK L0 L1 L2 null
+    TRYCATCHBLOCK L2 L3 L2 null
+    TRYCATCHBLOCK L4 L5 L6 lanse/worldwarchess/shared/core/piece/ai/NPC$SearchTimeout
+    ALOAD 0
+    IFNULL L7
+    ALOAD 2
+    IFNONNULL L8
+   L7
+   FRAME SAME
+    ACONST_NULL
+    ARETURN
+   L8
+   FRAME SAME
+    ALOAD 0
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/move/MoveContext.contextify (Llanse/worldwarchess/shared/core/worldmap/board/Board;)Llanse/worldwarchess/shared/core/piece/move/MoveContext;
+    ASTORE 5
+    ALOAD 5
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.copyContext (Llanse/worldwarchess/shared/core/piece/move/MoveContext;)Llanse/worldwarchess/shared/core/piece/move/MoveContext;
+    ASTORE 6
+    NEW java/util/ArrayList
+    DUP
+    INVOKESPECIAL java/util/ArrayList.<init> ()V
+    ASTORE 7
+    ICONST_0
+    ISTORE 8
+   L9
+   FRAME FULL [lanse/worldwarchess/shared/core/worldmap/board/Board I lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI J lanse/worldwarchess/shared/core/piece/move/MoveContext lanse/worldwarchess/shared/core/piece/move/MoveContext java/util/List I] []
+    ILOAD 8
+    ALOAD 6
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.pieces ()Ljava/util/List;
+    INVOKEINTERFACE java/util/List.size ()I (itf)
+    IF_ICMPGE L10
+    ALOAD 6
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.pieces ()Ljava/util/List;
+    ILOAD 8
+    INVOKEINTERFACE java/util/List.get (I)Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/Piece
+    ASTORE 9
+    ALOAD 9
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getTeam ()Z
+    ILOAD 1
+    IF_ICMPEQ L11
+    GOTO L12
+   L11
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/Piece]
+    ALOAD 9
+    ALOAD 6
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector.getLegalMoves (Llanse/worldwarchess/shared/core/piece/Piece;Llanse/worldwarchess/shared/core/piece/move/MoveContext;)Ljava/util/List;
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 10
+   L13
+   FRAME APPEND [java/util/Iterator]
+    ALOAD 10
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L12
+    ALOAD 10
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate
+    ASTORE 11
+    ALOAD 7
+    NEW lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove
+    DUP
+    ALOAD 5
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.pieces ()Ljava/util/List;
+    ILOAD 8
+    INVOKEINTERFACE java/util/List.get (I)Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/Piece
+    ILOAD 8
+    ALOAD 11
+    INVOKESPECIAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.<init> (Llanse/worldwarchess/shared/core/piece/Piece;ILlanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;)V
+    INVOKEINTERFACE java/util/List.add (Ljava/lang/Object;)Z (itf)
+    POP
+    GOTO L13
+   L12
+   FRAME CHOP 2
+    IINC 8 1
+    GOTO L9
+   L10
+   FRAME CHOP 1
+    ALOAD 7
+    INVOKEINTERFACE java/util/List.isEmpty ()Z (itf)
+    IFEQ L14
+    ACONST_NULL
+    ARETURN
+   L14
+   FRAME SAME
+    ALOAD 6
+    ALOAD 7
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.orderCapturesFirst (Llanse/worldwarchess/shared/core/piece/move/MoveContext;Ljava/util/List;)V
+    LCONST_1
+    LLOAD 3
+    INVOKESTATIC java/lang/Math.max (JJ)J
+    LDC 1000000L
+    LMUL
+    LSTORE 8
+    INVOKESTATIC java/lang/System.nanoTime ()J
+    LLOAD 8
+    LADD
+    PUTSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.jobDeadline : J
+    LCONST_0
+    PUTSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.time : J
+    ALOAD 7
+    INVOKEINTERFACE java/util/List.getFirst ()Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove
+    ASTORE 10
+   L15
+    NEW lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult
+    DUP
+    ALOAD 10
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.livePiece ()Llanse/worldwarchess/shared/core/piece/Piece;
+    ALOAD 10
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.move ()Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;
+    ALOAD 6
+    ILOAD 1
+    ILOAD 1
+    IFNE L16
+    ICONST_1
+    GOTO L17
+   L16
+   FRAME FULL [lanse/worldwarchess/shared/core/worldmap/board/Board I lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI J lanse/worldwarchess/shared/core/piece/move/MoveContext lanse/worldwarchess/shared/core/piece/move/MoveContext java/util/List J lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove] [L15 L15 lanse/worldwarchess/shared/core/piece/Piece lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate lanse/worldwarchess/shared/core/piece/move/MoveContext I]
+    ICONST_0
+   L17
+   FRAME FULL [lanse/worldwarchess/shared/core/worldmap/board/Board I lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI J lanse/worldwarchess/shared/core/piece/move/MoveContext lanse/worldwarchess/shared/core/piece/move/MoveContext java/util/List J lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove] [L15 L15 lanse/worldwarchess/shared/core/piece/Piece lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate lanse/worldwarchess/shared/core/piece/move/MoveContext I I]
+    ALOAD 2
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.evaluate (Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;)D
+    ICONST_0
+    INVOKESPECIAL lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult.<init> (Llanse/worldwarchess/shared/core/piece/Piece;Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;DI)V
+    ASTORE 11
+    NEW java/util/HashMap
+    DUP
+    LDC 65536
+    INVOKESPECIAL java/util/HashMap.<init> (I)V
+    ASTORE 12
+    GETSTATIC java/lang/System.out : Ljava/io/PrintStream;
+    INVOKEVIRTUAL java/io/PrintStream.println ()V
+    ICONST_1
+    ISTORE 13
+   L4
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult java/util/Map I]
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.checkTime ()V
+    GETSTATIC java/lang/System.out : Ljava/io/PrintStream;
+    ILOAD 13
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.time : J
+    INVOKEDYNAMIC makeConcatWithConstants(IJ)Ljava/lang/String; [
+      // handle kind 0x6 : INVOKESTATIC
+      java/lang/invoke/StringConcatFactory.makeConcatWithConstants(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+      // arguments:
+      "\u0001: \u0001"
+    ]
+    INVOKEVIRTUAL java/io/PrintStream.println (Ljava/lang/String;)V
+    ACONST_NULL
+    ASTORE 14
+    LDC -InfinityD
+    DSTORE 15
+    LDC InfinityD
+    DSTORE 17
+    ALOAD 7
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 19
+   L18
+   FRAME FULL [lanse/worldwarchess/shared/core/worldmap/board/Board I lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI J lanse/worldwarchess/shared/core/piece/move/MoveContext lanse/worldwarchess/shared/core/piece/move/MoveContext java/util/List J lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult java/util/Map I lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult D D java/util/Iterator] []
+    ALOAD 19
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L19
+    ALOAD 19
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove
+    ASTORE 20
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.checkTime ()V
+    ALOAD 6
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.pieces ()Ljava/util/List;
+    ALOAD 20
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.pieceIndex ()I
+    INVOKEINTERFACE java/util/List.get (I)Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/Piece
+    ASTORE 21
+    ALOAD 6
+    ALOAD 21
+    ALOAD 20
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.move ()Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.x ()I
+    ALOAD 20
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.move ()Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.y ()I
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.makeMove (Llanse/worldwarchess/shared/core/piece/Piece;II)Llanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove;
+    ASTORE 22
+   L0
+    ALOAD 6
+    ILOAD 1
+    IFNE L20
+    ICONST_1
+    GOTO L21
+   L20
+   FRAME FULL [lanse/worldwarchess/shared/core/worldmap/board/Board I lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI J lanse/worldwarchess/shared/core/piece/move/MoveContext lanse/worldwarchess/shared/core/piece/move/MoveContext java/util/List J lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult java/util/Map I lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult D D java/util/Iterator lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/Piece lanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove] [lanse/worldwarchess/shared/core/piece/move/MoveContext]
+    ICONST_0
+   L21
+   FRAME FULL [lanse/worldwarchess/shared/core/worldmap/board/Board I lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI J lanse/worldwarchess/shared/core/piece/move/MoveContext lanse/worldwarchess/shared/core/piece/move/MoveContext java/util/List J lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult java/util/Map I lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult D D java/util/Iterator lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/Piece lanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove] [lanse/worldwarchess/shared/core/piece/move/MoveContext I]
+    ILOAD 1
+    ILOAD 1
+    IFNE L22
+    ICONST_1
+    GOTO L23
+   L22
+   FRAME FULL [lanse/worldwarchess/shared/core/worldmap/board/Board I lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI J lanse/worldwarchess/shared/core/piece/move/MoveContext lanse/worldwarchess/shared/core/piece/move/MoveContext java/util/List J lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult java/util/Map I lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult D D java/util/Iterator lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/Piece lanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove] [lanse/worldwarchess/shared/core/piece/move/MoveContext I I]
+    ICONST_0
+   L23
+   FRAME FULL [lanse/worldwarchess/shared/core/worldmap/board/Board I lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI J lanse/worldwarchess/shared/core/piece/move/MoveContext lanse/worldwarchess/shared/core/piece/move/MoveContext java/util/List J lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult java/util/Map I lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult D D java/util/Iterator lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/Piece lanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove] [lanse/worldwarchess/shared/core/piece/move/MoveContext I I I]
+    ILOAD 13
+    ICONST_1
+    ISUB
+    DLOAD 15
+    DLOAD 17
+    ALOAD 2
+    ALOAD 12
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.search (Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZZIDDLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;Ljava/util/Map;)D
+    DSTORE 23
+   L1
+    ALOAD 6
+    ALOAD 22
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.undoMove (Llanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove;)V
+    GOTO L24
+   L2
+   FRAME SAME1 java/lang/Throwable
+    ASTORE 25
+   L3
+    ALOAD 6
+    ALOAD 22
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.undoMove (Llanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove;)V
+    ALOAD 25
+    ATHROW
+   L24
+   FRAME APPEND [D]
+    ALOAD 14
+    IFNULL L25
+    DLOAD 23
+    ALOAD 14
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult.score ()D
+    ALOAD 2
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.isBetter (DDLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;)Z
+    IFEQ L26
+   L25
+   FRAME SAME
+    NEW lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult
+    DUP
+    ALOAD 20
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.livePiece ()Llanse/worldwarchess/shared/core/piece/Piece;
+    ALOAD 20
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.move ()Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;
+    DLOAD 23
+    ILOAD 13
+    INVOKESPECIAL lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult.<init> (Llanse/worldwarchess/shared/core/piece/Piece;Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;DI)V
+    ASTORE 14
+   L26
+   FRAME SAME
+    ALOAD 2
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI.MAXIMIN : Llanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;
+    IF_ACMPEQ L27
+    DLOAD 15
+    DLOAD 23
+    INVOKESTATIC java/lang/Math.max (DD)D
+    DSTORE 15
+    GOTO L28
+   L27
+   FRAME SAME
+    DLOAD 17
+    DLOAD 23
+    INVOKESTATIC java/lang/Math.min (DD)D
+    DSTORE 17
+   L28
+   FRAME FULL [lanse/worldwarchess/shared/core/worldmap/board/Board I lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI J lanse/worldwarchess/shared/core/piece/move/MoveContext lanse/worldwarchess/shared/core/piece/move/MoveContext java/util/List J lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult java/util/Map I lanse/worldwarchess/shared/core/piece/ai/NPC$SearchResult D D java/util/Iterator] []
+    GOTO L18
+   L19
+   FRAME CHOP 1
+    ALOAD 14
+    IFNULL L5
+    ALOAD 14
+    ASTORE 11
+   L5
+   FRAME CHOP 3
+    GOTO L29
+   L6
+   FRAME SAME1 lanse/worldwarchess/shared/core/piece/ai/NPC$SearchTimeout
+    ASTORE 14
+    GOTO L30
+   L29
+   FRAME SAME
+    IINC 13 1
+    GOTO L4
+   L30
+   FRAME CHOP 1
+    ALOAD 11
+    ARETURN
+    MAXSTACK = 11
+    MAXLOCALS = 26
+
+  // access flags 0xA
+  // signature (Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZZIDDLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;Ljava/util/Map<Ljava/lang/Long;Llanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry;>;)D
+  // declaration: double search(lanse.worldwarchess.shared.core.piece.move.MoveContext, boolean, boolean, boolean, int, double, double, lanse.worldwarchess.shared.core.piece.ai.NPC$SELECTED_AI, java.util.Map<java.lang.Long, lanse.worldwarchess.shared.core.piece.move.TranspositionTable$TranspositionTableEntry>)
+  private static search(Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZZIDDLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;Ljava/util/Map;)D
+    TRYCATCHBLOCK L0 L1 L2 null
+    TRYCATCHBLOCK L2 L3 L2 null
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.checkTime ()V
+    ILOAD 4
+    IFGT L4
+    ALOAD 0
+    ILOAD 1
+    ILOAD 2
+    ILOAD 3
+    DLOAD 5
+    DLOAD 7
+    ALOAD 9
+    ICONST_0
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.quiescenceSearch (Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZZDDLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;I)D
+    DRETURN
+   L4
+   FRAME SAME
+    ALOAD 0
+    ILOAD 1
+    ILOAD 2
+    ALOAD 9
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/move/TranspositionTable.hashPosition (Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;)J
+    LSTORE 11
+    DLOAD 5
+    DSTORE 13
+    DLOAD 7
+    DSTORE 15
+    ALOAD 10
+    LLOAD 11
+    INVOKESTATIC java/lang/Long.valueOf (J)Ljava/lang/Long;
+    INVOKEINTERFACE java/util/Map.get (Ljava/lang/Object;)Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry
+    ASTORE 17
+    ALOAD 17
+    IFNULL L5
+    ALOAD 17
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry.depth ()I
+    ILOAD 4
+    IF_ICMPLT L5
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC$1.$SwitchMap$lanse$worldwarchess$shared$core$piece$move$TranspositionTable$Bound : [I
+    ALOAD 17
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry.bound ()Llanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound.ordinal ()I
+    IALOAD
+    TABLESWITCH
+      1: L6
+      2: L7
+      3: L8
+      default: L9
+   L6
+   FRAME FULL [lanse/worldwarchess/shared/core/piece/move/MoveContext I I I I D D lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI java/util/Map J D D lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry] []
+    ALOAD 17
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry.score ()D
+    DRETURN
+   L7
+   FRAME SAME
+    DLOAD 5
+    ALOAD 17
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry.score ()D
+    INVOKESTATIC java/lang/Math.max (DD)D
+    DSTORE 5
+    GOTO L9
+   L8
+   FRAME SAME
+    DLOAD 7
+    ALOAD 17
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry.score ()D
+    INVOKESTATIC java/lang/Math.min (DD)D
+    DSTORE 7
+   L9
+   FRAME SAME
+    DLOAD 5
+    DLOAD 7
+    DCMPL
+    IFLT L5
+    ALOAD 17
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry.score ()D
+    DRETURN
+   L5
+   FRAME SAME
+    ALOAD 0
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.pieces ()Ljava/util/List;
+    ASTORE 18
+    NEW java/util/ArrayList
+    DUP
+    INVOKESPECIAL java/util/ArrayList.<init> ()V
+    ASTORE 19
+    ICONST_0
+    ISTORE 20
+   L10
+   FRAME APPEND [java/util/List java/util/List I]
+    ILOAD 20
+    ALOAD 18
+    INVOKEINTERFACE java/util/List.size ()I (itf)
+    IF_ICMPGE L11
+    ALOAD 18
+    ILOAD 20
+    INVOKEINTERFACE java/util/List.get (I)Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/Piece
+    ASTORE 21
+    ALOAD 21
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getTeam ()Z
+    ILOAD 1
+    IF_ICMPEQ L12
+    GOTO L13
+   L12
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/Piece]
+    ALOAD 21
+    ALOAD 0
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector.getLegalMoves (Llanse/worldwarchess/shared/core/piece/Piece;Llanse/worldwarchess/shared/core/piece/move/MoveContext;)Ljava/util/List;
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 22
+   L14
+   FRAME APPEND [java/util/Iterator]
+    ALOAD 22
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L13
+    ALOAD 22
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate
+    ASTORE 23
+    ALOAD 19
+    NEW lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove
+    DUP
+    ACONST_NULL
+    ILOAD 20
+    ALOAD 23
+    INVOKESPECIAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.<init> (Llanse/worldwarchess/shared/core/piece/Piece;ILlanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;)V
+    INVOKEINTERFACE java/util/List.add (Ljava/lang/Object;)Z (itf)
+    POP
+    GOTO L14
+   L13
+   FRAME CHOP 2
+    IINC 20 1
+    GOTO L10
+   L11
+   FRAME CHOP 1
+    ALOAD 19
+    INVOKEINTERFACE java/util/List.isEmpty ()Z (itf)
+    IFEQ L15
+    ALOAD 0
+    ILOAD 2
+    ILOAD 3
+    ALOAD 9
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.evaluate (Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;)D
+    DSTORE 20
+    ALOAD 10
+    LLOAD 11
+    ILOAD 4
+    DLOAD 20
+    GETSTATIC lanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound.EXACT : Llanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.storePosition (Ljava/util/Map;JIDLlanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;)V
+    DLOAD 20
+    DRETURN
+   L15
+   FRAME SAME
+    ALOAD 0
+    ALOAD 19
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.orderCapturesFirst (Llanse/worldwarchess/shared/core/piece/move/MoveContext;Ljava/util/List;)V
+    ILOAD 1
+    ILOAD 2
+    IF_ICMPNE L16
+    ICONST_1
+    GOTO L17
+   L16
+   FRAME SAME
+    ICONST_0
+   L17
+   FRAME SAME1 I
+    ISTORE 20
+    ALOAD 9
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI.MAXIMIN : Llanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;
+    IF_ACMPNE L18
+    ICONST_1
+    GOTO L19
+   L18
+   FRAME APPEND [I]
+    ICONST_0
+   L19
+   FRAME SAME1 I
+    ILOAD 20
+    IF_ICMPEQ L20
+    ICONST_1
+    GOTO L21
+   L20
+   FRAME SAME
+    ICONST_0
+   L21
+   FRAME SAME1 I
+    ISTORE 21
+    ILOAD 1
+    ILOAD 2
+    IF_ICMPNE L22
+    ILOAD 3
+    GOTO L23
+   L22
+   FRAME APPEND [I]
+    ILOAD 2
+   L23
+   FRAME SAME1 I
+    ISTORE 22
+    ILOAD 21
+    IFEQ L24
+    LDC -InfinityD
+    GOTO L25
+   L24
+   FRAME APPEND [I]
+    LDC InfinityD
+   L25
+   FRAME SAME1 D
+    DSTORE 23
+    ALOAD 19
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 25
+   L26
+   FRAME APPEND [D java/util/Iterator]
+    ALOAD 25
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L27
+    ALOAD 25
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove
+    ASTORE 26
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.checkTime ()V
+    ALOAD 18
+    ALOAD 26
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.pieceIndex ()I
+    INVOKEINTERFACE java/util/List.get (I)Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/Piece
+    ASTORE 27
+    ALOAD 0
+    ALOAD 27
+    ALOAD 26
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.move ()Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.x ()I
+    ALOAD 26
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.move ()Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.y ()I
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.makeMove (Llanse/worldwarchess/shared/core/piece/Piece;II)Llanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove;
+    ASTORE 28
+   L0
+    ALOAD 0
+    ILOAD 22
+    ILOAD 2
+    ILOAD 3
+    ILOAD 4
+    ICONST_1
+    ISUB
+    DLOAD 5
+    DLOAD 7
+    ALOAD 9
+    ALOAD 10
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.search (Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZZIDDLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;Ljava/util/Map;)D
+    DSTORE 29
+   L1
+    ALOAD 0
+    ALOAD 28
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.undoMove (Llanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove;)V
+    GOTO L28
+   L2
+   FRAME FULL [lanse/worldwarchess/shared/core/piece/move/MoveContext I I I I D D lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI java/util/Map J D D lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry java/util/List java/util/List I I I D java/util/Iterator lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/Piece lanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove] [java/lang/Throwable]
+    ASTORE 31
+   L3
+    ALOAD 0
+    ALOAD 28
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.undoMove (Llanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove;)V
+    ALOAD 31
+    ATHROW
+   L28
+   FRAME APPEND [D]
+    ILOAD 21
+    IFEQ L29
+    DLOAD 23
+    DLOAD 29
+    INVOKESTATIC java/lang/Math.max (DD)D
+    DSTORE 23
+    DLOAD 5
+    DLOAD 23
+    INVOKESTATIC java/lang/Math.max (DD)D
+    DSTORE 5
+    GOTO L30
+   L29
+   FRAME SAME
+    DLOAD 23
+    DLOAD 29
+    INVOKESTATIC java/lang/Math.min (DD)D
+    DSTORE 23
+    DLOAD 7
+    DLOAD 23
+    INVOKESTATIC java/lang/Math.min (DD)D
+    DSTORE 7
+   L30
+   FRAME SAME
+    DLOAD 7
+    DLOAD 5
+    DCMPG
+    IFGT L31
+    GOTO L27
+   L31
+   FRAME FULL [lanse/worldwarchess/shared/core/piece/move/MoveContext I I I I D D lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI java/util/Map J D D lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry java/util/List java/util/List I I I D java/util/Iterator] []
+    GOTO L26
+   L27
+   FRAME CHOP 1
+    DLOAD 23
+    DLOAD 13
+    DCMPG
+    IFGT L32
+    GETSTATIC lanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound.UPPER : Llanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;
+    ASTORE 25
+    GOTO L33
+   L32
+   FRAME SAME
+    DLOAD 23
+    DLOAD 15
+    DCMPL
+    IFLT L34
+    GETSTATIC lanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound.LOWER : Llanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;
+    ASTORE 25
+    GOTO L33
+   L34
+   FRAME SAME
+    GETSTATIC lanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound.EXACT : Llanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;
+    ASTORE 25
+   L33
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound]
+    ALOAD 10
+    LLOAD 11
+    ILOAD 4
+    DLOAD 23
+    ALOAD 25
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.storePosition (Ljava/util/Map;JIDLlanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;)V
+    DLOAD 23
+    DRETURN
+    MAXSTACK = 11
+    MAXLOCALS = 32
+
+  // access flags 0xA
+  private static quiescenceSearch(Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZZDDLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;I)D
+    TRYCATCHBLOCK L0 L1 L2 null
+    TRYCATCHBLOCK L2 L3 L2 null
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.checkTime ()V
+    ALOAD 0
+    ILOAD 2
+    ILOAD 3
+    ALOAD 8
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.evaluate (Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;)D
+    DSTORE 10
+    ILOAD 9
+    BIPUSH 120
+    IF_ICMPLT L4
+    DLOAD 10
+    DRETURN
+   L4
+   FRAME APPEND [D]
+    ALOAD 8
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI.MAXIMIN : Llanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;
+    IF_ACMPNE L5
+    ICONST_1
+    GOTO L6
+   L5
+   FRAME SAME
+    ICONST_0
+   L6
+   FRAME SAME1 I
+    ILOAD 1
+    ILOAD 2
+    IF_ICMPNE L7
+    ICONST_1
+    GOTO L8
+   L7
+   FRAME SAME1 I
+    ICONST_0
+   L8
+   FRAME FULL [lanse/worldwarchess/shared/core/piece/move/MoveContext I I I D D lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI I D] [I I]
+    IF_ICMPEQ L9
+    ICONST_1
+    GOTO L10
+   L9
+   FRAME SAME
+    ICONST_0
+   L10
+   FRAME SAME1 I
+    ISTORE 12
+    ILOAD 12
+    IFEQ L11
+    DLOAD 10
+    DLOAD 6
+    DCMPL
+    IFLT L12
+    DLOAD 10
+    DRETURN
+   L12
+   FRAME APPEND [I]
+    DLOAD 4
+    DLOAD 10
+    INVOKESTATIC java/lang/Math.max (DD)D
+    DSTORE 4
+    GOTO L13
+   L11
+   FRAME SAME
+    DLOAD 10
+    DLOAD 4
+    DCMPG
+    IFGT L14
+    DLOAD 10
+    DRETURN
+   L14
+   FRAME SAME
+    DLOAD 6
+    DLOAD 10
+    INVOKESTATIC java/lang/Math.min (DD)D
+    DSTORE 6
+   L13
+   FRAME SAME
+    DLOAD 10
+    DSTORE 13
+    ALOAD 0
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.pieces ()Ljava/util/List;
+    ASTORE 15
+    ICONST_0
+    ISTORE 16
+   L15
+   FRAME APPEND [D java/util/List I]
+    ILOAD 16
+    ALOAD 15
+    INVOKEINTERFACE java/util/List.size ()I (itf)
+    IF_ICMPGE L16
+    ALOAD 15
+    ILOAD 16
+    INVOKEINTERFACE java/util/List.get (I)Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/Piece
+    ASTORE 17
+    ALOAD 17
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getTeam ()Z
+    ILOAD 1
+    IF_ICMPEQ L17
+    GOTO L18
+   L17
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/Piece]
+    ALOAD 17
+    ALOAD 0
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector.getLegalMoves (Llanse/worldwarchess/shared/core/piece/Piece;Llanse/worldwarchess/shared/core/piece/move/MoveContext;)Ljava/util/List;
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 18
+   L19
+   FRAME APPEND [java/util/Iterator]
+    ALOAD 18
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L18
+    ALOAD 18
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate
+    ASTORE 19
+    ALOAD 0
+    ALOAD 19
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.x ()I
+    ALOAD 19
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.y ()I
+    ALOAD 17
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.getPieceAt (IILlanse/worldwarchess/shared/core/piece/Piece;)Llanse/worldwarchess/shared/core/piece/Piece;
+    ASTORE 20
+    ALOAD 20
+    IFNULL L19
+    ALOAD 20
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getTeam ()Z
+    ILOAD 1
+    IF_ICMPNE L20
+    GOTO L19
+   L20
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate lanse/worldwarchess/shared/core/piece/Piece]
+    ALOAD 0
+    ALOAD 17
+    ALOAD 19
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.x ()I
+    ALOAD 19
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.y ()I
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.makeMove (Llanse/worldwarchess/shared/core/piece/Piece;II)Llanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove;
+    ASTORE 21
+   L0
+    ILOAD 1
+    ILOAD 2
+    IF_ICMPNE L21
+    ILOAD 3
+    GOTO L22
+   L21
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove]
+    ILOAD 2
+   L22
+   FRAME SAME1 I
+    ISTORE 24
+    ALOAD 0
+    ILOAD 24
+    ILOAD 2
+    ILOAD 3
+    DLOAD 4
+    DLOAD 6
+    ALOAD 8
+    ILOAD 9
+    ICONST_1
+    IADD
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.quiescenceSearch (Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZZDDLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;I)D
+    DSTORE 22
+   L1
+    ALOAD 0
+    ALOAD 21
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.undoMove (Llanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove;)V
+    GOTO L23
+   L2
+   FRAME SAME1 java/lang/Throwable
+    ASTORE 25
+   L3
+    ALOAD 0
+    ALOAD 21
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.undoMove (Llanse/worldwarchess/shared/core/piece/move/MoveContext$TemporaryMove;)V
+    ALOAD 25
+    ATHROW
+   L23
+   FRAME APPEND [D]
+    ILOAD 12
+    IFEQ L24
+    DLOAD 13
+    DLOAD 22
+    INVOKESTATIC java/lang/Math.max (DD)D
+    DSTORE 13
+    DLOAD 4
+    DLOAD 13
+    INVOKESTATIC java/lang/Math.max (DD)D
+    DSTORE 4
+    GOTO L25
+   L24
+   FRAME SAME
+    DLOAD 13
+    DLOAD 22
+    INVOKESTATIC java/lang/Math.min (DD)D
+    DSTORE 13
+    DLOAD 6
+    DLOAD 13
+    INVOKESTATIC java/lang/Math.min (DD)D
+    DSTORE 6
+   L25
+   FRAME SAME
+    DLOAD 4
+    DLOAD 6
+    DCMPL
+    IFLT L26
+    DLOAD 13
+    DRETURN
+   L26
+   FRAME FULL [lanse/worldwarchess/shared/core/piece/move/MoveContext I I I D D lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI I D I D java/util/List I lanse/worldwarchess/shared/core/piece/Piece java/util/Iterator] []
+    GOTO L19
+   L18
+   FRAME CHOP 2
+    IINC 16 1
+    GOTO L15
+   L16
+   FRAME CHOP 1
+    DLOAD 13
+    DRETURN
+    MAXSTACK = 11
+    MAXLOCALS = 26
+
+  // access flags 0xA
+  // signature (Ljava/util/Map<Ljava/lang/Long;Llanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry;>;JIDLlanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;)V
+  // declaration: void storePosition(java.util.Map<java.lang.Long, lanse.worldwarchess.shared.core.piece.move.TranspositionTable$TranspositionTableEntry>, long, int, double, lanse.worldwarchess.shared.core.piece.move.TranspositionTable$Bound)
+  private static storePosition(Ljava/util/Map;JIDLlanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;)V
+    ALOAD 0
+    LLOAD 1
+    INVOKESTATIC java/lang/Long.valueOf (J)Ljava/lang/Long;
+    INVOKEINTERFACE java/util/Map.get (Ljava/lang/Object;)Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry
+    ASTORE 7
+    ALOAD 7
+    IFNULL L0
+    ILOAD 3
+    ALOAD 7
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry.depth ()I
+    IF_ICMPGT L0
+    ILOAD 3
+    ALOAD 7
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry.depth ()I
+    IF_ICMPNE L1
+    ALOAD 6
+    GETSTATIC lanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound.EXACT : Llanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;
+    IF_ACMPNE L1
+    ALOAD 7
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry.bound ()Llanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;
+    GETSTATIC lanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound.EXACT : Llanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;
+    IF_ACMPEQ L1
+   L0
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry]
+    ALOAD 0
+    LLOAD 1
+    INVOKESTATIC java/lang/Long.valueOf (J)Ljava/lang/Long;
+    NEW lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry
+    DUP
+    ILOAD 3
+    DLOAD 4
+    ALOAD 6
+    INVOKESPECIAL lanse/worldwarchess/shared/core/piece/move/TranspositionTable$TranspositionTableEntry.<init> (IDLlanse/worldwarchess/shared/core/piece/move/TranspositionTable$Bound;)V
+    INVOKEINTERFACE java/util/Map.put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object; (itf)
+    POP
+   L1
+   FRAME SAME
+    ALOAD 0
+    INVOKEINTERFACE java/util/Map.size ()I (itf)
+    LDC 500000
+    IF_ICMPLE L2
+    ALOAD 0
+    INVOKEINTERFACE java/util/Map.clear ()V (itf)
+   L2
+   FRAME SAME
+    RETURN
+    MAXSTACK = 8
+    MAXLOCALS = 8
+
+  // access flags 0xA
+  private static copyContext(Llanse/worldwarchess/shared/core/piece/move/MoveContext;)Llanse/worldwarchess/shared/core/piece/move/MoveContext;
+    NEW java/util/ArrayList
+    DUP
+    ALOAD 0
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.pieces ()Ljava/util/List;
+    INVOKEINTERFACE java/util/List.size ()I (itf)
+    INVOKESPECIAL java/util/ArrayList.<init> (I)V
+    ASTORE 1
+    ALOAD 0
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.pieces ()Ljava/util/List;
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 2
+   L0
+   FRAME APPEND [java/util/List java/util/Iterator]
+    ALOAD 2
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L1
+    ALOAD 2
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/Piece
+    ASTORE 3
+    ALOAD 1
+    ALOAD 3
+    ALOAD 0
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.board ()Llanse/worldwarchess/shared/core/worldmap/board/Board;
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.clonePiece (Llanse/worldwarchess/shared/core/worldmap/board/Board;)Llanse/worldwarchess/shared/core/piece/Piece;
+    INVOKEINTERFACE java/util/List.add (Ljava/lang/Object;)Z (itf)
+    POP
+    GOTO L0
+   L1
+   FRAME CHOP 1
+    NEW lanse/worldwarchess/shared/core/piece/move/MoveContext
+    DUP
+    ALOAD 0
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.board ()Llanse/worldwarchess/shared/core/worldmap/board/Board;
+    ALOAD 1
+    INVOKESPECIAL lanse/worldwarchess/shared/core/piece/move/MoveContext.<init> (Llanse/worldwarchess/shared/core/worldmap/board/Board;Ljava/util/List;)V
+    ARETURN
+    MAXSTACK = 4
+    MAXLOCALS = 4
+
+  // access flags 0xA
+  // signature (Llanse/worldwarchess/shared/core/piece/move/MoveContext;Ljava/util/List<Llanse/worldwarchess/shared/core/piece/ai/NPC$RootMove;>;)V
+  // declaration: void orderCapturesFirst(lanse.worldwarchess.shared.core.piece.move.MoveContext, java.util.List<lanse.worldwarchess.shared.core.piece.ai.NPC$RootMove>)
+  private static orderCapturesFirst(Llanse/worldwarchess/shared/core/piece/move/MoveContext;Ljava/util/List;)V
+    NEW java/util/ArrayList
+    DUP
+    ALOAD 1
+    INVOKEINTERFACE java/util/List.size ()I (itf)
+    INVOKESPECIAL java/util/ArrayList.<init> (I)V
+    ASTORE 2
+    NEW java/util/ArrayList
+    DUP
+    ALOAD 1
+    INVOKEINTERFACE java/util/List.size ()I (itf)
+    INVOKESPECIAL java/util/ArrayList.<init> (I)V
+    ASTORE 3
+    ALOAD 1
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 4
+   L0
+   FRAME APPEND [java/util/List java/util/List java/util/Iterator]
+    ALOAD 4
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L1
+    ALOAD 4
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove
+    ASTORE 5
+    ALOAD 0
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.pieces ()Ljava/util/List;
+    ALOAD 5
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.pieceIndex ()I
+    INVOKEINTERFACE java/util/List.get (I)Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/Piece
+    ASTORE 6
+    ALOAD 0
+    ALOAD 5
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.move ()Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.x ()I
+    ALOAD 5
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove.move ()Llanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate;
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/LegalMoveDetector$Coordinate.y ()I
+    ALOAD 6
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.getPieceAt (IILlanse/worldwarchess/shared/core/piece/Piece;)Llanse/worldwarchess/shared/core/piece/Piece;
+    ASTORE 7
+    ALOAD 7
+    IFNULL L2
+    ALOAD 7
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getTeam ()Z
+    ALOAD 6
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getTeam ()Z
+    IF_ICMPEQ L2
+    ALOAD 2
+    ALOAD 5
+    INVOKEINTERFACE java/util/List.add (Ljava/lang/Object;)Z (itf)
+    POP
+    GOTO L3
+   L2
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/ai/NPC$RootMove lanse/worldwarchess/shared/core/piece/Piece lanse/worldwarchess/shared/core/piece/Piece]
+    ALOAD 3
+    ALOAD 5
+    INVOKEINTERFACE java/util/List.add (Ljava/lang/Object;)Z (itf)
+    POP
+   L3
+   FRAME CHOP 3
+    GOTO L0
+   L1
+   FRAME CHOP 1
+    ALOAD 1
+    INVOKEINTERFACE java/util/List.clear ()V (itf)
+    ALOAD 1
+    ALOAD 2
+    INVOKEINTERFACE java/util/List.addAll (Ljava/util/Collection;)Z (itf)
+    POP
+    ALOAD 1
+    ALOAD 3
+    INVOKEINTERFACE java/util/List.addAll (Ljava/util/Collection;)Z (itf)
+    POP
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 8
+
+  // access flags 0x9
+  public static evaluate(Llanse/worldwarchess/shared/core/piece/move/MoveContext;ZZLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;)D
+    DCONST_0
+    DSTORE 4
+    ALOAD 0
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.pieces ()Ljava/util/List;
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 6
+   L0
+   FRAME APPEND [D java/util/Iterator]
+    ALOAD 6
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L1
+    ALOAD 6
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/Piece
+    ASTORE 7
+    ALOAD 7
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getValue ()I
+    I2D
+    DSTORE 8
+    ALOAD 7
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getTeam ()Z
+    ILOAD 1
+    IF_ICMPNE L2
+    DLOAD 4
+    DLOAD 8
+    DADD
+    DSTORE 4
+    GOTO L3
+   L2
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/Piece D]
+    DLOAD 4
+    DLOAD 8
+    DSUB
+    DSTORE 4
+   L3
+   FRAME CHOP 2
+    GOTO L0
+   L1
+   FRAME CHOP 1
+    ALOAD 0
+    ILOAD 1
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.evaluatePosition (Llanse/worldwarchess/shared/core/piece/move/MoveContext;Z)D
+    DSTORE 6
+    ALOAD 0
+    ILOAD 2
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.evaluatePosition (Llanse/worldwarchess/shared/core/piece/move/MoveContext;Z)D
+    DSTORE 8
+    DLOAD 4
+    DLOAD 6
+    DADD
+    DLOAD 8
+    DSUB
+    DSTORE 10
+    ALOAD 3
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI.ordinal ()I
+    TABLESWITCH
+      0: L4
+      1: L5
+      2: L4
+      default: L6
+   L6
+   FRAME APPEND [D D D]
+    NEW java/lang/MatchException
+    DUP
+    ACONST_NULL
+    ACONST_NULL
+    INVOKESPECIAL java/lang/MatchException.<init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+    ATHROW
+   L4
+   FRAME SAME
+    DLOAD 10
+    GOTO L7
+   L5
+   FRAME SAME
+    DLOAD 10
+    INVOKESTATIC java/lang/Math.abs (D)D
+    DNEG
+    DSTORE 12
+    DLOAD 10
+    DCONST_0
+    DCMPG
+    IFGE L8
+    DLOAD 12
+    DCONST_0
+    DLOAD 10
+    DSUB
+    LDC 10.0D
+    DMUL
+    DSUB
+    DSTORE 12
+   L8
+   FRAME APPEND [D]
+    DLOAD 12
+    GOTO L7
+   L7
+   FRAME FULL [lanse/worldwarchess/shared/core/piece/move/MoveContext I I lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI D D D D] [D]
+    DRETURN
+    MAXSTACK = 6
+    MAXLOCALS = 14
+
+  // access flags 0xA
+  private static evaluatePosition(Llanse/worldwarchess/shared/core/piece/move/MoveContext;Z)D
+    ALOAD 0
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/move/MoveContext.pieces ()Ljava/util/List;
+    ASTORE 2
+    BIPUSH 8
+    NEWARRAY T_INT
+    ASTORE 3
+    ILOAD 1
+    IFEQ L0
+    BIPUSH 7
+    GOTO L1
+   L0
+   FRAME APPEND [java/util/List [I]
+    ICONST_0
+   L1
+   FRAME SAME1 I
+    ISTORE 4
+    ILOAD 1
+    IFEQ L2
+    ICONST_0
+    GOTO L3
+   L2
+   FRAME APPEND [I]
+    BIPUSH 7
+   L3
+   FRAME SAME1 I
+    ISTORE 5
+    ALOAD 2
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 6
+   L4
+   FRAME APPEND [I java/util/Iterator]
+    ALOAD 6
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L5
+    ALOAD 6
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/Piece
+    ASTORE 7
+    ALOAD 7
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getTeam ()Z
+    ILOAD 1
+    IF_ICMPNE L6
+    ALOAD 7
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getType ()Llanse/worldwarchess/shared/core/piece/PieceType;
+    GETSTATIC lanse/worldwarchess/shared/core/piece/PieceType.PAWN : Llanse/worldwarchess/shared/core/piece/PieceType;
+    IF_ACMPNE L6
+    ALOAD 7
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getPosX ()I
+    ISTORE 8
+    ILOAD 8
+    IFLT L6
+    ILOAD 8
+    BIPUSH 8
+    IF_ICMPGE L6
+    ALOAD 3
+    ILOAD 8
+    DUP2
+    IALOAD
+    ICONST_1
+    IADD
+    IASTORE
+   L6
+   FRAME SAME
+    GOTO L4
+   L5
+   FRAME CHOP 1
+    DCONST_0
+    DSTORE 6
+    ALOAD 2
+    INVOKEINTERFACE java/util/List.iterator ()Ljava/util/Iterator; (itf)
+    ASTORE 8
+   L7
+   FRAME APPEND [D java/util/Iterator]
+    ALOAD 8
+    INVOKEINTERFACE java/util/Iterator.hasNext ()Z (itf)
+    IFEQ L8
+    ALOAD 8
+    INVOKEINTERFACE java/util/Iterator.next ()Ljava/lang/Object; (itf)
+    CHECKCAST lanse/worldwarchess/shared/core/piece/Piece
+    ASTORE 9
+    ALOAD 9
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getTeam ()Z
+    ILOAD 1
+    IF_ICMPEQ L9
+    GOTO L7
+   L9
+   FRAME APPEND [lanse/worldwarchess/shared/core/piece/Piece]
+    ALOAD 9
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getPosX ()I
+    ISTORE 10
+    ALOAD 9
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getPosY ()I
+    ISTORE 11
+    ILOAD 10
+    ILOAD 11
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.centerScore (II)I
+    ISTORE 12
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC$1.$SwitchMap$lanse$worldwarchess$shared$core$piece$PieceType : [I
+    ALOAD 9
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getType ()Llanse/worldwarchess/shared/core/piece/PieceType;
+    INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/PieceType.ordinal ()I
+    IALOAD
+    TABLESWITCH
+      1: L10
+      2: L11
+      3: L12
+      4: L13
+      5: L14
+      6: L15
+      default: L16
+   L10
+   FRAME APPEND [I I I]
+    ILOAD 1
+    IFEQ L17
+    BIPUSH 6
+    ILOAD 11
+    ISUB
+    GOTO L18
+   L17
+   FRAME SAME
+    ILOAD 11
+    ICONST_1
+    ISUB
+   L18
+   FRAME SAME1 I
+    ISTORE 13
+    ILOAD 13
+    IFLE L19
+    DLOAD 6
+    ILOAD 13
+    I2D
+    LDC 0.08D
+    DMUL
+    DADD
+    DSTORE 6
+   L19
+   FRAME APPEND [I]
+    ILOAD 10
+    ICONST_3
+    IF_ICMPEQ L20
+    ILOAD 10
+    ICONST_4
+    IF_ICMPNE L21
+   L20
+   FRAME SAME
+    DLOAD 6
+    LDC 0.15D
+    DADD
+    DSTORE 6
+   L21
+   FRAME SAME
+    ALOAD 3
+    ILOAD 10
+    IALOAD
+    ISTORE 14
+    ILOAD 14
+    ICONST_1
+    IF_ICMPLE L22
+    DLOAD 6
+    LDC 0.25D
+    ILOAD 14
+    ICONST_1
+    ISUB
+    I2D
+    DMUL
+    ILOAD 14
+    I2D
+    DDIV
+    DSUB
+    DSTORE 6
+   L22
+   FRAME APPEND [I]
+    ILOAD 10
+    IFEQ L23
+    ALOAD 3
+    ILOAD 10
+    ICONST_1
+    ISUB
+    IALOAD
+    IFNE L24
+   L23
+   FRAME SAME
+    ILOAD 10
+    BIPUSH 7
+    IF_ICMPEQ L25
+    ALOAD 3
+    ILOAD 10
+    ICONST_1
+    IADD
+    IALOAD
+    IFNE L24
+   L25
+   FRAME SAME
+    DLOAD 6
+    LDC 0.2D
+    DSUB
+    DSTORE 6
+   L24
+   FRAME CHOP 2
+    GOTO L16
+   L11
+   FRAME SAME
+    DLOAD 6
+    ILOAD 12
+    I2D
+    LDC 0.22D
+    DMUL
+    DADD
+    DSTORE 6
+    ALOAD 9
+    GETFIELD lanse/worldwarchess/shared/core/piece/Piece.hasMovedEver : Z
+    IFEQ L16
+    ILOAD 11
+    ILOAD 4
+    IF_ICMPNE L26
+    ILOAD 10
+    ICONST_1
+    IF_ICMPEQ L16
+    ILOAD 10
+    BIPUSH 6
+    IF_ICMPEQ L16
+   L26
+   FRAME SAME
+    DLOAD 6
+    LDC 0.45D
+    DADD
+    DSTORE 6
+    GOTO L16
+   L12
+   FRAME SAME
+    DLOAD 6
+    ILOAD 12
+    I2D
+    LDC 0.12D
+    DMUL
+    DADD
+    DSTORE 6
+    ALOAD 9
+    GETFIELD lanse/worldwarchess/shared/core/piece/Piece.hasMovedEver : Z
+    IFEQ L16
+    ILOAD 11
+    ILOAD 4
+    IF_ICMPNE L27
+    ILOAD 10
+    ICONST_2
+    IF_ICMPEQ L16
+    ILOAD 10
+    ICONST_5
+    IF_ICMPEQ L16
+   L27
+   FRAME SAME
+    DLOAD 6
+    LDC 0.45D
+    DADD
+    DSTORE 6
+    GOTO L16
+   L13
+   FRAME SAME
+    ILOAD 11
+    ILOAD 5
+    IF_ICMPNE L16
+    DLOAD 6
+    LDC 0.25D
+    DADD
+    DSTORE 6
+    GOTO L16
+   L14
+   FRAME SAME
+    DLOAD 6
+    ILOAD 12
+    I2D
+    LDC 0.06D
+    DMUL
+    DADD
+    DSTORE 6
+    GOTO L16
+   L15
+   FRAME SAME
+    ILOAD 11
+    ILOAD 4
+    IF_ICMPNE L16
+    ILOAD 10
+    ICONST_2
+    IF_ICMPEQ L28
+    ILOAD 10
+    BIPUSH 6
+    IF_ICMPNE L16
+   L28
+   FRAME SAME
+    ALOAD 9
+    GETFIELD lanse/worldwarchess/shared/core/piece/Piece.hasMovedEver : Z
+    IFEQ L16
+    DLOAD 6
+    LDC 0.6D
+    DADD
+    DSTORE 6
+   L16
+   FRAME FULL [lanse/worldwarchess/shared/core/piece/move/MoveContext I java/util/List [I I I D java/util/Iterator] []
+    GOTO L7
+   L8
+   FRAME CHOP 1
+    DLOAD 6
+    DRETURN
+    MAXSTACK = 6
+    MAXLOCALS = 15
+
+  // access flags 0xA
+  private static centerScore(II)I
+    ILOAD 0
+    BIPUSH 7
+    ILOAD 0
+    ISUB
+    INVOKESTATIC java/lang/Math.min (II)I
+    ILOAD 1
+    BIPUSH 7
+    ILOAD 1
+    ISUB
+    INVOKESTATIC java/lang/Math.min (II)I
+    IADD
+    IRETURN
+    MAXSTACK = 4
+    MAXLOCALS = 2
+
+  // access flags 0xA
+  private static isBetter(DDLlanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;)Z
+    ALOAD 4
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI.MAXIMIN : Llanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;
+    IF_ACMPNE L0
+    DLOAD 0
+    DLOAD 2
+    DCMPG
+    IFGE L1
+    ICONST_1
+    GOTO L2
+   L1
+   FRAME SAME
+    ICONST_0
+    GOTO L2
+   L0
+   FRAME SAME
+    DLOAD 0
+    DLOAD 2
+    DCMPL
+    IFLE L3
+    ICONST_1
+    GOTO L2
+   L3
+   FRAME SAME
+    ICONST_0
+   L2
+   FRAME SAME1 I
+    IRETURN
+    MAXSTACK = 4
+    MAXLOCALS = 5
+
+  // access flags 0xA
+  private static checkTime()V
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.time : J
+    LCONST_1
+    LADD
+    PUTSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.time : J
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.time : J
+    LDC 255L
+    LAND
+    LCONST_0
+    LCMP
+    IFNE L0
+    INVOKESTATIC java/lang/System.nanoTime ()J
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.jobDeadline : J
+    LCMP
+    IFLT L0
+    NEW lanse/worldwarchess/shared/core/piece/ai/NPC$SearchTimeout
+    DUP
+    INVOKESPECIAL lanse/worldwarchess/shared/core/piece/ai/NPC$SearchTimeout.<init> ()V
+    ATHROW
+   L0
+   FRAME SAME
+    RETURN
+    MAXSTACK = 4
+    MAXLOCALS = 0
+
+  // access flags 0x100A
+  private static synthetic lambda$doAllNpcLogic$0(ZZ)V
+    ILOAD 0
+    INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.performMove (Z)V
+    ILOAD 1
+    IFEQ L0
+    DCONST_0
+    PUTSTATIC lanse/worldwarchess/shared/core/Timer.currentTime : D
+   L0
+   FRAME SAME
+    RETURN
+    MAXSTACK = 2
+    MAXLOCALS = 2
+
+  // access flags 0x8
+  static <clinit>()V
+    NEW java/util/HashMap
+    DUP
+    INVOKESPECIAL java/util/HashMap.<init> ()V
+    PUTSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.attackedSquares : Ljava/util/Map;
+    GETSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI.MEANIMAX : Llanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;
+    PUTSTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.selectedAI : Llanse/worldwarchess/shared/core/piece/ai/NPC$SELECTED_AI;
+    RETURN
+    MAXSTACK = 2
+    MAXLOCALS = 0
+}

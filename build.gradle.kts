@@ -22,10 +22,15 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("dev.dirs:directories:26")
 
-    // for move history (not needed but like cool i guess)
+    // for move history (not needed but like cool i guess) ((The vulnerable dependencies would only be problem in multiplayer I think))
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
     implementation("com.fasterxml.jackson.core:jackson-core:2.17.2")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.17.2")
+
+    //for the bytecode viewer (comment this out if releasing)
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    implementation("org.ow2.asm:asm:9.8")
+    implementation("org.ow2.asm:asm-util:9.8")
 }
 
 tasks.test {
