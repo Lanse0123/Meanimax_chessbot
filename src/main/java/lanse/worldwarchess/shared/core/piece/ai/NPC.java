@@ -183,9 +183,6 @@ public class NPC {
 //            return score;
 //        }
 
-        double originalAlpha = alpha;
-        double originalBeta = beta;
-
         List<Piece> pieces = context.pieces();
         List<RootMove> moves = new ArrayList<>();
 
@@ -202,8 +199,7 @@ public class NPC {
         }
 
         if (moves.isEmpty()) {
-            double score = evaluate(context, rootTeam, opponentTeam, ai);
-            return score;
+            return evaluate(context, rootTeam, opponentTeam, ai);
         }
 
         orderCapturesFirst(context, moves);
@@ -345,71 +341,55 @@ public class NPC {
 
     //Positive scores favor the root team, negative scores favor its opponent.
     public static double evaluate(MoveContext context, boolean rootTeam, boolean opponentTeam, NPC.SELECTED_AI ai) {
-        double material = 0;
-
-        for (Piece piece : context.pieces()) {
-            double value = piece.getValue();
-
-            if (piece.getTeam() == rootTeam) {
-                material += value;
-            } else {
-                material -= value;
-            }
-        }
-
-        double rootPosition = evaluatePosition(context, rootTeam);
-        double enemyPosition = evaluatePosition(context, opponentTeam);
-
-        double score = material + rootPosition - enemyPosition;
-
-        return switch (ai) {
-            case MINIMAX, MAXIMIN -> score;
-
-            case MEANIMAX -> {
-                double balancedScore = -Math.abs(score);
-
-                //Thou shall not lose, only merely draw.
-                if (score < 0.0) {
-                    balancedScore -= (0.0 - score) * 10.0;
-                }
-
-                yield balancedScore;
-            }
-        };
-    }
-
-    //TODO - I also want to train an evolutionary neural net on Chess, and when I am done I am going to see if hard coding it
-    // or evolutionary learning is better, because my tactics are limited.
-    private static double evaluatePosition(MoveContext context, boolean team) {
         List<Piece> pieces = context.pieces();
-        int[] pawnFiles = new int[8];
-        int homeRank = team ? 7 : 0;
-        int enemyBackRank = team ? 0 : 7;
+
+        double material = 0.0;
+        double rootPosition = 0.0;
+        double enemyPosition = 0.0;
+
+        int[] rootPawnFiles = new int[8];
+        int[] enemyPawnFiles = new int[8];
+
+        int rootHomeRank = rootTeam ? 7 : 0;
+        int rootEnemyBackRank = rootTeam ? 0 : 7;
+        int enemyHomeRank = opponentTeam ? 7 : 0;
+        int enemyEnemyBackRank = opponentTeam ? 0 : 7;
 
         // Count pawns before the switch so its not O(n^2)
         for (Piece piece : pieces) {
-            if (piece.getTeam() == team && piece.getType() == PieceType.PAWN) {
+            boolean isRoot = piece.getTeam() == rootTeam;
+            double value = piece.getValue();
+
+            material += isRoot ? value : -value;
+
+            if (piece.getType() == PieceType.PAWN) {
                 int x = piece.getPosX();
                 if (x >= 0 && x < 8) {
-                    pawnFiles[x]++;
+                    (isRoot ? rootPawnFiles : enemyPawnFiles)[x]++;
                 }
             }
         }
 
-        double score = 0;
         for (Piece piece : pieces) {
-            if (piece.getTeam() != team) {
-                continue;
-            }
-
+            boolean isRoot = piece.getTeam() == rootTeam;
             int x = piece.getPosX();
             int y = piece.getPosY();
 
+            if (x < 0 || x >= 8 || y < 0 || y >= 8) {
+                continue;
+            }
+
+            int homeRank = isRoot ? rootHomeRank : enemyHomeRank;
+            int enemyBackRank = isRoot ? rootEnemyBackRank : enemyEnemyBackRank;
+            int[] pawnFiles = isRoot ? rootPawnFiles : enemyPawnFiles;
+
             int center = centerScore(x, y);
+            double score = 0.0;
 
             switch (piece.getType()) {
                 case PAWN -> {
-                    int advancement = team ? 6 - y : y - 1;
+                    int advancement = piece.getTeam() ? 6 - y : y - 1;
+
                     if (advancement > 0) {
                         score += advancement * 0.08;
                     }
@@ -425,7 +405,10 @@ public class NPC {
                         score -= 0.25 * (filePawns - 1) / filePawns;
                     }
 
-                    if ((x == 0 || pawnFiles[x - 1] == 0) && (x == 7 || pawnFiles[x + 1] == 0)) {
+                    boolean noLeftPawn = x == 0 || pawnFiles[x - 1] == 0;
+                    boolean noRightPawn = x == 7 || pawnFiles[x + 1] == 0;
+
+                    if (noLeftPawn && noRightPawn) {
                         score -= 0.20;
                     }
                 }
@@ -459,9 +442,27 @@ public class NPC {
                     }
                 }
             }
+
+            if (isRoot) {
+                rootPosition += score;
+            } else {
+                enemyPosition += score;
+            }
         }
 
-        return score;
+        double score = material + rootPosition - enemyPosition;
+
+        return switch (ai) {
+            case MINIMAX, MAXIMIN -> score;
+            case MEANIMAX -> {
+                //Thou shall not lose, only merely draw.
+                double balancedScore = -Math.abs(score);
+                if (score < 0.0) {
+                    balancedScore += score * 10.0;
+                }
+                yield balancedScore;
+            }
+        };
     }
 
     private static int centerScore(int x, int y) {
