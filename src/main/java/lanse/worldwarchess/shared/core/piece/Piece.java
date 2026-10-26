@@ -7,7 +7,6 @@ import lanse.worldwarchess.shared.core.worldmap.Utils;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.awt.*;
-import java.awt.font.GlyphVector;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +26,6 @@ public final class Piece {
     private final boolean team; // 0 = white, 1 = black
     private int posX, posY;      // Position within the board
     public boolean hasMovedEver = false;
-    private String playerName;
 
     /** REMEMBER TO ADD TO THE PieceClassPrefixMap.java WHEN ADDING A NEW PIECE CLASS*/
 
@@ -38,8 +36,6 @@ public final class Piece {
         this.team = team;
         this.posX = posX;
         this.posY = posY;
-
-        this.playerName = "";
     }
 
     public int getPlayerID() { return playerID; }
@@ -51,7 +47,6 @@ public final class Piece {
     public int getPosX() { return posX; }
     public int getPosY() { return posY; }
     public int getPieceClassPrefix() { return PieceClassPrefixMap.getPrefixIndex(this.getClass()); }
-    public String getPlayerName(){ return playerName; }
 
     public void setBoardPosition(int posX, int posY) {
         this.posX = (posX); // Snap to grid of piece size
@@ -60,10 +55,6 @@ public final class Piece {
 
     public void setBoard(Board board) {
         this.board = board;
-    }
-
-    public void setPlayerName(String name) {
-        this.playerName = name;
     }
 
     public void setType(PieceType type){
@@ -94,31 +85,6 @@ public final class Piece {
         Composite old = g2d.getComposite();
 
         g2d.drawImage(scaled, drawX, drawY, null);
-
-        //draw name above piece if it has one
-        String name = this.getPlayerName();
-        if (name != null && !name.isEmpty()) {
-            Font baseFont = g2d.getFont();
-            Font scaledFont = baseFont.deriveFont(Font.BOLD, (float) pieceSize);
-            g2d.setFont(scaledFont);
-
-            FontMetrics fm = g2d.getFontMetrics();
-            int textWidth = fm.stringWidth(name);
-
-            int textX = drawX + (pieceSize - textWidth) / 2;
-            int textY = drawY - (int) (4 * zoomFactor); // small padding above piece
-
-            GlyphVector gv = g2d.getFont().createGlyphVector(g2d.getFontRenderContext(), name);
-            Shape textShape = gv.getOutline(textX, textY);
-
-            // Draw outline
-            g2d.setColor(Color.BLACK);
-            g2d.setStroke(new BasicStroke((float) (25f * zoomFactor))); // how THICC the outline is
-            g2d.draw(textShape);
-
-            g2d.setColor(Color.WHITE);
-            g2d.fill(textShape);
-        }
 
         g2d.setComposite(old);
     }
@@ -167,7 +133,6 @@ public final class Piece {
     public Piece clonePiece(Board newBoard) {
         Piece clone = new Piece(playerID, newBoard, type, team, posX, posY);
         clone.hasMovedEver = this.hasMovedEver;
-        clone.setPlayerName(this.getPlayerName());
         return clone;
     }
 

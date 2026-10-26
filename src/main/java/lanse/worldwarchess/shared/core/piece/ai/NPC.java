@@ -37,8 +37,8 @@ public class NPC {
     public record SearchResult(Piece piece, LegalMoveDetector.Coordinate move, double score, int depth) {}
     private record RootMove(Piece livePiece, int pieceIndex, LegalMoveDetector.Coordinate move) {}
 
-    //TODO - mess around with this number to see what depth is strongest, 12 is original, or comment out to remove an if statement
-    private static final int MAX_CAPTURE_CHAIN_DEPTH = 120;
+//    //TODO - mess around with this number to see what depth is strongest, 12 is original, or comment out to remove an if statement
+//    private static final int MAX_CAPTURE_CHAIN_DEPTH = 120;
 
     //James likes custom exceptions so I wanted to mess around with one to break out when we hit the bot time limit
     private static final class SearchTimeout extends RuntimeException {
@@ -182,6 +182,13 @@ public class NPC {
         }
 
         long hash = TranspositionTable.hashPosition(context, teamToMove, rootTeam, ai);
+
+//        if (depth <= 0) {
+//            double score = evaluate(context, rootTeam, opponentTeam, ai);
+//            storePosition(transpositionTable, hash, depth, score, TranspositionTable.Bound.EXACT);
+//            return score;
+//        }
+
         double originalAlpha = alpha;
         double originalBeta = beta;
 
@@ -278,9 +285,9 @@ public class NPC {
 
         double standPat = evaluate(context, rootTeam, opponentTeam, ai);
 
-        if (qDepth >= MAX_CAPTURE_CHAIN_DEPTH) {
-            return standPat;
-        }
+//        if (qDepth >= MAX_CAPTURE_CHAIN_DEPTH) {
+//            return standPat;
+//        }
 
         boolean maximizing = (ai == SELECTED_AI.MAXIMIN) != (teamToMove == rootTeam);
 
