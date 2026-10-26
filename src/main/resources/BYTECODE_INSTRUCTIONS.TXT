@@ -1,0 +1,50 @@
+public = public
+protected = protected (or package private)
+private = private
+static = belongs to class
+synthetic = compiler generated and not specified by me
+
+lambda = () -> {}
+(ZZ)V = JVM method descriptor with two boolean parameters, returning void
+ILOAD 0 = Load a local variable, a boolean represented as an integer.
+
+INVOKESTATIC lanse/worldwarchess/shared/core/piece/ai/NPC.performMove (Z)V = NPC.performMove(boolean)
+INVOKEVIRTUAL lanse/worldwarchess/shared/core/piece/Piece.getValue ()I = piece.getValue(), which returns an int (I).
+INVOKESPECIAL java/util/ArrayList.<init> (I)V = new ArrayList<>(initialCapacity);
+
+IFEQ = jmp = goto = PERFORM = go to another area of the code, in java usually defined as a function if IF (== 0)
+IFNE = Not equal to zero (!= 0)
+IFLT = Less than zero (< 0)
+IFGE = Greater than or equal to zero (>= 0)
+IFLE = Less than or equal to zero (<= 0)
+IFGT = Greater than zero (> 0)
+
+DCONST_0 = Push the double value 0.0 onto the operand stack.
+
+CHECKCAST = (Clazz) orElse ClassCastException
+I2D = convert integer to double
+
+Z = boolean
+I = int
+J = long
+D = double
+V = void
+Ljava/lang/Object = Object reference
+
+L0, L1, L2, L3... = Jump points / Functions
+
+FRAME CHOP 2 = remove last 2 local variables from the stack-map frame
+
+FRAME FULL [MoveContext I I NPC$SELECTED_AI D D D D] [D] = Add all those to the stack-map frame
+
+NEW = new
+RETURN = return
+DRETURN = return double
+DUP = duplicate the top vaue on the operand stack and push a copy of it back onto the stack
+
+NEWARRAY T_INT = new int[]
+
+TRYCATCHBLOCK L0 L1 L2 null = An exception thrown between L0 and L1 can be caught by the handler at L2.
+The null type means this handler catches any throwable type
+
+IFNONNULL = thing != null
