@@ -19,6 +19,7 @@ public class SidebarMenu extends JPanel {
     private final JButton toggleButton;
     private final JPanel menuPanel;
     public boolean slowMode = false;
+    private boolean flameGraphEnabled = false;
 
     public SidebarMenu() {
         setLayout(new BorderLayout());
@@ -32,11 +33,11 @@ public class SidebarMenu extends JPanel {
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
         menuPanel.setBackground(new Color(9, 9, 9));
 
-        JButton homeButton = createSidebarButton("<html>Home<br></html>");
-        JButton settingsButton = createSidebarButton("<html>Settings<br></html>");
-        JButton resetCameraButton = createSidebarButton("<html>Reset<br>Camera</html>");
-        JButton pauseGameButton = createSidebarButton("<html>Pause<br>Game</html>");
-        JButton flameGraphButton = createSidebarButton("<html>Flame<br>Graph</html>");
+        JButton homeButton = createSidebarButton("<html>Home<br></html>", false);
+        JButton settingsButton = createSidebarButton("<html>Settings<br></html>", false);
+        JButton resetCameraButton = createSidebarButton("<html>Reset<br>Camera</html>", false);
+        JButton pauseGameButton = createSidebarButton("<html>Pause<br>Game</html>", false);
+        JButton flameGraphButton = createSidebarButton("<html>Flame<br>Graph</html>", true);
 
         homeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         settingsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -48,7 +49,11 @@ public class SidebarMenu extends JPanel {
         settingsButton.addActionListener(_ -> Settings.showSettingsWindow());
         resetCameraButton.addActionListener(_ -> resetCamera());
         pauseGameButton.addActionListener(_ -> pauseGame());
-        flameGraphButton.addActionListener(_ -> FlameGraphLagTester.toggle());
+        flameGraphButton.addActionListener(_ -> {
+            FlameGraphLagTester.toggle();
+            flameGraphEnabled = !flameGraphEnabled;
+            flameGraphButton.setBackground(flameGraphEnabled ? new Color(0xFF8800) : new Color(0x3a3a3a));
+        });
 
         menuPanel.add(homeButton);
         menuPanel.add(Box.createVerticalStrut(7));
@@ -113,7 +118,7 @@ public class SidebarMenu extends JPanel {
         }
     }
 
-    private JButton createSidebarButton(String text) {
+    private JButton createSidebarButton(String text, boolean isFireyButton) {
         JButton button = new JButton(text);
         button.setBackground(new Color(0x3a3a3a));
         button.setForeground(new Color(0xdddddd));
@@ -124,10 +129,18 @@ public class SidebarMenu extends JPanel {
 
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(0x505050));
+                if (isFireyButton) {
+                    button.setBackground(flameGraphEnabled ? new Color(0xFF8800) : new Color(0x505050));
+                } else {
+                    button.setBackground(new Color(0x505050));
+                }
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(0x3a3a3a));
+                if (isFireyButton) {
+                    button.setBackground(flameGraphEnabled ? new Color(0xFF8800) : new Color(0x3a3a3a));
+                } else {
+                    button.setBackground(new Color(0x3a3a3a));
+                }
             }
         });
         return button;
