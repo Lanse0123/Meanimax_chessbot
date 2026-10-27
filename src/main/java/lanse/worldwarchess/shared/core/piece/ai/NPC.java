@@ -12,9 +12,7 @@ import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /** Written by Lanse
  * <br><br>
@@ -62,16 +60,12 @@ public class NPC {
             Piece piece = result.piece();
             LegalMoveDetector.Coordinate move = result.move();
 
-            MoveExecutor.executeMove(piece, piece.getBoard(), move.x(), move.y(), piece.getPosX(),
-                    piece.getPosY(), true, "move", false, false);
+            MoveExecutor.executeMove(piece, move.x(), move.y(), piece.getPosX(),
+                    piece.getPosY(), true, "move", false);
         }
     }
 
     public static SearchResult findBestMove(Board board, boolean team, NPC.SELECTED_AI ai, long timeLimitMillis) {
-        if (board == null || ai == null) {
-            return null;
-        }
-
         MoveContext liveContext = MoveContext.contextify(board);
         MoveContext root = copyContext(liveContext);
 

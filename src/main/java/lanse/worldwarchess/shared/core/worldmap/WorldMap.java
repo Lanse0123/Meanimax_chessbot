@@ -25,14 +25,8 @@ public class WorldMap {
         WorldMap.board = new Board(0, 0, "Border", 0, 1, false, true);
     }
 
-    public static List<Piece> getAllPiecesOfBoard(Board board) {
-        List<Piece> result = new ArrayList<>();
-        for (Piece p : pieces) {
-            if (p.getBoard() == board) {
-                result.add(p);
-            }
-        }
-        return result;
+    public static List<Piece> getMainPieces() {
+        return pieces;
     }
 
     public static List<Piece> getAllPiecesOfPlayerID(int playerID) {
@@ -44,7 +38,7 @@ public class WorldMap {
     }
 
     public static void killPiece(Piece piece) {
-        new DeathMarker(piece.getBoard(), piece.getPosX(), piece.getPosY(), 1);
+        new DeathMarker(WorldMap.board, piece.getPosX(), piece.getPosY(), 1);
         pieces.remove(piece);
 
         if (piece.getType() == PieceType.KING) {

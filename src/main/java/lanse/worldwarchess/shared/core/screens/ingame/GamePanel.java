@@ -146,7 +146,7 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
                 int pieceLogicalY = (worldY - region.y) / tileSize;
 
                 // Get the nearest piece within snapping range of the click
-                Optional<Piece> opt_piece = Utils.nearestPiece(new LegalMoveDetector.Coordinate(pieceLogicalX, pieceLogicalY), WorldMap.getAllPiecesOfBoard(board));
+                Optional<Piece> opt_piece = Utils.nearestPiece(new LegalMoveDetector.Coordinate(pieceLogicalX, pieceLogicalY), WorldMap.getMainPieces());
                 if (opt_piece.isPresent()) {
                     selectPiece(opt_piece.get(), board, worldX, worldY);
                     return;
@@ -208,7 +208,7 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         LegalMoveDetector.Coordinate logicalCoords = Utils.pxToLogicalCoords(new Point(e.getX() - cameraX, e.getY() - cameraY), zoomFactor);
         Board newBoard = WorldMap.getBoard();
 
-        boolean sameSquare = (logicalCoords.x() == originalLogicalX && logicalCoords.y() == originalLogicalY && newBoard == selectedPiece.getBoard());
+        boolean sameSquare = (logicalCoords.x() == originalLogicalX && logicalCoords.y() == originalLogicalY);
         boolean currentTeam = Timer.turnCounter % 2 == 0;
         boolean invalidMoveBase = newBoard == null || sameSquare ||
                 Timer.playerIDMovedList.contains(selectedPiece.getPlayerID()) || selectedPiece.getTeam() != currentTeam;
@@ -226,8 +226,8 @@ public class GamePanel extends JPanel implements MouseWheelListener, MouseListen
         if (move.isPresent()) {
             LegalMoveDetector.Coordinate valid_move = move.get();
             // EXECUTE ORDER 66 or wait no I mean EXECUTE MOVE!!
-            MoveExecutor.executeMove(selectedPiece, newBoard, valid_move.x(), valid_move.y(), originalLogicalX, originalLogicalY,
-                    true, "move", true, false);
+            MoveExecutor.executeMove(selectedPiece, valid_move.x(), valid_move.y(), originalLogicalX, originalLogicalY,
+                    true, "move", true);
         }
         // handle illegal move
         else {

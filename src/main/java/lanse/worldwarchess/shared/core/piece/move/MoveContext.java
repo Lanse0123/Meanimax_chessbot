@@ -37,17 +37,15 @@ public final class MoveContext {
         this.occupancy = new Piece[board.getBoardSize()][board.getBoardSize()];
 
         for (Piece piece : this.pieces) {
-            if (piece.getBoard() == board) {
-                int x = piece.getPosX();
-                int y = piece.getPosY();
+            int x = piece.getPosX();
+            int y = piece.getPosY();
 
-                occupancy[x][y] = piece;
-            }
+            occupancy[x][y] = piece;
         }
     }
 
     public static MoveContext contextify(Board board) {
-        return new MoveContext(board, new ArrayList<>(WorldMap.getAllPiecesOfBoard(board)));
+        return new MoveContext(board, new ArrayList<>(WorldMap.getMainPieces()));
     }
 
     public Piece getPieceAt(int x, int y, Piece ignoredPiece) {
@@ -87,9 +85,7 @@ public final class MoveContext {
         int x = piece.getPosX();
         int y = piece.getPosY();
 
-        if (piece.getBoard() == board) {
-            occupancy[x][y] = piece;
-        }
+        occupancy[x][y] = piece;
     }
 
     public record TemporaryMove(Piece movingPiece, int oldX, int oldY, boolean oldHasMovedEver,

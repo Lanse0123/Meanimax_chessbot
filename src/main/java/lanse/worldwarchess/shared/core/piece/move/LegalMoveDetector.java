@@ -3,6 +3,7 @@ package lanse.worldwarchess.shared.core.piece.move;
 
 import lanse.worldwarchess.shared.core.piece.Piece;
 import lanse.worldwarchess.shared.core.piece.PieceType;
+import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.util.ArrayList;
@@ -33,13 +34,14 @@ public class LegalMoveDetector {
             {1, -2},  {1, 2}
     };
 
-    private static final List<Coordinate> NO_MOVES = List.of();
-
     public static List<Coordinate> getLegalMoves(Piece piece) {
-        return getLegalMoves(piece, MoveContext.contextify(piece.getBoard()));
+        return getLegalMoves(piece, MoveContext.contextify(WorldMap.board));
     }
 
     public static List<Coordinate> getLegalMoves(Piece piece, MoveContext context) {
+        //TODO - if king is in check, limit the moves and castling moves to just king moves out of check.
+        //Maybe I need a function for getAllLegalMoves
+
         return switch (piece.getType()) {
             case PAWN -> getPawnMoves(piece, context);
             case KNIGHT -> getKnightMoves(piece, context);

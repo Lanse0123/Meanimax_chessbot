@@ -50,7 +50,7 @@ public class Board {
 
     public static void clearBoardCache() { BOARD_CACHE.clear(); }
     public List<Piece> getPieces() {
-        return new ArrayList<>(WorldMap.getAllPiecesOfBoard(this));
+        return new ArrayList<>(WorldMap.getMainPieces());
     }
     public int getBoardX() {
         return boardX;
@@ -59,7 +59,7 @@ public class Board {
 
     public Piece getPieceAt(int x, int y, Piece attackerPiece, List<Piece> pieceList) {
         for (Piece piece : pieceList) {
-            if (piece == attackerPiece || piece.getBoard() != this) {
+            if (piece == attackerPiece) {
                 continue;
             }
 

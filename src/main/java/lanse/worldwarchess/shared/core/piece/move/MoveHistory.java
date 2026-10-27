@@ -47,7 +47,7 @@ public class MoveHistory {
     }
 
     public static boolean hasRookMoved(Board board, int x, int y) {
-        Piece rook = board.getPieceAt(x, y, null, WorldMap.getAllPiecesOfBoard(board));
+        Piece rook = board.getPieceAt(x, y, null, WorldMap.getMainPieces());
         if (rook == null) return true;
         return rook.hasMovedEver;
     }

@@ -46,7 +46,7 @@ public class LegalMoveDrawer {
 
         int highlightSize = (int) Math.round(scaledTile);
 
-        Piece targetPiece = moveBoard.getPieceAt(move.x(), move.y(), selectedPiece, WorldMap.getAllPiecesOfBoard(moveBoard));
+        Piece targetPiece = moveBoard.getPieceAt(move.x(), move.y(), selectedPiece, WorldMap.getMainPieces());
 
         BufferedImage textureToDraw = (targetPiece != null) ? captureTexture : legalMoveTexture;
 

@@ -4,6 +4,7 @@ import lanse.worldwarchess.shared.central.TextureKey;
 import lanse.worldwarchess.shared.core.RenderCache;
 import lanse.worldwarchess.shared.core.piece.move.LegalMoveDetector;
 import lanse.worldwarchess.shared.core.worldmap.Utils;
+import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
 
 import java.awt.*;
@@ -21,8 +22,7 @@ public final class Piece {
     // It is now final so there will be no polymorphism or functions to be overridden.
 
     private final int playerID;
-    private Board board;
-    private PieceType type;
+    private final PieceType type;
     private final boolean team; // 0 = white, 1 = black
     private int posX, posY;      // Position within the board
     public boolean hasMovedEver = false;
@@ -31,7 +31,6 @@ public final class Piece {
 
     public Piece(int playerId, Board board, PieceType type, boolean team, int posX, int posY) {
         this.playerID = playerId;
-        this.board = board;
         this.type = type;
         this.team = team;
         this.posX = posX;
@@ -39,7 +38,6 @@ public final class Piece {
     }
 
     public int getPlayerID() { return playerID; }
-    public Board getBoard() { return board; }
     public PieceType getType() { return type; }
 
     /** True = White, False = Black. **/
@@ -51,20 +49,12 @@ public final class Piece {
     }
 
     public void setBoardPosition(int posX, int posY) {
-        this.posX = (posX); // Snap to grid of piece size
-        this.posY = (posY);
-    }
-
-    public void setBoard(Board board) {
-        this.board = board;
-    }
-
-    public void setType(PieceType type){
-        this.type = type;
+        this.posX = posX;
+        this.posY = posY;
     }
 
     public void draw(Graphics2D g2d, double zoomFactor) {
-        Board board = this.getBoard();
+        Board board = WorldMap.board;
         int baseTile = board.getBaseTileSize();
         double scaledBaseTile = baseTile * zoomFactor;
         int pieceSize = (int) scaledBaseTile;
