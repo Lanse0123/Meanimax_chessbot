@@ -157,7 +157,7 @@ public class NPC {
         checkTime();
 
         if (depth <= 0) {
-            return quiescenceSearch(context, teamToMove, rootTeam, opponentTeam, alpha, beta, ai, 0);
+            return captureChainSearch(context, teamToMove, rootTeam, opponentTeam, alpha, beta, ai, 0);
         }
 
 //        if (depth <= 0) {
@@ -224,8 +224,8 @@ public class NPC {
         return bestScore;
     }
 
-    private static double quiescenceSearch(MoveContext context, boolean teamToMove, boolean rootTeam,
-            boolean opponentTeam, double alpha, double beta, SELECTED_AI ai, int qDepth) {
+    private static double captureChainSearch(MoveContext context, boolean teamToMove, boolean rootTeam,
+                                             boolean opponentTeam, double alpha, double beta, SELECTED_AI ai, int qDepth) {
 
         checkTime();
 
@@ -266,7 +266,7 @@ public class NPC {
                 double score;
                 try {
                     boolean nextTeam = teamToMove == rootTeam ? opponentTeam : rootTeam;
-                    score = quiescenceSearch(context, nextTeam, rootTeam, opponentTeam, alpha, beta, ai, qDepth + 1);
+                    score = captureChainSearch(context, nextTeam, rootTeam, opponentTeam, alpha, beta, ai, qDepth + 1);
                 } finally {
                     context.undoMove(undo);
                 }
