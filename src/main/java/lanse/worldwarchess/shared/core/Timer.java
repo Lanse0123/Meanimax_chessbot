@@ -54,7 +54,6 @@ public class Timer {
     }
 
     private static void doHostLogic(){
-        NPC.recalculateAttackerLocations();
         currentTime = maxTimePerTurn;
         turnCounter++;
         playerIDMovedList.clear();

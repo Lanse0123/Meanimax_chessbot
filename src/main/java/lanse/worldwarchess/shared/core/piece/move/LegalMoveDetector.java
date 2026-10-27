@@ -36,15 +36,10 @@ public class LegalMoveDetector {
     private static final List<Coordinate> NO_MOVES = List.of();
 
     public static List<Coordinate> getLegalMoves(Piece piece) {
-        if (piece == null || piece.getBoard() == null) return NO_MOVES;
         return getLegalMoves(piece, MoveContext.contextify(piece.getBoard()));
     }
 
     public static List<Coordinate> getLegalMoves(Piece piece, MoveContext context) {
-        if (piece == null || context == null || context.board() == null || piece.getBoard() != context.board() || !context.pieces().contains(piece)) {
-            return NO_MOVES;
-        }
-
         return switch (piece.getType()) {
             case PAWN -> getPawnMoves(piece, context);
             case KNIGHT -> getKnightMoves(piece, context);

@@ -25,7 +25,6 @@ public class Returner {
         DeathMarker.deathRow.clear();
         MoveHistory.moveRecords.clear();
         MoveHistory.shouldRecordHistory = false;
-        NPC.attackedSquares.clear();
         Board.clearBoardCache();
         WorldMap.pieces.clear();
         BoardPresets.resetOrder();

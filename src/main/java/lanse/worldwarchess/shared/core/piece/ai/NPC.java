@@ -22,9 +22,6 @@ import java.util.Map;
  * and I saw a lot of other ideas but I want this to be my own creation, not a tutorial or something else. **/
 public class NPC {
 
-    //TODO - invent check
-    public static Map<LegalMoveDetector.Coordinate, List<Boolean>> attackedSquares = new HashMap<>();
-
     public enum SELECTED_AI {
         MINIMAX,
         MEANIMAX,
@@ -35,9 +32,6 @@ public class NPC {
 
     public record SearchResult(Piece piece, LegalMoveDetector.Coordinate move, double score, int depth) {}
     private record RootMove(Piece livePiece, int pieceIndex, LegalMoveDetector.Coordinate move) {}
-
-//    //TODO - mess around with this number to see what depth is strongest, 12 is original, or comment out to remove an if statement
-//    private static final int MAX_CAPTURE_CHAIN_DEPTH = 120;
 
     //James likes custom exceptions so I wanted to mess around with one to break out when we hit the bot time limit
     private static final class SearchTimeout extends RuntimeException {
@@ -71,11 +65,6 @@ public class NPC {
             MoveExecutor.executeMove(piece, piece.getBoard(), move.x(), move.y(), piece.getPosX(),
                     piece.getPosY(), true, "move", false, false);
         }
-    }
-
-    public static void recalculateAttackerLocations() {
-        attackedSquares.clear();
-        attackedSquares = WorldMap.getAllEnemyMoves();
     }
 
     public static SearchResult findBestMove(Board board, boolean team, NPC.SELECTED_AI ai, long timeLimitMillis) {
@@ -248,10 +237,6 @@ public class NPC {
 
         double standPat = evaluate(context, rootTeam, opponentTeam, ai);
 
-//        if (qDepth >= MAX_CAPTURE_CHAIN_DEPTH) {
-//            return standPat;
-//        }
-
         boolean maximizing = (ai == SELECTED_AI.MAXIMIN) != (teamToMove == rootTeam);
 
         if (maximizing) {
@@ -374,10 +359,6 @@ public class NPC {
             boolean isRoot = piece.getTeam() == rootTeam;
             int x = piece.getPosX();
             int y = piece.getPosY();
-
-            if (x < 0 || x >= 8 || y < 0 || y >= 8) {
-                continue;
-            }
 
             int homeRank = isRoot ? rootHomeRank : enemyHomeRank;
             int enemyBackRank = isRoot ? rootEnemyBackRank : enemyEnemyBackRank;
