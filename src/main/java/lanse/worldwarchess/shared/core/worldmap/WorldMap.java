@@ -22,7 +22,7 @@ public class WorldMap {
 
     public static void initializeBoards() {
         System.out.println("Adding board...");
-        WorldMap.board = new Board(0, 0, "Border", 0, 1, false, true);
+        WorldMap.board = new Board("Border", 0, 1, true);
     }
 
     public static List<Piece> getMainPieces() {

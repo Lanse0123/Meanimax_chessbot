@@ -47,10 +47,9 @@ public class PawnPromotionManager {
     private void promotePawn(PawnPromotion promo, String newType) {
         Piece pawn = promo.pawn;
         int playerID = pawn.getPlayerID();
-        Board board = promo.board;
         int posX = promo.logicalX;
         int posY = promo.logicalY;
-        Piece newPiece = new Piece(playerID, board, PieceType.fromName(newType), pawn.getTeam(), posX, posY);
+        Piece newPiece = new Piece(playerID, PieceType.fromName(newType), pawn.getTeam(), posX, posY);
         WorldMap.erasePiece(pawn, false);
         WorldMap.spawnPiece(newPiece, false);
 

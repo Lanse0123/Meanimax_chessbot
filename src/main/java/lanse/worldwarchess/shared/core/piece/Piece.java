@@ -29,7 +29,7 @@ public final class Piece {
 
     /** REMEMBER TO ADD TO THE PieceClassPrefixMap.java WHEN ADDING A NEW PIECE CLASS*/
 
-    public Piece(int playerId, Board board, PieceType type, boolean team, int posX, int posY) {
+    public Piece(int playerId, PieceType type, boolean team, int posX, int posY) {
         this.playerID = playerId;
         this.type = type;
         this.team = team;
@@ -122,8 +122,8 @@ public final class Piece {
         return Stream.of(new LegalMoveDetector.Coordinate(posX, posY));
     }
 
-    public Piece clonePiece(Board newBoard) {
-        Piece clone = new Piece(playerID, newBoard, type, team, posX, posY);
+    public Piece clonePiece() {
+        Piece clone = new Piece(playerID, type, team, posX, posY);
         clone.hasMovedEver = this.hasMovedEver;
         return clone;
     }

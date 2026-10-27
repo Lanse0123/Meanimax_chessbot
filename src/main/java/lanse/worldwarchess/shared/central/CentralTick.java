@@ -63,6 +63,7 @@ public class CentralTick {
             if (gameOver && !gameOverScreenShown) {
                 gameOverScreenShown = true;
                 isGameActive = false;
+                SoundManager.gameOver();
                 SwingUtilities.invokeLater(() -> new GameOverScreen(GamePanel.winningTeam));
             }
         } catch (Exception e) {

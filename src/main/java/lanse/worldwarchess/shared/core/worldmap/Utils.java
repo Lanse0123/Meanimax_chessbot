@@ -103,8 +103,4 @@ public class Utils {
         return validPieces.stream().filter(piece -> localDistance(piece, coord) < Math.pow(boardSize / 32.0, 2))
                 .min(Comparator.comparing(piece -> localDistance(piece, coord)));
     }
-
-    public static int boardPxSize(Board board) {
-        return (board.getBoardSize() * board.getBaseTileSize());
-    }
 }

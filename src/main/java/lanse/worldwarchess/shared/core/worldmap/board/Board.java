@@ -20,8 +20,6 @@ public class Board {
 
     //This class represents a chess board.
 
-    protected int boardX;
-    protected int boardY;
     protected int boardSize;
     protected int tileScale;
     protected float borderSize = 10;
@@ -34,9 +32,7 @@ public class Board {
 
     /** REMEMBER TO ADD TO THE BoardClassPrefixMap.java WHEN ADDING A NEW BOARD CLASS*/
 
-    public Board(int boardX, int boardY, String preset, int playerID, int playerID2, boolean isCommander, boolean shouldSetBoardPreset) {
-        this.boardX = boardX;
-        this.boardY = boardY;
+    public Board(String preset, int playerID, int playerID2, boolean shouldSetBoardPreset) {
         this.boardSize = 8;
         this.tileScale = 1;
         this.borderColor = new Color(100, 100, 100);
@@ -44,7 +40,7 @@ public class Board {
         this.blackTexturePrefix = 'b';
 
         if (shouldSetBoardPreset){
-            BoardPresets.setPreset(preset, boardX, boardY, playerID, playerID2, this, isCommander);
+            BoardPresets.setPreset(preset, playerID, playerID2);
         }
     }
 
@@ -53,9 +49,9 @@ public class Board {
         return new ArrayList<>(WorldMap.getMainPieces());
     }
     public int getBoardX() {
-        return boardX;
+        return 0;
     }
-    public int getBoardY() { return boardY; }
+    public int getBoardY() { return 0; }
 
     public Piece getPieceAt(int x, int y, Piece attackerPiece, List<Piece> pieceList) {
         for (Piece piece : pieceList) {
@@ -78,8 +74,8 @@ public class Board {
         double scaledBaseTile = TILE_SIZE * zoomFactor;
         int boardPixelSize = (int) Math.round(boardSize * scaledBaseTile);
 
-        int drawX = (int) Math.round(boardX * zoomFactor);
-        int drawY = (int) Math.round(boardY * zoomFactor);
+        int drawX = (int) Math.round(getBoardX() * zoomFactor);
+        int drawY = (int) Math.round(getBoardY() * zoomFactor);
 
         char prefix = 'u';
 

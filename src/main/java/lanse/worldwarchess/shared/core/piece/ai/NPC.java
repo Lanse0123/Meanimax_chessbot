@@ -292,7 +292,7 @@ public class NPC {
         List<Piece> copies = new ArrayList<>(source.pieces().size());
 
         for (Piece piece : source.pieces()) {
-            copies.add(piece.clonePiece(source.board()));
+            copies.add(piece.clonePiece());
         }
 
         return new MoveContext(source.board(), copies);

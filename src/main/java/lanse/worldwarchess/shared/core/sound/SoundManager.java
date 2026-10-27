@@ -119,27 +119,6 @@ public class SoundManager {
         playSoundWithRandomPitch("/sounds/capture.wav", false);
     }
 
-    public static void commanderMove(Piece piece) {
-        boolean lowSound = false;
-        String sound = "/sounds/commander-move.wav";
-
-        if (Settings.THE_ROOK()) {
-            lowSound = true;
-            sound = switch (piece.getType()) {
-                case ROOK -> "/sounds/THE-ROOK.wav";
-                case BISHOP -> "/sounds/THE-BISHOP.wav";
-                case KNIGHT -> "/sounds/THE-KNIGHT.wav";
-                case QUEEN -> "/sounds/THE-QUEEN.wav";
-                default -> {
-                    lowSound = false;
-                    yield "/sounds/commander-move.wav";
-                }
-            };
-        }
-
-        playSoundWithRandomPitch(sound, lowSound);
-    }
-
     public static void validMove(Piece piece) {
         String sound = "/sounds/valid-move.wav";
 
@@ -154,16 +133,6 @@ public class SoundManager {
         }
 
         playSoundWithRandomPitch(sound, false);
-    }
-
-    public static void ultraKill(Piece piece) {
-        if (Settings.THE_ROOK() && piece != null) commanderMove(piece);
-        playSoundWithRandomPitch("/sounds/commander-ultrakill.wav", false);
-    }
-
-    public static void commanderAttack(Piece piece) {
-        if (Settings.THE_ROOK() && piece != null) commanderMove(piece);
-        playSoundWithRandomPitch("/sounds/commander-attack.wav", false);
     }
 
     public static void gameOver() { playSound("/sounds/game-over.wav"); }

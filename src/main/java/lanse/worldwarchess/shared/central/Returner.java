@@ -2,7 +2,6 @@ package lanse.worldwarchess.shared.central;
 
 import lanse.worldwarchess.shared.core.RenderCache;
 import lanse.worldwarchess.shared.core.Timer;
-import lanse.worldwarchess.shared.core.piece.ai.NPC;
 import lanse.worldwarchess.shared.core.piece.marker.DeathMarker;
 import lanse.worldwarchess.shared.core.piece.marker.Marker;
 import lanse.worldwarchess.shared.core.piece.move.MoveHistory;
@@ -10,7 +9,6 @@ import lanse.worldwarchess.shared.core.screens.ingame.GamePanel;
 import lanse.worldwarchess.shared.core.screens.pregame.MainMenu;
 import lanse.worldwarchess.shared.core.worldmap.WorldMap;
 import lanse.worldwarchess.shared.core.worldmap.board.Board;
-import lanse.worldwarchess.shared.core.worldmap.board.BoardPresets;
 
 import javax.swing.*;
 
@@ -27,7 +25,6 @@ public class Returner {
         MoveHistory.shouldRecordHistory = false;
         Board.clearBoardCache();
         WorldMap.pieces.clear();
-        BoardPresets.resetOrder();
         Marker.markers.clear();
         RenderCache.clear();
         CentralTick.tickCount = 0;
